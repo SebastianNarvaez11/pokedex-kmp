@@ -1,0 +1,5 @@
+// Lo unico que cambia de un desarrollador a otro. TEAM_ID puede quedar vacio
+// para el simulador; hace falta para instalar en un iPhone de verdad.
+TEAM_ID=
+BUNDLE_ID=com.sebastiannarvaez.pokedex
+APP_NAME=Pokédex

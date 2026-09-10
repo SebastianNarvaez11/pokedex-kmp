@@ -1,0 +1,30 @@
+# Catalogo de versiones: el unico sitio donde se escribe un numero de version.
+#
+# Regla del proyecto: solo versiones estables, verificadas contra el repositorio
+# Maven (maven-metadata.xml), nunca contra un blog ni contra la documentacion.
+
+[versions]
+kotlin = "2.4.20"
+agp = "9.4.0"
+androidCompileSdk = "37"
+androidMinSdk = "24"
+androidTargetSdk = "37"
+coreKtx = "1.19.0"
+activityCompose = "1.13.0"
+composeBom = "2026.08.00"
+lifecycle = "2.11.0"
+
+[libraries]
+androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "coreKtx" }
+androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activityCompose" }
+androidx-lifecycle-runtime-ktx = { module = "androidx.lifecycle:lifecycle-runtime-ktx", version.ref = "lifecycle" }
+androidx-compose-bom = { module = "androidx.compose:compose-bom", version.ref = "composeBom" }
+androidx-compose-ui = { module = "androidx.compose.ui:ui" }
+androidx-compose-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview" }
+androidx-compose-material3 = { module = "androidx.compose.material3:material3" }
+
+[plugins]
+kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
+androidKmpLibrary = { id = "com.android.kotlin.multiplatform.library", version.ref = "agp" }
+androidApplication = { id = "com.android.application", version.ref = "agp" }
+composeCompiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
