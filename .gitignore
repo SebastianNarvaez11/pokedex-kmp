@@ -1,18 +1,32 @@
-*.iml
-.kotlin
+# Gradle y Kotlin
 .gradle
+.kotlin
 **/build/
-xcuserdata
 !src/**/build/
-local.properties
+
+# Android Studio / IntelliJ
+*.iml
 .idea
-.DS_Store
 captures
 .externalNativeBuild
 .cxx
+
+# Rutas de esta maquina: las escribe el IDE y no valen en otra
+local.properties
+
+# Xcode: se versiona el proyecto y los esquemas compartidos, nada mas
+xcuserdata
 *.xcodeproj/*
 !*.xcodeproj/project.pbxproj
 !*.xcodeproj/xcshareddata/
 !*.xcodeproj/project.xcworkspace/
 !*.xcworkspace/contents.xcworkspacedata
 **/xcshareddata/WorkspaceSettings.xcsettings
+
+# Secretos: se versiona el ejemplo, nunca el fichero real
+secrets.properties
+keystore.properties
+*.jks
+*.keystore
+
+.DS_Store
