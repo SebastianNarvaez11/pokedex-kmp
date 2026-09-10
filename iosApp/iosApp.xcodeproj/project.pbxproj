@@ -10,8 +10,18 @@
 		000000000000000000000011 /* Config.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Config.xcconfig; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		000000000000000000000013 /* Excepciones */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 000000000000000000000002 /* Pokedex */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		000000000000000000000003 /* iosApp */ = {isa = PBXFileSystemSynchronizedRootGroup; path = iosApp; sourceTree = "<group>"; };
+		000000000000000000000003 /* iosApp */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (000000000000000000000013 /* Excepciones */, ); path = iosApp; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
