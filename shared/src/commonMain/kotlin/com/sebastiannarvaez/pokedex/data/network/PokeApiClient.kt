@@ -5,6 +5,7 @@ import com.sebastiannarvaez.pokedex.core.Log
 import io.ktor.client.HttpClient
 import io.ktor.client.HttpClientConfig
 import io.ktor.client.engine.HttpClientEngine
+import io.ktor.client.plugins.HttpRequestRetry
 import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.defaultRequest
@@ -13,6 +14,7 @@ import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.http.URLProtocol
 import io.ktor.serialization.kotlinx.json.json
+import kotlinx.coroutines.CancellationException
 import kotlinx.serialization.json.Json
 
 /**
@@ -40,6 +42,18 @@ internal fun createHttpClient(
                     ignoreUnknownKeys = true
                 },
             )
+        }
+
+        // Reintenta lo que merece la pena reintentar: fallos de red y errores
+        // del servidor. Un 404 no se reintenta, porque va a seguir siendo 404.
+        //
+        // La espera crece entre intentos. Sin eso, tres reintentos inmediatos
+        // contra un servidor caido son tres peticiones mas que no ayudan a que
+        // se levante.
+        install(HttpRequestRetry) {
+            retryOnServerErrors(maxRetries = 2)
+            retryOnExceptionIf(maxRetries = 2) { _, causa -> causa !is CancellationException }
+            exponentialDelay(base = 2.0, maxDelayMs = 4_000)
         }
 
         install(HttpTimeout) {
