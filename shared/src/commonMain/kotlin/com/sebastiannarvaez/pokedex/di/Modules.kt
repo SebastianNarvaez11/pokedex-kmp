@@ -3,7 +3,6 @@ package com.sebastiannarvaez.pokedex.di
 import com.sebastiannarvaez.pokedex.Pokedex
 import com.sebastiannarvaez.pokedex.core.AppConfig
 import com.sebastiannarvaez.pokedex.core.AppDispatchers
-import com.sebastiannarvaez.pokedex.core.DefaultAppConfig
 import com.sebastiannarvaez.pokedex.data.FavoritesRepository
 import com.sebastiannarvaez.pokedex.data.PokemonRepository
 import com.sebastiannarvaez.pokedex.data.SettingsRepository
@@ -39,7 +38,6 @@ val pokedexModule: Module = module {
     single { currentPlatform() }
     single { Pokedex(get()) }
 
-    single<AppConfig> { DefaultAppConfig() }
     single { createHttpClient(get()) }
     single<PokeApi> { KtorPokeApi(get()) }
     single { PokemonRepository(get(), get()) }

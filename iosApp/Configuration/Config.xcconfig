@@ -3,3 +3,16 @@
 TEAM_ID=
 BUNDLE_ID=com.sebastiannarvaez.pokedex
 APP_NAME=Pokédex
+
+// Las claves de Supabase. Este fichero SÍ se versiona, así que se deja vacío:
+// cada desarrollador pone las suyas en local y no las commitea.
+//
+// Ojo con las URL en un xcconfig: las dos barras de `https://` se interpretan
+// como el comienzo de un comentario. Hay que escapar la segunda con `$()`:
+//
+//   SUPABASE_URL=https:/$()/abcdefgh.supabase.co
+//
+// Es de los errores más desconcertantes que hay, porque el valor llega
+// truncado a `https:` sin que nada avise.
+SUPABASE_URL=
+SUPABASE_KEY=

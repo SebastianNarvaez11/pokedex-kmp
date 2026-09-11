@@ -42,6 +42,8 @@ class ModulesTest {
                 // Lo aporta el modulo de plataforma, no este.
                 androidx.datastore.core.DataStore::class,
                 androidx.room3.RoomDatabase.Builder::class,
+                // La aporta cada app al arrancar, con sus propias claves.
+                com.sebastiannarvaez.pokedex.core.AppConfig::class,
             ),
         )
     }

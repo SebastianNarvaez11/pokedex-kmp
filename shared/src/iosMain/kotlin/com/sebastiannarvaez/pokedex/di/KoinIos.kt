@@ -1,5 +1,8 @@
 package com.sebastiannarvaez.pokedex.di
 
+import com.sebastiannarvaez.pokedex.core.AppConfig
+import org.koin.dsl.module
+
 /**
  * El arranque de Koin para iOS.
  *
@@ -10,6 +13,9 @@ package com.sebastiannarvaez.pokedex.di
  * Objective-C, asi que `initKoin` llegaria a Swift como `doInitKoin`. Por eso
  * esta funcion se llama distinto.
  */
-fun startKoinIos() {
-    initKoin()
+fun startKoinIos(config: AppConfig) {
+    initKoin {
+        // Igual que en Android: la configuracion la aporta la app.
+        modules(module { single { config } })
+    }
 }

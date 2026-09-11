@@ -1,8 +1,19 @@
+// `java` esta ocupado en un script de Gradle por la extension del plugin de
+// Java, asi que `java.util.Properties` no resuelve: hay que importarlo.
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.androidApplication)
     // NavKey se serializa para sobrevivir a que el sistema mate el proceso.
     alias(libs.plugins.kotlinxSerialization)
     alias(libs.plugins.composeCompiler)
+}
+
+// Las claves salen de un fichero que no se versiona. Si no existe, quedan
+// vacias y la app compila igual: lo unico que pasa es que no hay cuenta.
+val secretos = Properties().apply {
+    val fichero = rootProject.file("secrets.properties")
+    if (fichero.exists()) fichero.inputStream().use { load(it) }
 }
 
 android {
@@ -19,6 +30,14 @@ android {
 
     buildFeatures {
         compose = true
+        // Desactivado por defecto desde AGP 8: sin esta linea, `BuildConfig`
+        // no se genera y el error dice «unresolved reference», no «actívalo».
+        buildConfig = true
+    }
+
+    defaultConfig {
+        buildConfigField("String", "SUPABASE_URL", "\"${secretos.getProperty("SUPABASE_URL", "")}\"")
+        buildConfigField("String", "SUPABASE_KEY", "\"${secretos.getProperty("SUPABASE_KEY", "")}\"")
     }
 }
 
