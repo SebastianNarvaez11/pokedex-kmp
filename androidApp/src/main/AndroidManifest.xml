@@ -5,6 +5,13 @@
          iOS funciona: el fallo solo aparece en una de las dos plataformas. -->
     <uses-permission android:name="android.permission.INTERNET" />
 
+    <!--
+        Desde Android 13 las notificaciones son un permiso en tiempo de
+        ejecucion. En versiones anteriores basta con declararlo aqui: el
+        sistema lo concede solo.
+    -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
     <application
         android:name=".PokedexApplication"
         android:allowBackup="true"

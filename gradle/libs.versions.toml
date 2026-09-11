@@ -23,6 +23,7 @@ sqlite = "2.7.1"
 datastore = "1.2.1"
 okio = "3.18.2"
 datetime = "0.8.0"
+work = "2.11.2"
 ksp = "2.3.12"
 koin = "4.2.2"
 ktor = "3.5.2"
@@ -65,6 +66,7 @@ kmp-nativecoroutines-annotations = { module = "com.rickclephas.kmp:kmp-nativecor
 kmp-nativecoroutines-core = { module = "com.rickclephas.kmp:kmp-nativecoroutines-core", version.ref = "nativeCoroutines" }
 turbine = { module = "app.cash.turbine:turbine", version.ref = "turbine" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "coroutines" }
+androidx-work-runtime = { module = "androidx.work:work-runtime-ktx", version.ref = "work" }
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "coreKtx" }
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activityCompose" }
 androidx-lifecycle-viewmodel = { module = "androidx.lifecycle:lifecycle-viewmodel", version.ref = "lifecycle" }

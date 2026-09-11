@@ -37,6 +37,7 @@ dependencies {
     // detalle se ve el del anterior.
     implementation(libs.androidx.lifecycle.viewmodel.navigation3)
     implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.work.runtime)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     // viewmodel-compose trae viewModel(); runtime-compose trae
     // collectAsStateWithLifecycle, que es lo que corta el trabajo del Flow

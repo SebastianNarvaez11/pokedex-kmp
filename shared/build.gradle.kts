@@ -65,9 +65,12 @@ kotlin {
             // explicito porque `Path` asoma en la firma de createWithPath.
             api(libs.androidx.datastore.preferences.core)
             implementation(libs.okio)
-            // Para la fecha local. `kotlin.time` trae el instante, pero no el
-            // calendario ni la zona horaria, que es lo que hace falta aqui.
-            implementation(libs.kotlinx.datetime)
+            // api y no implementation: `LocalDate` asoma en la firma publica de
+            // `PokemonOfTheDay`, asi que las dos apps tienen que poder verlo.
+            //
+            // `kotlin.time` trae el instante, pero no el calendario ni la zona
+            // horaria, que es lo que hace falta aqui.
+            api(libs.kotlinx.datetime)
             api(libs.androidx.paging.common)
             api(libs.koin.core)
             implementation(libs.koin.core.viewmodel)

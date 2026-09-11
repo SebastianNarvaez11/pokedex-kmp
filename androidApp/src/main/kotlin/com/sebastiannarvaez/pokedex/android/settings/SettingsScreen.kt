@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -31,7 +32,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.ui.platform.LocalContext
+import com.sebastiannarvaez.pokedex.android.daily.mostrarPokemonDelDia
+import com.sebastiannarvaez.pokedex.android.daily.recordarPermisoDeNotificaciones
+import com.sebastiannarvaez.pokedex.feature.daily.EstadoDelPermiso
 import com.sebastiannarvaez.pokedex.feature.settings.SettingsViewModel
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import com.sebastiannarvaez.pokedex.feature.settings.Tema
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -73,6 +82,34 @@ fun SettingsScreen(
                     )
                 },
                 alPulsar = { viewModel.cambiarOrden(!ajustes.favoritosPorNumero) },
+            )
+            val (permiso, pedirPermiso) = recordarPermisoDeNotificaciones()
+            val contexto = LocalContext.current
+            Fila(
+                titulo = "Pokémon del día",
+                detalle = when (permiso) {
+                    EstadoDelPermiso.CONCEDIDO -> "Una notificación al día"
+                    EstadoDelPermiso.SIN_PREGUNTAR -> "Toca para activar las notificaciones"
+                    EstadoDelPermiso.DENEGADO -> "Las notificaciones están desactivadas"
+                },
+                icono = {
+                    Icon(
+                        Icons.Default.Notifications,
+                        contentDescription = null,
+                        tint = if (permiso == EstadoDelPermiso.CONCEDIDO) {
+                            MaterialTheme.colorScheme.primary
+                        } else {
+                            MaterialTheme.colorScheme.onSurfaceVariant
+                        },
+                    )
+                },
+                alPulsar = {
+                    if (permiso == EstadoDelPermiso.CONCEDIDO) {
+                        mostrarPokemonDelDia(contexto, hoy())
+                    } else {
+                        pedirPermiso()
+                    }
+                },
             )
             Fila(
                 titulo = "Acerca de",
@@ -154,3 +191,7 @@ val Tema.etiqueta: String
         Tema.CLARO -> "Claro"
         Tema.OSCURO -> "Oscuro"
     }
+
+/** La fecha de hoy en la zona del dispositivo, que es la que ve el usuario. */
+@OptIn(ExperimentalTime::class)
+private fun hoy() = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
