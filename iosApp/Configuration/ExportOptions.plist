@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+	Como se exporta el archivo a un .ipa.
+
+	`app-store-connect` es el metodo para subir a App Store Connect. Los otros
+	—`ad-hoc`, `development`, `enterprise`— producen builds que no llegan a la
+	tienda.
+
+	`teamID` se deja vacio a proposito: cada uno pone el suyo, y sin Apple
+	Developer Program no hay ninguno. La exportacion es el unico paso de todo el
+	curso que **necesita la cuenta de pago**; crear el archivo, no.
+
+	`uploadSymbols` a true es lo que manda el dSYM con los simbolos de Kotlin.
+	Sin el, los informes de fallo de las tiendas llegan con direcciones de
+	memoria.
+-->
+<plist version="1.0">
+<dict>
+	<key>method</key>
+	<string>app-store-connect</string>
+	<key>teamID</key>
+	<string></string>
+	<key>uploadSymbols</key>
+	<true/>
+	<key>signingStyle</key>
+	<string>automatic</string>
+	<key>destination</key>
+	<string>export</string>
+</dict>
+</plist>

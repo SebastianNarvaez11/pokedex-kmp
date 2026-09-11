@@ -40,10 +40,26 @@
 	<string>$(SUPABASE_URL)</string>
 	<key>SUPABASE_KEY</key>
 	<string>$(SUPABASE_KEY)</string>
+	<!--
+		Cifrado. La app solo habla HTTPS, que es de los usos exentos, asi que
+		esto es `false` y App Store Connect deja de preguntarlo **en cada
+		subida**. Sin esta clave, cada build se queda esperando a que alguien
+		conteste un formulario.
+	-->
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<!--
+		La pantalla de lanzamiento. Un diccionario vacio da una pantalla blanca,
+		que en modo oscuro es un fogonazo. Con el color del fondo de la app, el
+		paso a la primera pantalla no se nota.
+	-->
 	<key>UILaunchScreen</key>
-	<dict/>
+	<dict>
+		<key>UIColorName</key>
+		<string>FondoDeArranque</string>
+	</dict>
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>

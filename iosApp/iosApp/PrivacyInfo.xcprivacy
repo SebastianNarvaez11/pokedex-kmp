@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!--
+		El manifiesto de privacidad.
+
+		Lo que hay aquí no se ha copiado de una plantilla: se ha comprobado
+		contra el binario. Las APIs de «motivo obligatorio» son funciones
+		concretas, y basta con que estén enlazadas para que Apple las detecte.
+
+			nm -u Shared.framework/Shared | grep -E '_(stat|fstat|lstat|statfs)$'
+
+		Devuelve stat, fstat, lstat y statfs, y ninguna la llama nuestro código:
+		vienen de SQLite y de la librería de ficheros que usa el almacén de
+		ajustes. Da igual quién las llame: la app las lleva dentro.
+	-->
+	<key>NSPrivacyTracking</key>
+	<false/>
+	<key>NSPrivacyTrackingDomains</key>
+	<array/>
+
+	<!--
+		Lo único que la app recoge es el correo con el que se crea la cuenta, y
+		solo para que la app funcione. No se cruza con nada ni se usa para
+		publicidad, así que `Tracking` va a false y `Linked` a true, porque sí
+		está asociado a la identidad del usuario.
+
+		Los favoritos **no** se declaran: nunca salen del dispositivo.
+	-->
+	<key>NSPrivacyCollectedDataTypes</key>
+	<array>
+		<dict>
+			<key>NSPrivacyCollectedDataType</key>
+			<string>NSPrivacyCollectedDataTypeEmailAddress</string>
+			<key>NSPrivacyCollectedDataTypeLinked</key>
+			<true/>
+			<key>NSPrivacyCollectedDataTypeTracking</key>
+			<false/>
+			<key>NSPrivacyCollectedDataTypePurposes</key>
+			<array>
+				<string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
+			</array>
+		</dict>
+	</array>
+
+	<key>NSPrivacyAccessedAPITypes</key>
+	<array>
+		<dict>
+			<!-- stat, fstat y lstat: los usa SQLite sobre su propio fichero. -->
+			<key>NSPrivacyAccessedAPIType</key>
+			<string>NSPrivacyAccessedAPICategoryFileTimestamp</string>
+			<key>NSPrivacyAccessedAPITypeReasons</key>
+			<array>
+				<string>C617.1</string>
+			</array>
+		</dict>
+		<dict>
+			<!-- statfs: SQLite mira el espacio libre antes de escribir. -->
+			<key>NSPrivacyAccessedAPIType</key>
+			<string>NSPrivacyAccessedAPICategoryDiskSpace</string>
+			<key>NSPrivacyAccessedAPITypeReasons</key>
+			<array>
+				<string>E174.1</string>
+			</array>
+		</dict>
+	</array>
+</dict>
+</plist>
