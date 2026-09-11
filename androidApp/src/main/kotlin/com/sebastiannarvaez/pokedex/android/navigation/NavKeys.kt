@@ -19,7 +19,13 @@ import kotlinx.serialization.Serializable
 data object ListaKey : NavKey
 
 @Serializable
+data object FavoritosKey : NavKey
+
+@Serializable
 data class DetalleKey(val pokemonId: Int) : NavKey
+
+/** Las pestañas de primer nivel, que nunca se apilan entre si. */
+val PESTANAS: List<NavKey> = listOf(ListaKey, FavoritosKey)
 
 fun Destination.aNavKey(): NavKey = when (this) {
     Destination.Lista -> ListaKey

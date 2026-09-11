@@ -1,6 +1,20 @@
 package com.sebastiannarvaez.pokedex.android.navigation
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material3.Icon
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import com.sebastiannarvaez.pokedex.android.favorites.FavoritesScreen
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
@@ -19,8 +33,37 @@ import com.sebastiannarvaez.pokedex.android.list.PokemonListScreen
 @Composable
 fun PokedexApp(inicio: NavKey = ListaKey) {
     val pila = rememberNavBackStack(inicio)
+    val actual = pila.lastOrNull()
 
+    Scaffold(
+        bottomBar = {
+            // La barra solo aparece en las pantallas de primer nivel. En un
+            // detalle estorba: ocupa sitio y ofrece saltar a otra seccion
+            // justo cuando el usuario acaba de entrar en algo.
+            AnimatedVisibility(
+                visible = actual in PESTANAS,
+                enter = slideInVertically { it },
+                exit = slideOutVertically { it },
+            ) {
+                NavigationBar {
+                    NavigationBarItem(
+                        selected = actual == ListaKey,
+                        onClick = { irAPestana(pila, ListaKey) },
+                        icon = { Icon(Icons.Default.Menu, contentDescription = null) },
+                        label = { Text("Pokédex") },
+                    )
+                    NavigationBarItem(
+                        selected = actual == FavoritosKey,
+                        onClick = { irAPestana(pila, FavoritosKey) },
+                        icon = { Icon(Icons.Default.Favorite, contentDescription = null) },
+                        label = { Text("Favoritos") },
+                    )
+                }
+            }
+        },
+    ) { relleno ->
     NavDisplay(
+        modifier = Modifier.padding(relleno),
         backStack = pila,
         onBack = { if (pila.size > 1) pila.removeAt(pila.lastIndex) },
         // Cada entrada de la pila con su propio almacen de ViewModel. Sin este
@@ -33,6 +76,9 @@ fun PokedexApp(inicio: NavKey = ListaKey) {
                     alPulsar = { id -> pila.add(DetalleKey(id)) },
                 )
             }
+            entry<FavoritosKey> {
+                FavoritesScreen(alPulsar = { id -> pila.add(DetalleKey(id)) })
+            }
             entry<DetalleKey> { clave ->
                 PokemonDetailScreen(
                     pokemonId = clave.pokemonId,
@@ -41,4 +87,20 @@ fun PokedexApp(inicio: NavKey = ListaKey) {
             }
         },
     )
+    }
+}
+
+/**
+ * Cambiar de pestaña vacía la pila y deja la pestaña sola.
+ *
+ * Navigation 3 no trae pilas separadas por pestaña, y montarlas a mano es más
+ * complejo de lo que parece. Con una sola pila, volver desde una pestaña
+ * distinta de la inicial cierra la app; para evitarlo, la lista siempre queda
+ * debajo.
+ */
+private fun irAPestana(pila: MutableList<NavKey>, destino: NavKey) {
+    if (pila.lastOrNull() == destino) return
+    pila.clear()
+    if (destino != ListaKey) pila.add(ListaKey)
+    pila.add(destino)
 }
