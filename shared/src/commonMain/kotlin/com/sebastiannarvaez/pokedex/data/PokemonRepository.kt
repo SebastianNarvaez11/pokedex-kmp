@@ -30,6 +30,16 @@ import kotlinx.coroutines.withContext
 internal class PokemonRepository(
     private val api: PokeApi,
     private val dispatchers: AppDispatchers,
+    /**
+     * Los idiomas del usuario, como dependencia y no como llamada directa.
+     *
+     * Por el mismo motivo que los dispatchers y el reloj: **es entorno**. Con
+     * `idiomasPreferidos()` llamado a pelo aqui dentro, un test que comprueba
+     * el texto en espanol pasa en un portatil en espanol y falla en un runner
+     * de CI en ingles, con un mensaje que no menciona el idioma por ninguna
+     * parte. Paso exactamente eso.
+     */
+    private val idiomas: () -> List<String> = ::idiomasPreferidos,
 ) {
 
     private val candado = Mutex()
@@ -110,8 +120,8 @@ internal class PokemonRepository(
             // habria que escribirla dos veces y una de las dos se equivocaria.
             heightCm = basico.height * 10,
             weightG = basico.weight * 100,
-            genus = especie.enElIdiomaDelUsuario { it.genera.map { g -> g.genus to g.language.name } },
-            description = especie.enElIdiomaDelUsuario { it.flavorTexts.map { f -> f.text to f.language.name } }
+            genus = especie.enElIdioma(idiomas()) { it.genera.map { g -> g.genus to g.language.name } },
+            description = especie.enElIdioma(idiomas()) { it.flavorTexts.map { f -> f.text to f.language.name } }
                 .limpiarSaltos(),
             stats = basico.stats.mapNotNull { s ->
                 StatKind.deApi(s.stat.name)?.let { PokemonStat(it, s.baseStat) }
@@ -131,11 +141,12 @@ internal class PokemonRepository(
  * cada texto disponible cual encaja daria el primero del array, que es el que
  * PokeAPI devuelva primero, no el que el usuario quiere.
  */
-private fun SpeciesDto.enElIdiomaDelUsuario(
+private fun SpeciesDto.enElIdioma(
+    preferidos: List<String>,
     extraer: (SpeciesDto) -> List<Pair<String, String>>,
 ): String {
     val textos = extraer(this)
-    idiomasPreferidos().forEach { idioma ->
+    preferidos.forEach { idioma ->
         textos.firstOrNull { it.second == idioma }?.let { return it.first }
     }
     return textos.firstOrNull()?.first.orEmpty()

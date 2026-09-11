@@ -34,8 +34,23 @@ class PokemonDetailTest {
         Dispatchers.resetMain()
     }
 
-    private fun repo(falla: Boolean = false, scheduler: kotlinx.coroutines.test.TestCoroutineScheduler) =
-        PokemonRepository(FakePokeApi(total = 10, falla = falla), TestDispatchers(StandardTestDispatcher(scheduler)))
+    /**
+     * El idioma se fija en el test y no se hereda de la maquina.
+     *
+     * Sin esto, estos tests pasan en un portatil en espanol y fallan en un
+     * runner de integracion continua en ingles. Pasó de verdad, y el mensaje
+     * —«expected:<Pokemon Semilla> but was:<Seed Pokemon>»— no menciona el
+     * idioma por ninguna parte: parece un fallo del mapeo.
+     */
+    private fun repo(
+        falla: Boolean = false,
+        scheduler: kotlinx.coroutines.test.TestCoroutineScheduler,
+        idiomas: List<String> = listOf("es", "en"),
+    ) = PokemonRepository(
+        FakePokeApi(total = 10, falla = falla),
+        TestDispatchers(StandardTestDispatcher(scheduler)),
+        idiomas = { idiomas },
+    )
 
     @Test
     fun lasMedidasSeConviertenAUnidadesDeHumano() = runTest {
@@ -55,6 +70,26 @@ class PokemonDetailTest {
         // original, no donde acaba una frase.
         assertEquals("Una rara semilla le fue plantada al nacer.", detalle.description)
         assertFalse(detalle.description.contains('\n'))
+    }
+
+    /**
+     * La otra mitad de la regla: con el telefono en ingles, el texto llega en
+     * ingles. Antes estaba fijado a espanol y este caso no existia.
+     */
+    @Test
+    fun conElTelefonoEnInglesElTextoLlegaEnIngles() = runTest {
+        val detalle = repo(scheduler = testScheduler, idiomas = listOf("en")).detail(1)
+
+        assertEquals("Seed Pokemon", detalle.genus)
+        assertEquals("Texto en ingles.", detalle.description)
+    }
+
+    /** Un idioma que PokeAPI no trae cae al ingles, que siempre esta. */
+    @Test
+    fun unIdiomaQueNoExisteCaeAlIngles() = runTest {
+        val detalle = repo(scheduler = testScheduler, idiomas = listOf("eu", "en")).detail(1)
+
+        assertEquals("Seed Pokemon", detalle.genus)
     }
 
     @Test
