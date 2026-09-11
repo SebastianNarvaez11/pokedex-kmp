@@ -45,6 +45,8 @@ kotlin {
             api(libs.androidx.lifecycle.viewmodel)
             // api: el grafo de Koin es parte de la cara publica del modulo,
             // porque quien arranca la app es cada interfaz nativa, no esto.
+            // api: PagingData asoma en la cara publica del ViewModel.
+            api(libs.androidx.paging.common)
             api(libs.koin.core)
             implementation(libs.koin.core.viewmodel)
             implementation(libs.ktor.client.core)
@@ -79,6 +81,7 @@ kotlin {
             implementation(libs.kotlinx.coroutines.test)
             implementation(libs.ktor.client.mock)
             implementation(libs.turbine)
+            implementation(libs.androidx.paging.testing)
         }
     }
 }

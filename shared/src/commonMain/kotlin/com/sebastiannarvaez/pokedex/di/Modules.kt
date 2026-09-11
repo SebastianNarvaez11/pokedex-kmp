@@ -11,6 +11,7 @@ import com.sebastiannarvaez.pokedex.data.network.createHttpClient
 import com.sebastiannarvaez.pokedex.core.PlatformAppDispatchers
 import com.sebastiannarvaez.pokedex.currentPlatform
 import com.sebastiannarvaez.pokedex.feature.home.HomeViewModel
+import com.sebastiannarvaez.pokedex.feature.list.PokemonListViewModel
 import org.koin.core.KoinApplication
 import org.koin.core.context.startKoin
 import org.koin.core.module.Module
@@ -37,6 +38,7 @@ val pokedexModule: Module = module {
     // viewModelOf y no factory: Koin registra el ViewModel con el ciclo de
     // vida que espera cada plataforma, y en Android lo entrega viewModel().
     viewModelOf(::HomeViewModel)
+    viewModelOf(::PokemonListViewModel)
 }
 
 /**
