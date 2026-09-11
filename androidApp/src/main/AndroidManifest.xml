@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <!-- Sin esto, en Android toda peticion falla con UnknownHostException y en
+         iOS funciona: el fallo solo aparece en una de las dos plataformas. -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <application
         android:name=".PokedexApplication"
         android:allowBackup="true"

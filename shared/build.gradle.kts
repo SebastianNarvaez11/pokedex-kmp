@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidKmpLibrary)
+    alias(libs.plugins.kotlinxSerialization)
     // Plugin de compilador, no de KSP: convierte los Flow anotados en algo que
     // Swift pueda recorrer con `for await`.
     alias(libs.plugins.nativeCoroutines)
@@ -46,6 +47,11 @@ kotlin {
             // porque quien arranca la app es cada interfaz nativa, no esto.
             api(libs.koin.core)
             implementation(libs.koin.core.viewmodel)
+            implementation(libs.ktor.client.core)
+            implementation(libs.ktor.client.content.negotiation)
+            implementation(libs.ktor.client.logging)
+            implementation(libs.ktor.serialization.kotlinx.json)
+            implementation(libs.kotlinx.serialization.json)
             // api y no implementation: el Logger asoma en la cara publica del
             // modulo, asi que Swift tiene que poder verlo desde el framework.
             implementation(libs.kotlinx.coroutines.core)
@@ -53,12 +59,16 @@ kotlin {
         }
         androidMain.dependencies {
             implementation(libs.koin.android)
+            // Cada plataforma usa su motor: el cliente de Ktor es comun, quien
+            // hace la peticion de verdad no lo es.
+            implementation(libs.ktor.client.okhttp)
         }
         // Solo iOS: la anotacion que hace recorrible un Flow desde Swift no
         // pinta nada en Android ni en la JVM.
         iosMain.dependencies {
             implementation(libs.kmp.nativecoroutines.annotations)
             implementation(libs.kmp.nativecoroutines.core)
+            implementation(libs.ktor.client.darwin)
         }
         // koin-test verifica el grafo por reflexion, que Kotlin/Native no tiene.
         jvmTest.dependencies {
@@ -67,6 +77,7 @@ kotlin {
         commonTest.dependencies {
             implementation(kotlin("test"))
             implementation(libs.kotlinx.coroutines.test)
+            implementation(libs.ktor.client.mock)
         }
     }
 }

@@ -1,5 +1,6 @@
 package com.sebastiannarvaez.pokedex.di
 
+import io.ktor.client.engine.HttpClientEngine
 import kotlin.test.Test
 import org.koin.core.annotation.KoinExperimentalAPI
 import org.koin.test.verify.verify
@@ -25,6 +26,16 @@ class ModulesTest {
     @OptIn(KoinExperimentalAPI::class)
     @Test
     fun elGrafoSePuedeConstruirEntero() {
-        pokedexModule.verify()
+        // `extraTypes` declara lo que el grafo no construye pero existe.
+        //
+        // `verify` mira el **constructor del tipo** por reflexion, no la lambda
+        // que lo fabrica. `HttpClient` recibe un `HttpClientEngine` en su
+        // constructor, aunque nuestro `single { createHttpClient(get()) }` no
+        // se lo pase nunca: lo resuelve Ktor segun la plataforma. Sin esta
+        // linea, el test falla con:
+        //
+        //   MissingKoinDefinitionException: Missing definition for
+        //   '[field:'engine' - type:'io.ktor.client.engine.HttpClientEngine']'
+        pokedexModule.verify(extraTypes = listOf(HttpClientEngine::class))
     }
 }
