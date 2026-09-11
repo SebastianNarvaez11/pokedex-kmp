@@ -25,6 +25,7 @@ xcuserdata
 
 # Secretos: se versiona el ejemplo, nunca el fichero real
 secrets.properties
+iosApp/Configuration/Config.local.xcconfig
 keystore.properties
 *.jks
 *.keystore

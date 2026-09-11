@@ -1,0 +1,13 @@
+// Copia este fichero como `Config.local.xcconfig` y rellena los valores.
+//
+// `Config.local.xcconfig` está en .gitignore: nunca se sube. Este ejemplo sí,
+// para que quien clone el repositorio sepa qué necesita.
+//
+// Los dos valores salen del panel de Supabase, en Project Settings > API, y
+// son los mismos que van en `secrets.properties` para Android.
+//
+// La barra escapada de la URL no es un error de copia: sin el `$()` el valor
+// llega truncado a `https:` y nada avisa.
+
+SUPABASE_URL=https:/$()/abcdefgh.supabase.co
+SUPABASE_KEY=sb_publishable_...

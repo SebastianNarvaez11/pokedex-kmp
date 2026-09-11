@@ -10,8 +10,8 @@ APP_NAME=Pokédex
 MARKETING_VERSION=1.0.0
 CURRENT_PROJECT_VERSION=1
 
-// Las claves de Supabase. Este fichero SÍ se versiona, así que se deja vacío:
-// cada desarrollador pone las suyas en local y no las commitea.
+// Las claves de Supabase. Este fichero SÍ se versiona, así que aquí se quedan
+// vacías: las tuyas van en `Config.local.xcconfig`, que git ignora.
 //
 // Ojo con las URL en un xcconfig: las dos barras de `https://` se interpretan
 // como el comienzo de un comentario. Hay que escapar la segunda con `$()`:
@@ -22,3 +22,14 @@ CURRENT_PROJECT_VERSION=1
 // truncado a `https:` sin que nada avise.
 SUPABASE_URL=
 SUPABASE_KEY=
+
+// Y aquí entra lo tuyo. El `?` hace que la línea no falle si el fichero no
+// existe, que es el caso de quien acaba de clonar el repositorio.
+//
+// Va **al final** a propósito: en un xcconfig gana la última asignación, así
+// que lo local pisa a lo de arriba. Si estuviera antes, ganarían los vacíos.
+//
+// Este es el equivalente de `secrets.properties` en Android. Antes no existía
+// y había que editar este mismo fichero, que git marcaba como modificado para
+// siempre y acababa commiteado sin querer.
+#include? "Config.local.xcconfig"
