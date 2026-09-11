@@ -6,45 +6,14 @@ import androidx.paging.PagingConfig
 import androidx.paging.Pager
 import com.sebastiannarvaez.pokedex.core.AppDispatchers
 import com.sebastiannarvaez.pokedex.data.PokemonRepository
-import com.sebastiannarvaez.pokedex.data.network.PokeApi
-import com.sebastiannarvaez.pokedex.data.network.dto.NamedRefDto
-import com.sebastiannarvaez.pokedex.data.network.dto.PokemonDetailDto
-import com.sebastiannarvaez.pokedex.data.network.dto.PokemonPageDto
-import com.sebastiannarvaez.pokedex.data.network.dto.PokemonRefDto
-import com.sebastiannarvaez.pokedex.data.network.dto.TypeSlotDto
-import kotlinx.coroutines.CoroutineDispatcher
+import com.sebastiannarvaez.pokedex.dobles.FakePokeApi
+import com.sebastiannarvaez.pokedex.dobles.TestDispatchers
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-private class FakePokeApi(private val total: Int, private val falla: Boolean = false) : PokeApi {
-
-    override suspend fun page(limit: Int, offset: Int): PokemonPageDto {
-        if (falla) error("sin red")
-        val desde = offset + 1
-        val hasta = minOf(offset + limit, total)
-        return PokemonPageDto(
-            count = total,
-            results = (desde..hasta).map {
-                PokemonRefDto(name = "pokemon-$it", url = "https://pokeapi.co/api/v2/pokemon/$it/")
-            },
-        )
-    }
-
-    override suspend fun detail(id: Int) = PokemonDetailDto(
-        id = id,
-        name = "pokemon-$id",
-        types = listOf(TypeSlotDto(slot = 1, type = NamedRefDto("normal"))),
-    )
-}
-
-private class TestDispatchers(private val d: CoroutineDispatcher) : AppDispatchers {
-    override val io = d
-    override val default = d
-    override val main = d
-}
 
 class PokemonPagingSourceTest {
 
