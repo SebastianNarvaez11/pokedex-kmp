@@ -12,6 +12,13 @@ internal data class PokemonDetailDto(
     /** En hectogramos. */
     val weight: Int = 0,
     val types: List<TypeSlotDto> = emptyList(),
+    val stats: List<StatSlotDto> = emptyList(),
+)
+
+@Serializable
+internal data class StatSlotDto(
+    @SerialName("base_stat") val baseStat: Int = 0,
+    val stat: NamedRefDto,
 )
 
 @Serializable

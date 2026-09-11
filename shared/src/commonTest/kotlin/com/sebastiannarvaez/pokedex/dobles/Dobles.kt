@@ -6,6 +6,10 @@ import com.sebastiannarvaez.pokedex.data.network.dto.NamedRefDto
 import com.sebastiannarvaez.pokedex.data.network.dto.PokemonDetailDto
 import com.sebastiannarvaez.pokedex.data.network.dto.PokemonPageDto
 import com.sebastiannarvaez.pokedex.data.network.dto.PokemonRefDto
+import com.sebastiannarvaez.pokedex.data.network.dto.FlavorTextDto
+import com.sebastiannarvaez.pokedex.data.network.dto.GenusDto
+import com.sebastiannarvaez.pokedex.data.network.dto.SpeciesDto
+import com.sebastiannarvaez.pokedex.data.network.dto.StatSlotDto
 import com.sebastiannarvaez.pokedex.data.network.dto.TypeSlotDto
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.io.IOException
@@ -44,14 +48,39 @@ internal class FakePokeApi(
         )
     }
 
+    override suspend fun species(id: Int): SpeciesDto {
+        if (falla) throw IOException("socket cerrado")
+        return SpeciesDto(
+            id = id,
+            isLegendary = false,
+            flavorTexts = listOf(
+                FlavorTextDto("Texto en ingles.", NamedRefDto("en")),
+                // Con salto de linea y salto de pagina, como los de verdad.
+                FlavorTextDto("Una rara semilla\nle fue plantada\u000cal nacer.", NamedRefDto("es")),
+            ),
+            genera = listOf(
+                GenusDto("Seed Pokemon", NamedRefDto("en")),
+                GenusDto("Pokemon Semilla", NamedRefDto("es")),
+            ),
+        )
+    }
+
     override suspend fun detail(id: Int): PokemonDetailDto {
         llamadasAlDetalle++
         return PokemonDetailDto(
             id = id,
             name = "pokemon-$id",
+            height = 7,
+            weight = 69,
             types = (tipos[id] ?: listOf("normal")).mapIndexed { i, t ->
                 TypeSlotDto(slot = i + 1, type = NamedRefDto(t))
             },
+            stats = listOf(
+                StatSlotDto(baseStat = 45, stat = NamedRefDto("hp")),
+                StatSlotDto(baseStat = 49, stat = NamedRefDto("attack")),
+                // Uno que no conocemos: no debe romper la ficha.
+                StatSlotDto(baseStat = 10, stat = NamedRefDto("suerte")),
+            ),
         )
     }
 }

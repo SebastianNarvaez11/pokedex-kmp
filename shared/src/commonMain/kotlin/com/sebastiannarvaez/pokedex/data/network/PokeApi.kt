@@ -2,6 +2,7 @@ package com.sebastiannarvaez.pokedex.data.network
 
 import com.sebastiannarvaez.pokedex.data.network.dto.PokemonDetailDto
 import com.sebastiannarvaez.pokedex.data.network.dto.PokemonPageDto
+import com.sebastiannarvaez.pokedex.data.network.dto.SpeciesDto
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
@@ -16,6 +17,7 @@ import io.ktor.client.request.parameter
 internal interface PokeApi {
     suspend fun page(limit: Int, offset: Int): PokemonPageDto
     suspend fun detail(id: Int): PokemonDetailDto
+    suspend fun species(id: Int): SpeciesDto
 }
 
 internal class KtorPokeApi(private val client: HttpClient) : PokeApi {
@@ -28,4 +30,7 @@ internal class KtorPokeApi(private val client: HttpClient) : PokeApi {
 
     override suspend fun detail(id: Int): PokemonDetailDto =
         client.get("pokemon/$id").body()
+
+    override suspend fun species(id: Int): SpeciesDto =
+        client.get("pokemon-species/$id").body()
 }
