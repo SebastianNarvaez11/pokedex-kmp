@@ -6,6 +6,7 @@ import com.sebastiannarvaez.pokedex.core.AppDispatchers
 import com.sebastiannarvaez.pokedex.core.DefaultAppConfig
 import com.sebastiannarvaez.pokedex.data.FavoritesRepository
 import com.sebastiannarvaez.pokedex.data.PokemonRepository
+import com.sebastiannarvaez.pokedex.data.SettingsRepository
 import com.sebastiannarvaez.pokedex.data.local.PokedexDatabase
 import com.sebastiannarvaez.pokedex.data.local.createDatabase
 import com.sebastiannarvaez.pokedex.data.network.KtorPokeApi
@@ -17,6 +18,7 @@ import com.sebastiannarvaez.pokedex.feature.detail.PokemonDetailViewModel
 import com.sebastiannarvaez.pokedex.feature.favorites.FavoritesViewModel
 import com.sebastiannarvaez.pokedex.feature.home.HomeViewModel
 import com.sebastiannarvaez.pokedex.feature.list.PokemonListViewModel
+import com.sebastiannarvaez.pokedex.feature.settings.SettingsViewModel
 import com.sebastiannarvaez.pokedex.feature.search.PokemonSearchViewModel
 import org.koin.core.KoinApplication
 import org.koin.core.context.startKoin
@@ -45,6 +47,7 @@ val pokedexModule: Module = module {
     single { createDatabase(get()) }
     single { get<PokedexDatabase>().favoriteDao() }
     single { FavoritesRepository(get(), get()) }
+    single { SettingsRepository(get()) }
 
     // viewModelOf y no factory: Koin registra el ViewModel con el ciclo de
     // vida que espera cada plataforma, y en Android lo entrega viewModel().
@@ -52,6 +55,7 @@ val pokedexModule: Module = module {
     viewModelOf(::PokemonListViewModel)
     viewModelOf(::PokemonSearchViewModel)
     viewModelOf(::FavoritesViewModel)
+    viewModelOf(::SettingsViewModel)
 
     // Con parametro: el identificador no lo sabe el grafo, lo trae la
     // navegacion. `viewModel { }` y no `viewModelOf`, que solo sirve cuando

@@ -36,6 +36,13 @@ class ModulesTest {
         //
         //   MissingKoinDefinitionException: Missing definition for
         //   '[field:'engine' - type:'io.ktor.client.engine.HttpClientEngine']'
-        pokedexModule.verify(extraTypes = listOf(HttpClientEngine::class))
+        pokedexModule.verify(
+            extraTypes = listOf(
+                HttpClientEngine::class,
+                // Lo aporta el modulo de plataforma, no este.
+                androidx.datastore.core.DataStore::class,
+                androidx.room3.RoomDatabase.Builder::class,
+            ),
+        )
     }
 }

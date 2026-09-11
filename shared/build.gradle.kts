@@ -61,6 +61,10 @@ kotlin {
             // Bundled y no el SQLite del sistema: la misma version del motor en
             // Android, iOS y JVM, y en iOS ahorra enlazar -lsqlite3 a mano.
             implementation(libs.androidx.sqlite.bundled)
+            // DataStore de preferencias, sin la parte de Android. `okio` va
+            // explicito porque `Path` asoma en la firma de createWithPath.
+            api(libs.androidx.datastore.preferences.core)
+            implementation(libs.okio)
             api(libs.androidx.paging.common)
             api(libs.koin.core)
             implementation(libs.koin.core.viewmodel)

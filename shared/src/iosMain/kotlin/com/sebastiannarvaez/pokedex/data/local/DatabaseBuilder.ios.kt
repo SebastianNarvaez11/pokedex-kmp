@@ -26,3 +26,16 @@ fun getDatabaseBuilder(): RoomDatabase.Builder<PokedexDatabase> {
         name = requireNotNull(documentos.path) + "/" + DATABASE_FILE_NAME,
     )
 }
+
+/** El fichero de preferencias, junto a la base de datos. */
+@OptIn(ExperimentalForeignApi::class)
+fun settingsPath(): String {
+    val documentos: NSURL = NSFileManager.defaultManager.URLForDirectory(
+        directory = NSDocumentDirectory,
+        inDomain = NSUserDomainMask,
+        appropriateForURL = null,
+        create = false,
+        error = null,
+    ) ?: error("no se pudo resolver el directorio de documentos")
+    return requireNotNull(documentos.path) + "/" + SETTINGS_FILE_NAME
+}

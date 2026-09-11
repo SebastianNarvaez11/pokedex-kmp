@@ -15,3 +15,7 @@ fun getDatabaseBuilder(context: Context): RoomDatabase.Builder<PokedexDatabase> 
         context = context.applicationContext,
         name = context.getDatabasePath(DATABASE_FILE_NAME).absolutePath,
     )
+
+/** El fichero de preferencias, en el directorio privado de la app. */
+fun settingsPath(context: Context): String =
+    context.filesDir.resolve(SETTINGS_FILE_NAME).absolutePath
