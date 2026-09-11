@@ -51,6 +51,7 @@ struct AuthView: View {
                 Text("Crear cuenta").tag(true)
             }
             .pickerStyle(.segmented)
+            .accessibilityIdentifier("auth-modo")
 
             VStack(spacing: 12) {
                 TextField("Correo", text: Binding(
@@ -64,6 +65,7 @@ struct AuthView: View {
                 .focused($campo, equals: .correo)
                 .submitLabel(.next)
                 .onSubmit { campo = .password }
+                .accessibilityIdentifier("auth-correo")
 
                 SecureField("Contraseña", text: Binding(
                     get: { formulario.password },
@@ -76,6 +78,7 @@ struct AuthView: View {
                 .focused($campo, equals: .password)
                 .submitLabel(.go)
                 .onSubmit(enviar)
+                .accessibilityIdentifier("auth-password")
             }
             .textFieldStyle(.roundedBorder)
 
@@ -90,6 +93,7 @@ struct AuthView: View {
             .buttonStyle(.borderedProminent)
             .controlSize(.large)
             .disabled(!formulario.sePuedeEnviar)
+            .accessibilityIdentifier("auth-enviar")
 
             // Recuperar solo tiene sentido al entrar: quien se registra no
             // tiene contraseña que olvidar.

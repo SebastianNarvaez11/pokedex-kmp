@@ -22,7 +22,7 @@ final class PokedexUITests: XCTestCase {
         // simulador —que en un runner de CI es ingles— y los que buscan
         // «Ajustes» encuentran «Settings». No es que el test este mal: es que
         // no decia en que idioma miraba.
-        app.launchArguments = ["-AppleLanguages", "(es)", "-AppleLocale", "es_ES"]
+        app.launchArguments = ["-uiTests", "-AppleLanguages", "(es)", "-AppleLocale", "es_ES"]
         app.launch()
     }
 
