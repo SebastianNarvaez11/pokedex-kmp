@@ -4,6 +4,7 @@ import com.sebastiannarvaez.pokedex.core.AppDispatchers
 import com.sebastiannarvaez.pokedex.data.local.FavoriteDao
 import com.sebastiannarvaez.pokedex.data.local.FavoriteEntity
 import com.sebastiannarvaez.pokedex.domain.FavoritePokemon
+import com.sebastiannarvaez.pokedex.domain.PokemonType
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 import kotlinx.coroutines.flow.Flow
@@ -24,7 +25,9 @@ internal class FavoritesRepository(
 ) {
 
     fun observeFavorites(): Flow<List<FavoritePokemon>> =
-        dao.observeAll().map { filas -> filas.map { FavoritePokemon(it.pokemonId, it.name) } }
+        dao.observeAll().map { filas ->
+            filas.map { FavoritePokemon(it.pokemonId, it.name, PokemonType.deApi(it.primaryType)) }
+        }
 
     /**
      * Solo los identificadores, como conjunto.
@@ -36,12 +39,19 @@ internal class FavoritesRepository(
      */
     fun observeFavoriteIds(): Flow<Set<Int>> = dao.observeIds().map { it.toSet() }
 
-    suspend fun toggle(id: Int, name: String): Boolean = withContext(dispatchers.io) {
+    suspend fun toggle(id: Int, name: String, primaryType: PokemonType? = null): Boolean = withContext(dispatchers.io) {
         if (dao.isFavorite(id)) {
             dao.remove(id)
             false
         } else {
-            dao.add(FavoriteEntity(pokemonId = id, name = name, addedAt = ahora()))
+            dao.add(
+                FavoriteEntity(
+                    pokemonId = id,
+                    name = name,
+                    addedAt = ahora(),
+                    primaryType = primaryType?.name.orEmpty(),
+                ),
+            )
             true
         }
     }

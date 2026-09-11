@@ -109,7 +109,7 @@ struct PokemonListView: View {
                             PokemonCardView(
                                 pokemon: pokemon,
                                 esFavorito: idsFavoritos.contains(pokemon.id),
-                                alMarcar: { favoritos?.toggle(id: pokemon.id, name: pokemon.name) }
+                                alMarcar: { favoritos?.toggle(id: pokemon.id, name: pokemon.name, primaryType: pokemon.types.first) }
                             )
                         }
                         .buttonStyle(.plain)

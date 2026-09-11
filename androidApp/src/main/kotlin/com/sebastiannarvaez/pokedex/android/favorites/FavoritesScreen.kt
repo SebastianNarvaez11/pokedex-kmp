@@ -12,7 +12,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import com.sebastiannarvaez.pokedex.android.ui.color
+import com.sebastiannarvaez.pokedex.android.ui.etiqueta
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.FavoriteBorder
@@ -90,7 +93,7 @@ fun FavoritesScreen(
                     FilaDeslizable(
                         favorito = favorito,
                         alPulsar = { alPulsar(favorito.id) },
-                        alQuitar = { viewModel.toggle(favorito.id, favorito.name) },
+                        alQuitar = { viewModel.toggle(favorito.id, favorito.name, favorito.primaryType) },
                     )
                     HorizontalDivider(color = MaterialTheme.colorScheme.surfaceContainerHighest)
                 }
@@ -192,11 +195,29 @@ private fun Fila(favorito: FavoritePokemon, alPulsar: () -> Unit) {
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold,
             )
-            Text(
-                "N.º ${favorito.id.toString().padStart(4, '0')}",
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(
+                    "N.º ${favorito.id.toString().padStart(4, '0')}",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                // El tipo se guardo con el favorito, asi que esta fila se pinta
+                // entera sin red. Los guardados antes de la version 2 no lo
+                // tienen, y por eso puede ser nulo.
+                favorito.primaryType?.let { tipo ->
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(5.dp),
+                    ) {
+                        Box(Modifier.size(7.dp).clip(CircleShape).background(tipo.color))
+                        Text(
+                            tipo.etiqueta,
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+            }
         }
     }
 }

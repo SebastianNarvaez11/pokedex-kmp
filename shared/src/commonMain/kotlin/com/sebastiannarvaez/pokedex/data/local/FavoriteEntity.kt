@@ -1,5 +1,6 @@
 package com.sebastiannarvaez.pokedex.data.local
 
+import androidx.room3.ColumnInfo
 import androidx.room3.Entity
 import androidx.room3.PrimaryKey
 
@@ -20,4 +21,16 @@ data class FavoriteEntity(
     val name: String,
     /** Cuando se marco. Sirve para ordenar por lo mas reciente. */
     val addedAt: Long,
+    /**
+     * El tipo principal, guardado con el favorito.
+     *
+     * Llego en la version 2 del esquema. Sin el, la lista de favoritos no
+     * podia pintar el color sin pedir el detalle de cada uno, y eso convertia
+     * una pantalla que funcionaba sin red en una que no.
+     *
+     * `defaultValue` no es opcional: sin el, Room no sabe que poner en las
+     * filas que ya existen y la migracion automatica **no se puede generar**.
+     */
+    @ColumnInfo(defaultValue = "")
+    val primaryType: String = "",
 )

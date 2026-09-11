@@ -1,11 +1,20 @@
 package com.sebastiannarvaez.pokedex.data.local
 
+import androidx.room3.AutoMigration
 import androidx.room3.ConstructedBy
 import androidx.room3.Database
 import androidx.room3.RoomDatabase
 import androidx.room3.RoomDatabaseConstructor
 
-@Database(entities = [FavoriteEntity::class], version = 1, exportSchema = true)
+@Database(
+    entities = [FavoriteEntity::class],
+    version = 2,
+    exportSchema = true,
+    // La migracion automatica: Room compara los dos esquemas exportados y
+    // escribe el ALTER TABLE. Solo puede hacerlo porque `schemas/1.json` esta
+    // versionado; si se hubiera borrado, habria que escribirla a mano.
+    autoMigrations = [AutoMigration(from = 1, to = 2)],
+)
 @ConstructedBy(PokedexDatabaseConstructor::class)
 abstract class PokedexDatabase : RoomDatabase() {
     abstract fun favoriteDao(): FavoriteDao

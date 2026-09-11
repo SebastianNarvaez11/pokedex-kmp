@@ -75,7 +75,7 @@ fun PokemonListScreen(
         alLimpiar = buscador::limpiar,
         alPulsar = alPulsar,
         idsFavoritos = idsFavoritos,
-        alMarcar = { p -> favoritos.toggle(p.id, p.name) },
+        alMarcar = { p -> favoritos.toggle(p.id, p.name, p.types.firstOrNull()) },
         modifier = modifier,
     )
 }

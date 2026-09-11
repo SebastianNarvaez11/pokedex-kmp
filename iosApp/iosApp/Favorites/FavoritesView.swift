@@ -82,9 +82,21 @@ struct FavoritesView: View {
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(favorito.name.capitalized)
                                     .font(.system(.headline, design: .rounded))
-                                Text(String(format: "N.º %04d", favorito.id))
-                                    .font(.caption2)
-                                    .foregroundStyle(.secondary)
+                                HStack(spacing: 8) {
+                                    Text(String(format: "N.º %04d", favorito.id))
+                                        .font(.caption2)
+                                        .foregroundStyle(.secondary)
+                                    // El tipo viaja con el favorito: la fila se
+                                    // pinta entera sin red.
+                                    if let tipo = favorito.primaryType {
+                                        HStack(spacing: 5) {
+                                            Circle().fill(tipo.tinte).frame(width: 7, height: 7)
+                                            Text(tipo.etiqueta)
+                                                .font(.caption2)
+                                                .foregroundStyle(.secondary)
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
@@ -94,7 +106,7 @@ struct FavoritesView: View {
                     // Android el equivalente pinta un fondo y hay que dibujarlo.
                     .swipeActions(edge: .trailing) {
                         Button("Quitar", systemImage: "heart.slash", role: .destructive) {
-                            viewModel?.toggle(id: favorito.id, name: favorito.name)
+                            viewModel?.toggle(id: favorito.id, name: favorito.name, primaryType: favorito.primaryType)
                         }
                     }
                 }

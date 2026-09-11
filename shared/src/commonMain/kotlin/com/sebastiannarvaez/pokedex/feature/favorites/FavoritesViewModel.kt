@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sebastiannarvaez.pokedex.data.FavoritesRepository
 import com.sebastiannarvaez.pokedex.domain.FavoritePokemon
+import com.sebastiannarvaez.pokedex.domain.PokemonType
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
@@ -34,8 +35,8 @@ class FavoritesViewModel internal constructor(
         .map { it.toList() }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
-    fun toggle(id: Int, name: String) {
-        viewModelScope.launch { repository.toggle(id, name) }
+    fun toggle(id: Int, name: String, primaryType: PokemonType? = null) {
+        viewModelScope.launch { repository.toggle(id, name, primaryType) }
     }
 
     fun vaciar() {
