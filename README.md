@@ -43,6 +43,16 @@ Gradle solo: no hay que compilar el framework a mano. Antes de la primera
 compilación, Gradle descarga la distribución de Kotlin/Native (alrededor de
 1,6 GB) en `~/.konan`. Tarda.
 
+## Cuenta de Supabase
+
+La parte de sesión necesita un proyecto de Supabase, que es gratuito. Los pasos
+están en [docs/supabase.md](docs/supabase.md). Con `secrets.properties` vacío la
+app compila y funciona: solo se queda sin la pantalla de cuenta.
+
+```bash
+cp secrets.properties.example secrets.properties   # y rellenar los dos valores
+```
+
 ## Stack
 
 Kotlin 2.4.20 · AGP 9.4.0 · Gradle 9.7.1 · targets `jvm`, `android`,
