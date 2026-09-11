@@ -22,10 +22,13 @@ data object ListaKey : NavKey
 data object FavoritosKey : NavKey
 
 @Serializable
+data object AjustesKey : NavKey
+
+@Serializable
 data class DetalleKey(val pokemonId: Int) : NavKey
 
 /** Las pestañas de primer nivel, que nunca se apilan entre si. */
-val PESTANAS: List<NavKey> = listOf(ListaKey, FavoritosKey)
+val PESTANAS: List<NavKey> = listOf(ListaKey, FavoritosKey, AjustesKey)
 
 fun Destination.aNavKey(): NavKey = when (this) {
     Destination.Lista -> ListaKey

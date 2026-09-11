@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -15,6 +16,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.sebastiannarvaez.pokedex.android.favorites.FavoritesScreen
+import com.sebastiannarvaez.pokedex.android.settings.SettingsScreen
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
@@ -58,6 +60,12 @@ fun PokedexApp(inicio: NavKey = ListaKey) {
                         icon = { Icon(Icons.Default.Favorite, contentDescription = null) },
                         label = { Text("Favoritos") },
                     )
+                    NavigationBarItem(
+                        selected = actual == AjustesKey,
+                        onClick = { irAPestana(pila, AjustesKey) },
+                        icon = { Icon(Icons.Default.Settings, contentDescription = null) },
+                        label = { Text("Ajustes") },
+                    )
                 }
             }
         },
@@ -79,6 +87,7 @@ fun PokedexApp(inicio: NavKey = ListaKey) {
             entry<FavoritosKey> {
                 FavoritesScreen(alPulsar = { id -> pila.add(DetalleKey(id)) })
             }
+            entry<AjustesKey> { SettingsScreen() }
             entry<DetalleKey> { clave ->
                 PokemonDetailScreen(
                     pokemonId = clave.pokemonId,

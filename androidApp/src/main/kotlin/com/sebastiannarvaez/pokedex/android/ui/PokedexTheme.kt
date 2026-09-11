@@ -10,6 +10,7 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import com.sebastiannarvaez.pokedex.feature.settings.Tema
 
 private val Rojo = Color(0xFFD2413C)
 
@@ -34,9 +35,15 @@ private val OscuroPropio = darkColorScheme(
  */
 @Composable
 fun PokedexTheme(
-    oscuro: Boolean = isSystemInDarkTheme(),
+    tema: Tema = Tema.SISTEMA,
     contenido: @Composable () -> Unit,
 ) {
+    val oscuro = when (tema) {
+        Tema.SISTEMA -> isSystemInDarkTheme()
+        Tema.CLARO -> false
+        Tema.OSCURO -> true
+    }
+
     val contexto = LocalContext.current
     val esquema = when {
         Build.VERSION.SDK_INT >= Build.VERSION_CODES.S ->
