@@ -15,6 +15,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.sebastiannarvaez.pokedex.Greeting
+import com.sebastiannarvaez.pokedex.currentPlatform
 
 class MainActivity : ComponentActivity() {
 
@@ -30,7 +31,7 @@ class MainActivity : ComponentActivity() {
                     ) {
                         // El texto viene del modulo compartido: es la prueba de
                         // que Android esta consumiendo Kotlin comun.
-                        Saludo(texto = Greeting().greet())
+                        Saludo(texto = Greeting(currentPlatform()).greet())
                     }
                 }
             }
