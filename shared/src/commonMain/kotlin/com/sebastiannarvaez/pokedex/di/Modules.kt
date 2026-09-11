@@ -4,15 +4,22 @@ import com.sebastiannarvaez.pokedex.Pokedex
 import com.sebastiannarvaez.pokedex.core.AppConfig
 import com.sebastiannarvaez.pokedex.core.AppDispatchers
 import com.sebastiannarvaez.pokedex.data.FavoritesRepository
+import com.sebastiannarvaez.pokedex.data.SessionRepository
+import com.sebastiannarvaez.pokedex.data.InMemoryTokenStore
+import com.sebastiannarvaez.pokedex.data.TokenStore
 import com.sebastiannarvaez.pokedex.data.PokemonRepository
 import com.sebastiannarvaez.pokedex.data.SettingsRepository
 import com.sebastiannarvaez.pokedex.data.local.PokedexDatabase
 import com.sebastiannarvaez.pokedex.data.local.createDatabase
 import com.sebastiannarvaez.pokedex.data.network.KtorPokeApi
 import com.sebastiannarvaez.pokedex.data.network.PokeApi
+import com.sebastiannarvaez.pokedex.data.network.KtorSupabaseAuthApi
+import com.sebastiannarvaez.pokedex.data.network.SupabaseAuthApi
 import com.sebastiannarvaez.pokedex.data.network.createHttpClient
+import com.sebastiannarvaez.pokedex.data.network.createSupabaseClient
 import com.sebastiannarvaez.pokedex.core.PlatformAppDispatchers
 import com.sebastiannarvaez.pokedex.currentPlatform
+import com.sebastiannarvaez.pokedex.feature.auth.AuthViewModel
 import com.sebastiannarvaez.pokedex.feature.detail.PokemonDetailViewModel
 import com.sebastiannarvaez.pokedex.feature.favorites.FavoritesViewModel
 import com.sebastiannarvaez.pokedex.feature.home.HomeViewModel
@@ -33,6 +40,9 @@ import org.koin.dsl.module
  * por su cuenta: una en Kotlin y otra en Swift, describiendo lo mismo dos
  * veces y desincronizandose a la primera de cambio.
  */
+/** El nombre que distingue al cliente de Supabase del de PokeAPI. */
+val SUPABASE = org.koin.core.qualifier.named("supabase")
+
 val pokedexModule: Module = module {
     single<AppDispatchers> { PlatformAppDispatchers() }
     single { currentPlatform() }
@@ -47,6 +57,15 @@ val pokedexModule: Module = module {
     single { FavoritesRepository(get(), get()) }
     single { SettingsRepository(get()) }
 
+    // El cliente de Supabase lleva `named`: hay dos HttpClient en el grafo y,
+    // sin nombre, el segundo sobrescribe al primero sin avisar.
+    single(SUPABASE) { createSupabaseClient(get()) }
+    single<SupabaseAuthApi> { KtorSupabaseAuthApi(get(SUPABASE)) }
+    // De momento, en memoria: al cerrar la app la sesion se pierde. Es una
+    // limitacion a proposito, y se arregla con el almacenamiento de verdad.
+    single<TokenStore> { InMemoryTokenStore() }
+    single { SessionRepository(get(), get(), get()) }
+
     // viewModelOf y no factory: Koin registra el ViewModel con el ciclo de
     // vida que espera cada plataforma, y en Android lo entrega viewModel().
     viewModelOf(::HomeViewModel)
@@ -54,6 +73,7 @@ val pokedexModule: Module = module {
     viewModelOf(::PokemonSearchViewModel)
     viewModelOf(::FavoritesViewModel)
     viewModelOf(::SettingsViewModel)
+    viewModelOf(::AuthViewModel)
 
     // Con parametro: el identificador no lo sabe el grafo, lo trae la
     // navegacion. `viewModel { }` y no `viewModelOf`, que solo sirve cuando

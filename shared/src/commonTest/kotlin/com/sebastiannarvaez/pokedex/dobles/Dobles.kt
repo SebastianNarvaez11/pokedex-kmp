@@ -95,3 +95,9 @@ internal class TestDispatchers(private val d: CoroutineDispatcher) : AppDispatch
     override val default = d
     override val main = d
 }
+
+/** Una configuracion con Supabase puesto, para los tests de sesion. */
+internal class ConfigDePrueba(
+    override val supabaseUrl: String = "https://proyecto.supabase.co",
+    override val supabaseKey: String = "clave-publica",
+) : com.sebastiannarvaez.pokedex.core.BaseAppConfig()
