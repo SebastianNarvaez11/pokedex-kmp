@@ -80,9 +80,16 @@ fun PokemonListScreen(
     )
 }
 
+/**
+ * La pantalla sin ViewModel.
+ *
+ * Es `internal` y no `private` para que el test la pueda pintar con una lista
+ * fija. La alternativa —probar `PokemonListScreen`— obligaria a montar Koin,
+ * Room y tres clientes de Ktor para comprobar que una tarjeta ensena un nombre.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun PokemonListContent(
+internal fun PokemonListContent(
     pokemon: LazyPagingItems<Pokemon>,
     busqueda: SearchUiState,
     expandida: Boolean,
@@ -147,6 +154,18 @@ private fun PokemonListContent(
                         )
                     }
                 }
+
+                // Terminada la carga y sin nada: hasta que lo encontro un
+                // test, este caso caia en la rejilla y dejaba **una pantalla
+                // en blanco**, indistinguible de un fallo silencioso.
+                pokemon.loadState.refresh is LoadState.NotLoading && pokemon.itemCount == 0 ->
+                    Centrado {
+                        EstadoDeError(
+                            titulo = "No hay nada que enseñar",
+                            detalle = "PokeAPI no devolvió ningún Pokémon.",
+                            reintentar = { pokemon.refresh() },
+                        )
+                    }
 
                 else -> Rejilla(pokemon, alPulsar, idsFavoritos, alMarcar)
             }

@@ -41,6 +41,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -65,19 +66,51 @@ import org.koin.compose.viewmodel.koinViewModel
  * mismo con un `Picker` de estilo segmentado: se parecen a la vista y se
  * escriben distinto, que es justo el motivo de no compartir la interfaz.
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AuthScreen(
     modifier: Modifier = Modifier,
     viewModel: AuthViewModel = koinViewModel(),
 ) {
     val formulario by viewModel.form.collectAsStateWithLifecycle()
+
+    AuthContent(
+        formulario = formulario,
+        alEscribirEmail = viewModel::escribirEmail,
+        alEscribirPassword = viewModel::escribirPassword,
+        alEntrar = viewModel::entrar,
+        alRegistrar = viewModel::registrar,
+        alRecuperar = viewModel::recuperar,
+        alDescartar = viewModel::descartarError,
+        modifier = modifier,
+    )
+}
+
+/**
+ * La pantalla sin ViewModel.
+ *
+ * Separarla no es ceremonia: asi se puede pintar en una vista previa y, sobre
+ * todo, probarla sin montar el grafo de dependencias entero. Un test que
+ * necesita Koin, Room y tres clientes de Ktor para comprobar que un boton se
+ * habilita no comprueba el boton: comprueba el arranque de la app.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun AuthContent(
+    formulario: AuthFormState,
+    alEscribirEmail: (String) -> Unit,
+    alEscribirPassword: (String) -> Unit,
+    alEntrar: () -> Unit,
+    alRegistrar: () -> Unit,
+    alRecuperar: () -> Unit,
+    alDescartar: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     var registrando by remember { mutableStateOf(false) }
     val teclado = LocalSoftwareKeyboardController.current
 
     val enviar = {
         teclado?.hide()
-        if (registrando) viewModel.registrar() else viewModel.entrar()
+        if (registrando) alRegistrar() else alEntrar()
     }
 
     Surface(modifier = modifier.fillMaxSize()) {
@@ -110,16 +143,22 @@ fun AuthScreen(
                 modifier = Modifier.padding(top = 8.dp, bottom = 32.dp),
             )
 
+            // Las etiquetas de prueba existen porque el selector y el boton
+            // dicen **lo mismo**: «Entrar» aparece dos veces en la pantalla, y
+            // buscar por texto encuentra los dos. Sin ellas, el test falla con
+            // «Expected exactly 1 node but found 2».
             SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
                 SegmentedButton(
                     selected = !registrando,
                     onClick = { registrando = false },
                     shape = SegmentedButtonDefaults.itemShape(index = 0, count = 2),
+                    modifier = Modifier.testTag(TAG_MODO_ENTRAR),
                 ) { Text("Entrar") }
                 SegmentedButton(
                     selected = registrando,
                     onClick = { registrando = true },
                     shape = SegmentedButtonDefaults.itemShape(index = 1, count = 2),
+                    modifier = Modifier.testTag(TAG_MODO_REGISTRAR),
                 ) { Text("Crear cuenta") }
             }
 
@@ -127,7 +166,7 @@ fun AuthScreen(
 
             OutlinedTextField(
                 value = formulario.email,
-                onValueChange = viewModel::escribirEmail,
+                onValueChange = alEscribirEmail,
                 label = { Text("Correo") },
                 leadingIcon = { Icon(Icons.Default.Email, contentDescription = null) },
                 singleLine = true,
@@ -147,7 +186,7 @@ fun AuthScreen(
             var verPassword by remember { mutableStateOf(false) }
             OutlinedTextField(
                 value = formulario.password,
-                onValueChange = viewModel::escribirPassword,
+                onValueChange = alEscribirPassword,
                 label = { Text("Contraseña") },
                 leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null) },
                 trailingIcon = {
@@ -183,7 +222,7 @@ fun AuthScreen(
             Button(
                 onClick = enviar,
                 enabled = formulario.sePuedeEnviar,
-                modifier = Modifier.fillMaxWidth().height(52.dp),
+                modifier = Modifier.fillMaxWidth().height(52.dp).testTag(TAG_ENVIAR),
             ) {
                 if (formulario.enviando) {
                     CircularProgressIndicator(
@@ -202,10 +241,10 @@ fun AuthScreen(
                 TextButton(
                     onClick = {
                         teclado?.hide()
-                        viewModel.recuperar()
+                        alRecuperar()
                     },
                     enabled = formulario.emailValido && !formulario.enviando,
-                    modifier = Modifier.padding(top = 8.dp),
+                    modifier = Modifier.padding(top = 8.dp).testTag(TAG_RECUPERAR),
                 ) {
                     Text("¿Olvidaste tu contraseña?")
                 }
@@ -227,9 +266,9 @@ fun AuthScreen(
     // quien tiene cuenta aqui, y Supabase responde igual en los dos casos.
     if (formulario.correoEnviado) {
         AlertDialog(
-            onDismissRequest = viewModel::descartarError,
+            onDismissRequest = alDescartar,
             confirmButton = {
-                TextButton(onClick = viewModel::descartarError) { Text("Entendido") }
+                TextButton(onClick = alDescartar) { Text("Entendido") }
             },
             title = { Text("Revisa tu correo") },
             text = {
@@ -241,6 +280,12 @@ fun AuthScreen(
         )
     }
 }
+
+/** Las etiquetas que usan los tests, en un solo sitio y no sueltas por ahi. */
+const val TAG_MODO_ENTRAR = "modo-entrar"
+const val TAG_MODO_REGISTRAR = "modo-registrar"
+const val TAG_ENVIAR = "enviar"
+const val TAG_RECUPERAR = "recuperar"
 
 @Composable
 private fun AvisoDeError(error: UiError) {

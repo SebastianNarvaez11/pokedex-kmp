@@ -30,6 +30,8 @@ ktor = "3.5.2"
 serialization = "1.11.0"
 coroutines = "1.11.0"
 nativeCoroutines = "1.0.6"
+robolectric = "4.17"
+junit = "4.13.2"
 
 [libraries]
 kermit = { module = "co.touchlab:kermit", version.ref = "kermit" }
@@ -66,6 +68,10 @@ kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-c
 kmp-nativecoroutines-annotations = { module = "com.rickclephas.kmp:kmp-nativecoroutines-annotations", version.ref = "nativeCoroutines" }
 kmp-nativecoroutines-core = { module = "com.rickclephas.kmp:kmp-nativecoroutines-core", version.ref = "nativeCoroutines" }
 turbine = { module = "app.cash.turbine:turbine", version.ref = "turbine" }
+robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectric" }
+junit = { module = "junit:junit", version.ref = "junit" }
+androidx-compose-ui-test-junit4 = { module = "androidx.compose.ui:ui-test-junit4" }
+androidx-compose-ui-test-manifest = { module = "androidx.compose.ui:ui-test-manifest" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "coroutines" }
 androidx-work-runtime = { module = "androidx.work:work-runtime-ktx", version.ref = "work" }
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "coreKtx" }

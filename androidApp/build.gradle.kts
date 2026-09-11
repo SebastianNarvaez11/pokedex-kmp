@@ -35,6 +35,15 @@ android {
         buildConfig = true
     }
 
+    testOptions {
+        unitTests {
+            // Robolectric necesita los recursos compilados de la app: sin esta
+            // linea, cualquier test que infle una vista falla con «resource not
+            // found» y el mensaje no menciona a Robolectric.
+            isIncludeAndroidResources = true
+        }
+    }
+
     defaultConfig {
         buildConfigField("String", "SUPABASE_URL", "\"${secretos.getProperty("SUPABASE_URL", "")}\"")
         buildConfigField("String", "SUPABASE_KEY", "\"${secretos.getProperty("SUPABASE_KEY", "")}\"")
@@ -69,4 +78,20 @@ dependencies {
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.compose.material.icons.core)
+
+    // Los tests de interfaz corren en la JVM con Robolectric, no en un
+    // emulador. El motivo es el precio: el job de Linux cuesta la decima parte
+    // que el de macOS y no necesita dispositivo. Lo que no cubre esto son los
+    // gestos reales y el renderizado del sistema.
+    testImplementation(libs.junit)
+    testImplementation(libs.robolectric)
+    testImplementation(libs.koin.test)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(platform(libs.androidx.compose.bom))
+    testImplementation(libs.androidx.compose.ui.test.junit4)
+    // Va en `debugImplementation` y no en `testImplementation` porque es un
+    // **manifest**, no una libreria: aporta la Activity vacia que necesita
+    // `createComposeRule`. En el sitio equivocado, el test falla al arrancar
+    // con «No compatible attribute found».
+    debugImplementation(libs.androidx.compose.ui.test.manifest)
 }
