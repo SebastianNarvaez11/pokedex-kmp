@@ -22,6 +22,7 @@ room = "3.0.3"
 sqlite = "2.7.1"
 datastore = "1.2.1"
 okio = "3.18.2"
+datetime = "0.8.0"
 ksp = "2.3.12"
 koin = "4.2.2"
 ktor = "3.5.2"
@@ -50,6 +51,7 @@ androidx-room-runtime = { module = "androidx.room3:room3-runtime", version.ref =
 androidx-room-compiler = { module = "androidx.room3:room3-compiler", version.ref = "room" }
 androidx-room-testing = { module = "androidx.room3:room3-testing", version.ref = "room" }
 androidx-datastore-preferences-core = { module = "androidx.datastore:datastore-preferences-core", version.ref = "datastore" }
+kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "datetime" }
 okio = { module = "com.squareup.okio:okio", version.ref = "okio" }
 androidx-sqlite-bundled = { module = "androidx.sqlite:sqlite-bundled", version.ref = "sqlite" }
 androidx-navigation3-runtime = { module = "androidx.navigation3:navigation3-runtime", version.ref = "navigation3" }
