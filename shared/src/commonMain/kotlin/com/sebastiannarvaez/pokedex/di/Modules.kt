@@ -5,6 +5,8 @@ import com.sebastiannarvaez.pokedex.core.AppConfig
 import com.sebastiannarvaez.pokedex.core.AppDispatchers
 import com.sebastiannarvaez.pokedex.core.DefaultAppConfig
 import com.sebastiannarvaez.pokedex.data.PokemonRepository
+import com.sebastiannarvaez.pokedex.data.local.PokedexDatabase
+import com.sebastiannarvaez.pokedex.data.local.createDatabase
 import com.sebastiannarvaez.pokedex.data.network.KtorPokeApi
 import com.sebastiannarvaez.pokedex.data.network.PokeApi
 import com.sebastiannarvaez.pokedex.data.network.createHttpClient
@@ -37,6 +39,9 @@ val pokedexModule: Module = module {
     single { createHttpClient(get()) }
     single<PokeApi> { KtorPokeApi(get()) }
     single { PokemonRepository(get(), get()) }
+
+    single { createDatabase(get()) }
+    single { get<PokedexDatabase>().favoriteDao() }
 
     // viewModelOf y no factory: Koin registra el ViewModel con el ciclo de
     // vida que espera cada plataforma, y en Android lo entrega viewModel().

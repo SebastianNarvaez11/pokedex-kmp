@@ -2,6 +2,8 @@ plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidKmpLibrary)
     alias(libs.plugins.kotlinxSerialization)
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.room)
     // Plugin de compilador, no de KSP: convierte los Flow anotados en algo que
     // Swift pueda recorrer con `for await`.
     alias(libs.plugins.nativeCoroutines)
@@ -46,6 +48,12 @@ kotlin {
             // api: el grafo de Koin es parte de la cara publica del modulo,
             // porque quien arranca la app es cada interfaz nativa, no esto.
             // api: PagingData asoma en la cara publica del ViewModel.
+            // api: la base de datos asoma en el constructor del repositorio,
+            // asi que sus supertipos tienen que viajar con el modulo.
+            api(libs.androidx.room.runtime)
+            // Bundled y no el SQLite del sistema: la misma version del motor en
+            // Android, iOS y JVM, y en iOS ahorra enlazar -lsqlite3 a mano.
+            implementation(libs.androidx.sqlite.bundled)
             api(libs.androidx.paging.common)
             api(libs.koin.core)
             implementation(libs.koin.core.viewmodel)
@@ -75,6 +83,7 @@ kotlin {
         // koin-test verifica el grafo por reflexion, que Kotlin/Native no tiene.
         jvmTest.dependencies {
             implementation(libs.koin.test)
+            implementation(libs.androidx.room.testing)
         }
         commonTest.dependencies {
             implementation(kotlin("test"))
@@ -84,4 +93,20 @@ kotlin {
             implementation(libs.androidx.paging.testing)
         }
     }
+}
+
+room3 {
+    // Los esquemas generados se versionan con el codigo: son la unica forma de
+    // escribir una migracion automatica, y sin ellos Room no puede compararla.
+    schemaDirectory("$projectDir/schemas")
+}
+
+// Room genera el codigo con KSP, y KSP no tiene noticia de los source sets
+// comunes: hay que pedirle el procesador target por target. Si falta uno, ese
+// target compila sin DAOs y falla en ejecucion, no al compilar.
+dependencies {
+    add("kspAndroid", libs.androidx.room.compiler)
+    add("kspIosArm64", libs.androidx.room.compiler)
+    add("kspIosSimulatorArm64", libs.androidx.room.compiler)
+    add("kspJvm", libs.androidx.room.compiler)
 }
