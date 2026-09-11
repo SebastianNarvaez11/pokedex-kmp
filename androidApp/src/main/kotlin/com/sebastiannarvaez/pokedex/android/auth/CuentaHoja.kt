@@ -1,0 +1,85 @@
+package com.sebastiannarvaez.pokedex.android.auth
+
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import com.sebastiannarvaez.pokedex.domain.Session
+
+/**
+ * La cuenta, en una hoja inferior.
+ *
+ * Cerrar sesion es una accion destructiva de las suaves: no borra nada, pero
+ * saca al usuario de la app. Una hoja modal la pone delante sin cambiar de
+ * pantalla y se cierra deslizando, que es lo que espera alguien que la abrio
+ * por curiosidad.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun CuentaHoja(session: Session, alCerrar: () -> Unit, alSalir: () -> Unit) {
+    ModalBottomSheet(onDismissRequest = alCerrar, sheetState = rememberModalBottomSheetState()) {
+        Column(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp).padding(bottom = 40.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+            ) {
+                Surface(
+                    shape = CircleShape,
+                    color = MaterialTheme.colorScheme.primaryContainer,
+                    modifier = Modifier.size(48.dp),
+                ) {
+                    Icon(
+                        Icons.Default.Person,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                        modifier = Modifier.padding(12.dp),
+                    )
+                }
+                Column {
+                    Text(
+                        session.email ?: "Tu cuenta",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                    )
+                    Text(
+                        "Sesión iniciada",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+
+            Text(
+                "Tus favoritos se guardan en este dispositivo, así que seguirán aquí " +
+                    "cuando vuelvas a entrar.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+
+            OutlinedButton(onClick = alSalir, modifier = Modifier.fillMaxWidth()) {
+                Text("Cerrar sesión")
+            }
+        }
+    }
+}

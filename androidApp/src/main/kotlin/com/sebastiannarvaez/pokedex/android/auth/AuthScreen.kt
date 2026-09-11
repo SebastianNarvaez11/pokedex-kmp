@@ -1,0 +1,226 @@
+package com.sebastiannarvaez.pokedex.android.auth
+
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.sebastiannarvaez.pokedex.core.UiError
+import com.sebastiannarvaez.pokedex.feature.auth.AuthFormState
+import com.sebastiannarvaez.pokedex.feature.auth.AuthViewModel
+import org.koin.compose.viewmodel.koinViewModel
+
+/**
+ * La puerta de la app.
+ *
+ * Entrar y registrarse son **la misma pantalla** con un selector arriba. Son
+ * dos campos iguales y un boton, y separarlas en dos destinos obligaria a
+ * navegar de una a otra perdiendo lo escrito.
+ *
+ * El selector es `SingleChoiceSegmentedButtonRow`, que es lo que Material 3
+ * ofrece para una eleccion entre pocas opciones excluyentes. iOS resuelve lo
+ * mismo con un `Picker` de estilo segmentado: se parecen a la vista y se
+ * escriben distinto, que es justo el motivo de no compartir la interfaz.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun AuthScreen(
+    modifier: Modifier = Modifier,
+    viewModel: AuthViewModel = koinViewModel(),
+) {
+    val formulario by viewModel.form.collectAsStateWithLifecycle()
+    var registrando by remember { mutableStateOf(false) }
+    val teclado = LocalSoftwareKeyboardController.current
+
+    val enviar = {
+        teclado?.hide()
+        if (registrando) viewModel.registrar() else viewModel.entrar()
+    }
+
+    Surface(modifier = modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                // `imePadding` sube el contenido con el teclado. Sin el, el
+                // boton queda debajo del teclado y no hay forma de pulsarlo en
+                // pantallas pequenas.
+                .imePadding()
+                .statusBarsPadding()
+                .navigationBarsPadding()
+                .padding(horizontal = 32.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Spacer(Modifier.height(48.dp))
+            Text(
+                "Pokédex",
+                style = MaterialTheme.typography.displaySmall,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary,
+            )
+            Text(
+                "Entra para guardar tus favoritos y recibir el Pokémon del día.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(top = 8.dp, bottom = 32.dp),
+            )
+
+            SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+                SegmentedButton(
+                    selected = !registrando,
+                    onClick = { registrando = false },
+                    shape = SegmentedButtonDefaults.itemShape(index = 0, count = 2),
+                ) { Text("Entrar") }
+                SegmentedButton(
+                    selected = registrando,
+                    onClick = { registrando = true },
+                    shape = SegmentedButtonDefaults.itemShape(index = 1, count = 2),
+                ) { Text("Crear cuenta") }
+            }
+
+            Spacer(Modifier.height(24.dp))
+
+            OutlinedTextField(
+                value = formulario.email,
+                onValueChange = viewModel::escribirEmail,
+                label = { Text("Correo") },
+                leadingIcon = { Icon(Icons.Default.Email, contentDescription = null) },
+                singleLine = true,
+                // El teclado de correo trae la arroba a mano y quita la
+                // mayuscula automatica, que es la causa numero uno de «mi
+                // correo no existe».
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Email,
+                    imeAction = ImeAction.Next,
+                ),
+                isError = formulario.email.isNotBlank() && !formulario.emailValido,
+                modifier = Modifier.fillMaxWidth(),
+            )
+
+            Spacer(Modifier.height(12.dp))
+
+            var verPassword by remember { mutableStateOf(false) }
+            OutlinedTextField(
+                value = formulario.password,
+                onValueChange = viewModel::escribirPassword,
+                label = { Text("Contraseña") },
+                leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null) },
+                trailingIcon = {
+                    TextButton(onClick = { verPassword = !verPassword }) {
+                        Text(if (verPassword) "Ocultar" else "Ver")
+                    }
+                },
+                visualTransformation = if (verPassword) {
+                    androidx.compose.ui.text.input.VisualTransformation.None
+                } else {
+                    PasswordVisualTransformation()
+                },
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Password,
+                    imeAction = ImeAction.Done,
+                ),
+                keyboardActions = KeyboardActions(onDone = { if (formulario.sePuedeEnviar) enviar() }),
+                supportingText = {
+                    if (registrando) Text("Al menos ${AuthFormState.MINIMO_PASSWORD} caracteres")
+                },
+                modifier = Modifier.fillMaxWidth(),
+            )
+
+            // El error aparece y desaparece con animacion, en el sitio donde se
+            // mira: justo encima del boton que se acaba de pulsar.
+            AnimatedVisibility(visible = formulario.error != null) {
+                formulario.error?.let { AvisoDeError(it) }
+            }
+
+            Spacer(Modifier.height(24.dp))
+
+            Button(
+                onClick = enviar,
+                enabled = formulario.sePuedeEnviar,
+                modifier = Modifier.fillMaxWidth().height(52.dp),
+            ) {
+                if (formulario.enviando) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(20.dp),
+                        strokeWidth = 2.dp,
+                        color = MaterialTheme.colorScheme.onPrimary,
+                    )
+                } else {
+                    Text(if (registrando) "Crear cuenta" else "Entrar")
+                }
+            }
+
+            Spacer(Modifier.height(48.dp))
+        }
+    }
+}
+
+@Composable
+private fun AvisoDeError(error: UiError) {
+    Surface(
+        color = MaterialTheme.colorScheme.errorContainer,
+        contentColor = MaterialTheme.colorScheme.onErrorContainer,
+        shape = MaterialTheme.shapes.medium,
+        modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(error.titulo, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
+            Text(error.detalle, style = MaterialTheme.typography.bodySmall)
+        }
+    }
+}
+
+/** Lo que se ve mientras se lee el token guardado. Dura un parpadeo. */
+@Composable
+fun ComprobandoSesion(modifier: Modifier = Modifier) {
+    Surface(modifier = modifier.fillMaxSize()) {
+        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+        }
+    }
+}

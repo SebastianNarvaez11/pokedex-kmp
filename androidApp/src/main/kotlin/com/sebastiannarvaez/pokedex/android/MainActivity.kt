@@ -8,6 +8,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.sebastiannarvaez.pokedex.android.auth.RaizConSesion
 import com.sebastiannarvaez.pokedex.android.navigation.PokedexApp
 import com.sebastiannarvaez.pokedex.android.ui.PokedexTheme
 import com.sebastiannarvaez.pokedex.feature.settings.SettingsViewModel
@@ -37,10 +38,16 @@ class MainActivity : ComponentActivity() {
             val preferencias by ajustes.settings.collectAsStateWithLifecycle()
 
             PokedexTheme(tema = preferencias.tema) {
-                PokedexApp(
-                    destinoEntrante = destinoEntrante.value,
-                    alConsumirDestino = { destinoEntrante.value = null },
-                )
+                // El enlace entrante se guarda en el estado de la actividad, no
+                // aqui dentro. Por eso un enlace que llega sin sesion no se
+                // pierde: espera a que la app se componga, que es despues de
+                // entrar.
+                RaizConSesion {
+                    PokedexApp(
+                        destinoEntrante = destinoEntrante.value,
+                        alConsumirDestino = { destinoEntrante.value = null },
+                    )
+                }
             }
         }
     }

@@ -12,6 +12,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -37,6 +38,8 @@ import com.sebastiannarvaez.pokedex.android.daily.mostrarPokemonDelDia
 import com.sebastiannarvaez.pokedex.android.daily.programarRecordatorioDiario
 import com.sebastiannarvaez.pokedex.android.daily.recordarPermisoDeNotificaciones
 import com.sebastiannarvaez.pokedex.feature.daily.EstadoDelPermiso
+import com.sebastiannarvaez.pokedex.android.auth.CuentaHoja
+import com.sebastiannarvaez.pokedex.feature.auth.AuthViewModel
 import com.sebastiannarvaez.pokedex.feature.settings.SettingsViewModel
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
@@ -57,9 +60,12 @@ import org.koin.compose.viewmodel.koinViewModel
 fun SettingsScreen(
     modifier: Modifier = Modifier,
     viewModel: SettingsViewModel = koinViewModel(),
+    auth: AuthViewModel = koinViewModel(),
 ) {
     val ajustes by viewModel.settings.collectAsStateWithLifecycle()
+    val sesion by auth.state.collectAsStateWithLifecycle()
     var hojaTema by remember { mutableStateOf(false) }
+    var hojaCuenta by remember { mutableStateOf(false) }
     val estadoHoja = rememberModalBottomSheetState()
 
     Scaffold(
@@ -117,6 +123,14 @@ fun SettingsScreen(
                     }
                 },
             )
+            sesion.session?.let { activa ->
+                Fila(
+                    titulo = "Cuenta",
+                    detalle = activa.email ?: "Sesión iniciada",
+                    icono = { Icon(Icons.Default.Person, contentDescription = null) },
+                    alPulsar = { hojaCuenta = true },
+                )
+            }
             Fila(
                 titulo = "Acerca de",
                 detalle = "Pokédex · datos de PokeAPI",
@@ -124,6 +138,17 @@ fun SettingsScreen(
                 alPulsar = {},
             )
         }
+    }
+
+    sesion.session?.takeIf { hojaCuenta }?.let { activa ->
+        CuentaHoja(
+            session = activa,
+            alCerrar = { hojaCuenta = false },
+            alSalir = {
+                hojaCuenta = false
+                auth.salir()
+            },
+        )
     }
 
     if (hojaTema) {
