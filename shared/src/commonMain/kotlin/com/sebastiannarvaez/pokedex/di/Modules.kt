@@ -13,7 +13,11 @@ import com.sebastiannarvaez.pokedex.data.local.PokedexDatabase
 import com.sebastiannarvaez.pokedex.data.local.createDatabase
 import com.sebastiannarvaez.pokedex.data.network.KtorPokeApi
 import com.sebastiannarvaez.pokedex.data.network.PokeApi
+import com.sebastiannarvaez.pokedex.data.network.KtorSupabaseAccountApi
 import com.sebastiannarvaez.pokedex.data.network.KtorSupabaseAuthApi
+import com.sebastiannarvaez.pokedex.data.network.ProveedorDeTokens
+import com.sebastiannarvaez.pokedex.data.network.SupabaseAccountApi
+import com.sebastiannarvaez.pokedex.data.network.createSupabaseAccountClient
 import com.sebastiannarvaez.pokedex.data.network.SupabaseAuthApi
 import com.sebastiannarvaez.pokedex.data.network.createHttpClient
 import com.sebastiannarvaez.pokedex.data.network.createSupabaseClient
@@ -43,6 +47,9 @@ import org.koin.dsl.module
 /** El nombre que distingue al cliente de Supabase del de PokeAPI. */
 val SUPABASE = org.koin.core.qualifier.named("supabase")
 
+/** El cliente que si lleva la sesion del usuario. */
+val SUPABASE_CUENTA = org.koin.core.qualifier.named("supabase-cuenta")
+
 val pokedexModule: Module = module {
     single<AppDispatchers> { PlatformAppDispatchers() }
     single { currentPlatform() }
@@ -65,6 +72,19 @@ val pokedexModule: Module = module {
     // limitacion a proposito, y se arregla con el almacenamiento de verdad.
     single<TokenStore> { InMemoryTokenStore() }
     single { SessionRepository(get(), get(), get()) }
+
+    // El `get()` de dentro se resuelve al hacer la peticion, no al montar el
+    // grafo: es lo que rompe el ciclo cliente -> repositorio -> cliente.
+    single(SUPABASE_CUENTA) {
+        createSupabaseAccountClient(
+            get(),
+            object : ProveedorDeTokens {
+                override suspend fun vigentes() = get<SessionRepository>().tokensVigentes()
+                override suspend fun refrescar() = get<SessionRepository>().refrescarAhora()
+            },
+        )
+    }
+    single<SupabaseAccountApi> { KtorSupabaseAccountApi(get(SUPABASE_CUENTA)) }
 
     // viewModelOf y no factory: Koin registra el ViewModel con el ciclo de
     // vida que espera cada plataforma, y en Android lo entrega viewModel().

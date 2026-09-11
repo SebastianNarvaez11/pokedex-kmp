@@ -1,8 +1,7 @@
 package com.sebastiannarvaez.pokedex.data
 
 import com.sebastiannarvaez.pokedex.data.network.SupabaseAuthApi
-import com.sebastiannarvaez.pokedex.data.network.dto.SessionDto
-import com.sebastiannarvaez.pokedex.data.network.dto.UserDto
+import com.sebastiannarvaez.pokedex.dobles.FakeAuthApi
 import com.sebastiannarvaez.pokedex.dobles.TestDispatchers
 import com.sebastiannarvaez.pokedex.domain.Session
 import kotlinx.coroutines.async
@@ -15,47 +14,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
-
-/**
- * El doble del servidor.
- *
- * `expiresInTrasRefresco` no es un capricho: si el refresco devolviera la misma
- * duracion corta, con el reloj congelado del test el token nuevo tambien
- * naceria caducado y el repositorio refrescaria en bucle. Un servidor de
- * verdad nunca devuelve un token ya vencido.
- */
-private class FakeAuthApi(
-    private val expiresIn: Long = 3600,
-    private val expiresInTrasRefresco: Long = 3600,
-    private val fallaElRefresco: Boolean = false,
-) : SupabaseAuthApi {
-
-    var refrescos = 0
-        private set
-    var cierresEnElServidor = 0
-        private set
-
-    override suspend fun registrar(email: String, password: String) = sesion("registro", expiresIn)
-    override suspend fun entrar(email: String, password: String) = sesion("entrada", expiresIn)
-
-    override suspend fun refrescar(refreshToken: String): SessionDto {
-        refrescos++
-        if (fallaElRefresco) error("refresh token ya usado")
-        return sesion("refresco-$refrescos", expiresInTrasRefresco)
-    }
-
-    override suspend fun salir(accessToken: String) {
-        cierresEnElServidor++
-    }
-
-    private fun sesion(marca: String, expiresIn: Long) = SessionDto(
-        accessToken = "access-$marca",
-        refreshToken = "refresh-$marca",
-        expiresIn = expiresIn,
-        tokenType = "bearer",
-        user = UserDto(id = "u-1", email = "ash@pueblo-paleta.test"),
-    )
-}
 
 class SessionRepositoryTest {
 

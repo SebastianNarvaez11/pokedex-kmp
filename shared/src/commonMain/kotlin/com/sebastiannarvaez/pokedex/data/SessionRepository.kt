@@ -61,30 +61,68 @@ internal class SessionRepository(
     }
 
     /**
-     * Devuelve un token valido, refrescando si hace falta.
+     * Devuelve un token valido, refrescando si esta a punto de caducar.
      *
-     * Es lo que llama el interceptor antes de cada peticion protegida.
+     * Es el camino normal: se mira el reloj y casi nunca hay que ir a la red.
      */
     suspend fun tokenValido(): String? = withContext(dispatchers.io) {
         val actual = _state.value.session ?: return@withContext null
-        if (!actual.caducaAntesDe(ahoraEnSegundos())) return@withContext actual.accessToken
+        if (!actual.caducaAntesDe(ahoraEnSegundos())) actual.accessToken
+        else refrescar(actual.refreshToken)?.accessToken
+    }
 
-        candado.withLock {
-            // Se vuelve a mirar dentro del candado: mientras esperabamos, otro
-            // pudo refrescarlo ya. Sin esta segunda comprobacion, el mutex
-            // serializa los refrescos pero no los evita.
-            val dentro = _state.value.session ?: return@withLock null
-            if (!dentro.caducaAntesDe(ahoraEnSegundos())) return@withLock dentro.accessToken
+    /**
+     * El par que necesita el cliente autenticado.
+     *
+     * Devuelve los dos porque el plugin de Ktor guarda ambos: el de acceso para
+     * la cabecera y el de refresco para su propio reintento.
+     */
+    suspend fun tokensVigentes(): Pair<String, String>? {
+        tokenValido() ?: return null
+        val sesion = _state.value.session ?: return null
+        return sesion.accessToken to sesion.refreshToken
+    }
 
-            try {
-                publicar(api.refrescar(dentro.refreshToken)).accessToken
-            } catch (e: Throwable) {
-                // Si el refresco falla, la sesion esta muerta. Dejarla puesta
-                // haria que cada peticion fallara con 401 sin explicacion.
-                store.borrar()
-                _state.value = AuthState(comprobando = false, session = null)
-                throw e
-            }
+    /**
+     * Refresca aunque el reloj diga que aun vale.
+     *
+     * Lo llama el cliente cuando el servidor ya ha respondido 401. Ahi no sirve
+     * mirar la hora: el servidor ha dicho que no, y las razones sobran —el
+     * reloj del movil va adelantado, la sesion se cerro desde otro
+     * dispositivo, un administrador la revoco—.
+     */
+    suspend fun refrescarAhora(): Pair<String, String>? = withContext(dispatchers.io) {
+        val actual = _state.value.session ?: return@withContext null
+        val nueva = refrescar(actual.refreshToken) ?: return@withContext null
+        nueva.accessToken to nueva.refreshToken
+    }
+
+    /**
+     * El refresco, con candado.
+     *
+     * El token de refresco de Supabase **es de un solo uso**: si dos peticiones
+     * lo gastan a la vez, la segunda recibe un 401 y la sesion se invalida
+     * entera. El mutex los serializa, y quien llega segundo se encuentra el
+     * trabajo hecho.
+     *
+     * `gastado` es la clave de esa segunda parte: es el token con el que el que
+     * llama venia. Si dentro del candado ya no es el vigente, alguien refresco
+     * mientras esperabamos y no hay nada que hacer. Sin esta comprobacion, el
+     * mutex serializaria los refrescos pero no los evitaria, que es justo lo
+     * que se queria impedir.
+     */
+    private suspend fun refrescar(gastado: String): Session? = candado.withLock {
+        val dentro = _state.value.session ?: return@withLock null
+        if (dentro.refreshToken != gastado) return@withLock dentro
+
+        try {
+            publicar(api.refrescar(gastado))
+        } catch (e: Throwable) {
+            // Si el refresco falla, la sesion esta muerta. Dejarla puesta haria
+            // que cada peticion fallara con 401 sin explicacion.
+            store.borrar()
+            _state.value = AuthState(comprobando = false, session = null)
+            throw e
         }
     }
 
