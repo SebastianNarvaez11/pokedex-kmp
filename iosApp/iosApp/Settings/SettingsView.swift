@@ -33,6 +33,12 @@ struct SettingsView: View {
                             Text(tema.etiqueta).tag(tema.name)
                         }
                     }
+                    // Un identificador, no la etiqueta. SwiftUI compone la
+                    // etiqueta del `Picker` con su valor actual —queda «Tema,
+                    // Lo que diga el sistema»—, así que buscar por «Tema» no
+                    // encuentra nada. Y la etiqueta cambia al traducir la app;
+                    // el identificador, no.
+                    .accessibilityIdentifier("ajustes.tema")
                 } header: {
                     Text("Apariencia")
                 } footer: {

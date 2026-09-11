@@ -130,6 +130,22 @@ jobs:
             -derivedDataPath build/dd \
             build
 
+      # Los tests de interfaz de iOS si necesitan un simulador de verdad, y por
+      # eso viven en el job caro. El nombre del iPhone no se escribe a mano: la
+      # imagen del runner cambia de modelos cada pocos meses y un nombre fijo
+      # convierte la verificacion en una loteria.
+      - name: Tests de interfaz de iOS
+        run: |
+          set -euo pipefail
+          DISPOSITIVO=$(xcrun simctl list devices available --json \
+            | python3 -c "import json,sys;d=json.load(sys.stdin)['devices'];print(next(x['name'] for k in sorted(d) for x in d[k] if x['name'].startswith('iPhone')))")
+          echo "Simulador elegido: $DISPOSITIVO"
+          xcodebuild test -project iosApp/iosApp.xcodeproj \
+            -scheme Pokedex \
+            -sdk iphonesimulator \
+            -destination "platform=iOS Simulator,name=$DISPOSITIVO" \
+            -derivedDataPath build/dd
+
       - name: Guardar los informes si algo falla
         if: failure()
         uses: actions/upload-artifact@v7.0.1
