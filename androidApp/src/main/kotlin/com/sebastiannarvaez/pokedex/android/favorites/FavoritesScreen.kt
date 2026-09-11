@@ -40,6 +40,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.CustomAccessibilityAction
+import androidx.compose.ui.semantics.customActions
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
@@ -152,6 +155,20 @@ private fun FilaDeslizable(favorito: FavoritePokemon, alPulsar: () -> Unit, alQu
     SwipeToDismissBox(
         state = estadoDeslizamiento,
         enableDismissFromStartToEnd = false,
+        // Una accion que solo existe como gesto **no existe** para quien usa
+        // TalkBack: el lector de pantalla se traga el deslizamiento y no hay
+        // ninguna otra forma de quitar el favorito desde la lista. Declararla
+        // como accion personalizada la pone en el menu de acciones, que es
+        // donde TalkBack la busca. iOS hace esto solo con `.swipeActions`;
+        // Android no.
+        modifier = Modifier.semantics {
+            customActions = listOf(
+                CustomAccessibilityAction("Quitar de favoritos") {
+                    alQuitar()
+                    true
+                },
+            )
+        },
         backgroundContent = {
             Box(
                 modifier = Modifier
@@ -185,6 +202,10 @@ private fun Fila(favorito: FavoritePokemon, alPulsar: () -> Unit) {
     ) {
         AsyncImage(
             model = favorito.artworkUrl,
+            // `null` a proposito, y no un descuido: la ilustracion **repite** el
+            // nombre que hay justo al lado. Describirla haria que el lector de
+            // pantalla dijera «Bulbasaur, imagen de Bulbasaur». Una imagen
+            // decorativa se marca como decorativa.
             contentDescription = null,
             contentScale = ContentScale.Fit,
             modifier = Modifier.size(52.dp).clip(RoundedCornerShape(14.dp)),

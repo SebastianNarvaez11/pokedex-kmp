@@ -28,7 +28,19 @@ struct PokemonListView: View {
     /// `navigationDestination` dice qué pintar en cada paso.
     @Binding var camino: [Int32]
 
-    private let columnas = [GridItem(.adaptive(minimum: 164), spacing: 12)]
+    @Environment(\.dynamicTypeSize) private var tamano
+
+    /// Una sola columna con los tamaños de accesibilidad.
+    ///
+    /// Es lo que hacen las apps de Apple: cuando el texto crece, se renuncia a
+    /// la retícula antes que a que el texto se lea. Con dos columnas y la letra
+    /// al máximo, cada tarjeta tiene 164 puntos de ancho para una palabra de
+    /// seis letras a cuerpo gigante, y no hay forma de que quepa.
+    private var columnas: [GridItem] {
+        tamano.isAccessibilitySize
+            ? [GridItem(.flexible(), spacing: 12)]
+            : [GridItem(.adaptive(minimum: 164), spacing: 12)]
+    }
 
     var body: some View {
         NavigationStack(path: $camino) {

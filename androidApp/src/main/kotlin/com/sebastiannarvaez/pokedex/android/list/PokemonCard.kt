@@ -2,6 +2,7 @@ package com.sebastiannarvaez.pokedex.android.list
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -132,7 +133,15 @@ fun PokemonCard(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
-                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                // `FlowRow` y no `Row`: con la letra del sistema al 180 %, dos
+                // etiquetas no caben en el ancho de la tarjeta y la segunda se
+                // partia por la mitad —«Ven / eno»—. Asi baja a la linea
+                // siguiente entera. Se descubrio poniendo la escala de fuente
+                // al maximo en el emulador, no leyendo el codigo.
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    verticalArrangement = Arrangement.spacedBy(6.dp),
+                ) {
                     pokemon.types.forEach { tipo -> TypeChip(tipo.etiqueta, tipo.color) }
                 }
             }
@@ -156,6 +165,10 @@ private fun TypeChip(texto: String, tono: Color) {
             fontSize = 11.sp,
             fontWeight = FontWeight.Medium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
+            // Una etiqueta de una palabra no se parte nunca: si no cabe, se
+            // recorta con puntos suspensivos, que se entiende; partida, no.
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
         )
     }
 }

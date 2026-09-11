@@ -14,6 +14,14 @@ struct PokemonCardView: View {
 
     private var tinte: Color { pokemon.types.first?.tinte ?? .accentColor }
 
+    /// El tamaño de letra que ha elegido la persona en Ajustes.
+    ///
+    /// Se consulta porque en los tamaños de accesibilidad la tarjeta deja de
+    /// funcionar: con el texto al máximo, «Veneno» se partía en cuatro líneas
+    /// de dos letras y el nombre se quedaba en «Bul…». Se vio poniendo
+    /// `accessibility-extra-extra-extra-large` en el simulador.
+    @Environment(\.dynamicTypeSize) private var tamano
+
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             ZStack(alignment: .topLeading) {
@@ -43,6 +51,10 @@ struct PokemonCardView: View {
                     Text(String(format: "N.º %04d", pokemon.id))
                         .font(.caption2.weight(.semibold))
                         .foregroundStyle(.secondary)
+                        // El número es una etiqueta sobre la ilustración: si
+                        // crece, la tapa. Apple documenta este tope justo para
+                        // estos casos, y VoiceOver sigue leyéndolo igual.
+                        .dynamicTypeSize(...DynamicTypeSize.xxLarge)
                     Spacer()
                     // El corazón con su propia zona táctil: marcar no debe
                     // abrir la ficha.
@@ -62,11 +74,25 @@ struct PokemonCardView: View {
             VStack(alignment: .leading, spacing: 8) {
                 Text(pokemon.name.capitalized)
                     .font(.system(.headline, design: .rounded, weight: .bold))
-                    .lineLimit(1)
+                    // Dos líneas antes que recortar: «Bul…» no le dice nada a
+                    // nadie, y un nombre en dos líneas se lee perfectamente.
+                    .lineLimit(2)
+                    .minimumScaleFactor(0.8)
 
-                HStack(spacing: 6) {
-                    ForEach(pokemon.types, id: \.name) { tipo in
-                        TypeChip(tipo: tipo)
+                // Las etiquetas bajan de línea en vez de estrecharse. Con
+                // `HStack` se repartían el ancho y partían la palabra letra a
+                // letra, que es el peor resultado posible.
+                if tamano.isAccessibilitySize {
+                    VStack(alignment: .leading, spacing: 6) {
+                        ForEach(pokemon.types, id: \.name) { tipo in
+                            TypeChip(tipo: tipo)
+                        }
+                    }
+                } else {
+                    HStack(spacing: 6) {
+                        ForEach(pokemon.types, id: \.name) { tipo in
+                            TypeChip(tipo: tipo)
+                        }
                     }
                 }
             }
@@ -97,6 +123,8 @@ private struct TypeChip: View {
             Text(tipo.etiqueta)
                 .font(.caption2.weight(.medium))
                 .foregroundStyle(.secondary)
+                .lineLimit(1)
+                .fixedSize(horizontal: true, vertical: false)
         }
         .padding(.horizontal, 10)
         .padding(.vertical, 4)
