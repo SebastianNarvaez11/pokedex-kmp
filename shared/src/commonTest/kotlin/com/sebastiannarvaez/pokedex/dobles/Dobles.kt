@@ -35,7 +35,11 @@ internal class FakePokeApi(
     var llamadasAlDetalle = 0
         private set
 
+    var llamadasAlListado = 0
+        private set
+
     override suspend fun page(limit: Int, offset: Int): PokemonPageDto {
+        llamadasAlListado++
         // IOException y no error(): es lo que lanza de verdad un socket caido,
         // y es lo unico que el mapeo traduce a «sin conexion».
         if (falla) throw IOException("socket cerrado")

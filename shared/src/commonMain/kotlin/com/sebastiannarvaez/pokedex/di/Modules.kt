@@ -13,6 +13,7 @@ import com.sebastiannarvaez.pokedex.currentPlatform
 import com.sebastiannarvaez.pokedex.feature.detail.PokemonDetailViewModel
 import com.sebastiannarvaez.pokedex.feature.home.HomeViewModel
 import com.sebastiannarvaez.pokedex.feature.list.PokemonListViewModel
+import com.sebastiannarvaez.pokedex.feature.search.PokemonSearchViewModel
 import org.koin.core.KoinApplication
 import org.koin.core.context.startKoin
 import org.koin.core.module.Module
@@ -41,6 +42,7 @@ val pokedexModule: Module = module {
     // vida que espera cada plataforma, y en Android lo entrega viewModel().
     viewModelOf(::HomeViewModel)
     viewModelOf(::PokemonListViewModel)
+    viewModelOf(::PokemonSearchViewModel)
 
     // Con parametro: el identificador no lo sabe el grafo, lo trae la
     // navegacion. `viewModel { }` y no `viewModelOf`, que solo sirve cuando

@@ -5,6 +5,7 @@ import com.sebastiannarvaez.pokedex.data.network.PokeApi
 import com.sebastiannarvaez.pokedex.data.network.dto.PokemonDetailDto
 import com.sebastiannarvaez.pokedex.data.network.dto.SpeciesDto
 import com.sebastiannarvaez.pokedex.domain.Pokemon
+import com.sebastiannarvaez.pokedex.domain.PokemonRef
 import com.sebastiannarvaez.pokedex.domain.PokemonDetail
 import com.sebastiannarvaez.pokedex.domain.PokemonStat
 import com.sebastiannarvaez.pokedex.domain.PokemonType
@@ -12,6 +13,8 @@ import com.sebastiannarvaez.pokedex.domain.StatKind
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 
 /**
@@ -27,6 +30,9 @@ internal class PokemonRepository(
     private val api: PokeApi,
     private val dispatchers: AppDispatchers,
 ) {
+
+    private val candado = Mutex()
+    private var indice: List<PokemonRef>? = null
 
     suspend fun page(limit: Int, offset: Int): List<Pokemon> = withContext(dispatchers.io) {
         val pagina = api.page(limit = limit, offset = offset)
@@ -58,6 +64,25 @@ internal class PokemonRepository(
         }
     }
 
+    /**
+     * El indice de nombres, pedido una sola vez y guardado en memoria.
+     *
+     * **PokeAPI no tiene busqueda.** No hay `?q=pika`: `/pokemon/{nombre}` solo
+     * acierta con el nombre exacto. La unica forma es traerse la lista entera
+     * de nombres —son unos mil trescientos, apenas 100 KB— y filtrar aqui.
+     *
+     * El `Mutex` evita que dos busquedas simultaneas pidan el indice dos veces
+     * al arrancar. Sin el, la primera letra que escribe el usuario dispara dos
+     * descargas identicas.
+     */
+    suspend fun searchIndex(): List<PokemonRef> = withContext(dispatchers.io) {
+        indice ?: candado.withLock {
+            indice ?: api.page(limit = INDICE_COMPLETO, offset = 0).results
+                .mapNotNull { ref -> ref.id?.let { PokemonRef(id = it, name = ref.name) } }
+                .also { indice = it }
+        }
+    }
+
     suspend fun pokemon(id: Int): Pokemon = withContext(dispatchers.io) {
         val detalle = api.detail(id)
         Pokemon(
@@ -67,6 +92,11 @@ internal class PokemonRepository(
                 .sortedBy { it.slot }
                 .mapNotNull { PokemonType.deApi(it.type.name) },
         )
+    }
+
+    private companion object {
+        /** PokeAPI declara 1351 hoy; se pide de sobra y se acabo. */
+        const val INDICE_COMPLETO = 2000
     }
 
     private fun unirDetalle(basico: PokemonDetailDto, especie: SpeciesDto): PokemonDetail =
