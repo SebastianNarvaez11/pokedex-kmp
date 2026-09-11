@@ -1,0 +1,90 @@
+import SwiftUI
+import Shared
+
+/// La tarjeta de la rejilla, en lenguaje de iOS.
+///
+/// No imita a la de Android: usa `AsyncImage` del sistema, materiales de
+/// Apple y tipografía redondeada. La retícula se parece porque el contenido es
+/// el mismo, no porque se comparta código.
+struct PokemonCardView: View {
+
+    let pokemon: Pokemon
+
+    private var tinte: Color { pokemon.types.first?.tinte ?? .accentColor }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            ZStack(alignment: .topLeading) {
+                LinearGradient(
+                    colors: [tinte.opacity(0.42), tinte.opacity(0.10)],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+
+                AsyncImage(url: URL(string: pokemon.artworkUrl)) { fase in
+                    switch fase {
+                    case .success(let imagen):
+                        imagen.resizable().scaledToFit()
+                    case .failure:
+                        // SF Symbols: el vocabulario visual del sistema, que en
+                        // Android no existe.
+                        Image(systemName: "photo.badge.exclamationmark")
+                            .font(.title2)
+                            .foregroundStyle(.secondary)
+                    default:
+                        ProgressView()
+                    }
+                }
+                .padding(14)
+
+                Text(String(format: "N.º %04d", pokemon.id))
+                    .font(.caption2.weight(.semibold))
+                    .foregroundStyle(.secondary)
+                    .padding(12)
+            }
+            .aspectRatio(1.15, contentMode: .fit)
+
+            VStack(alignment: .leading, spacing: 8) {
+                Text(pokemon.name.capitalized)
+                    .font(.system(.headline, design: .rounded, weight: .bold))
+                    .lineLimit(1)
+
+                HStack(spacing: 6) {
+                    ForEach(pokemon.types, id: \.name) { tipo in
+                        TypeChip(tipo: tipo)
+                    }
+                }
+            }
+            .padding(.horizontal, 14)
+            .padding(.top, 10)
+            .padding(.bottom, 14)
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .background(.regularMaterial)
+        .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
+        // Una sola etiqueta para VoiceOver, en vez de leer número, nombre y
+        // tipos como cuatro cosas sueltas.
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(
+            pokemon.types.isEmpty
+                ? pokemon.name.capitalized
+                : "\(pokemon.name.capitalized), tipo \(pokemon.types.map(\.etiqueta).joined(separator: " y "))"
+        )
+    }
+}
+
+private struct TypeChip: View {
+    let tipo: PokemonType
+
+    var body: some View {
+        HStack(spacing: 5) {
+            Circle().fill(tipo.tinte).frame(width: 7, height: 7)
+            Text(tipo.etiqueta)
+                .font(.caption2.weight(.medium))
+                .foregroundStyle(.secondary)
+        }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 4)
+        .background(tipo.tinte.opacity(0.18), in: Capsule())
+    }
+}
