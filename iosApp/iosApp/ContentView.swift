@@ -3,30 +3,36 @@ import Shared
 import KMPNativeCoroutinesAsync
 
 struct ContentView: View {
-    // Un solo simbolo del modulo compartido. La plataforma se resuelve dentro,
-    // donde no ensucia la API que ve Swift.
+
+    /// @StateObject y no @ObservedObject: con @ObservedObject SwiftUI crearía
+    /// un dueño nuevo en cada recomposición, el ViewModel se recrearía y el
+    /// estado se perdería sin que nada avisara.
+    @StateObject private var owner = IosViewModelStoreOwner()
+
     private let pokedex = Pokedex()
 
-    @State private var latido = 0
+    @State private var estado = HomeUiState(greeting: "", heartbeat: 0)
 
     var body: some View {
-        VStack(spacing: 12) {
-            Text(pokedex.greeting())
+        let viewModel = HomeIosKt.homeViewModel(owner: owner, pokedex: pokedex)
+
+        VStack(spacing: 8) {
+            Text(estado.greeting)
                 .font(.title2)
-            Text("Latido \(latido)")
+            Text("Latido \(estado.heartbeat)")
                 .font(.footnote)
                 .foregroundStyle(.secondary)
         }
         .padding()
-        // .task se cancela solo cuando la vista desaparece, y con ella se
-        // cancela la corrutina de Kotlin: el Flow es frio y deja de emitir.
         .task {
+            // El valor actual primero, para no pintar un fotograma vacío.
+            estado = viewModel.uiStateForIos
             do {
-                for try await valor in asyncSequence(for: pokedex.heartbeatForIos()) {
-                    latido = valor.intValue
+                for try await nuevo in asyncSequence(for: viewModel.uiStateForIosFlow) {
+                    estado = nuevo
                 }
             } catch {
-                // Un Flow cancelado llega aqui como error. No es un fallo.
+                // Cancelar no es fallar: la vista desapareció.
             }
         }
     }
