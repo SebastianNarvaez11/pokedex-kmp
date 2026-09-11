@@ -160,6 +160,26 @@ private struct Ficha: View {
         .ignoresSafeArea(edges: .top)
         .navigationTitle(detalle.name.capitalized)
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                // `ShareLink` es una vista, no una acción: SwiftUI monta la
+                // hoja de compartir del sistema con solo darle el enlace. En
+                // Android hay que construir el Intent y pedir el selector.
+                //
+                // Se comparte el enlace https y no el pokedex://, porque los
+                // esquemas propios no se convierten en enlace pulsable en la
+                // mayoría de apps de mensajería.
+                // `DestinationKt.toShareUrl(_:)` y no `destino.toShareUrl()`:
+                // una funcion de extension de Kotlin llega a Swift como metodo
+                // estatico de la clase del fichero, con el receptor como primer
+                // argumento. No se puede llamar con notacion de punto.
+                ShareLink(
+                    item: URL(string: DestinationKt.toShareUrl(DestinationDetalle(pokemonId: detalle.id)))!,
+                    subject: Text(detalle.name.capitalized),
+                    message: Text("Mira este Pokémon")
+                )
+            }
+        }
     }
 }
 

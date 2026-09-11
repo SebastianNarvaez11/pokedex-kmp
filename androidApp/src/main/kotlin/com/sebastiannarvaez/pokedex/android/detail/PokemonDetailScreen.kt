@@ -1,5 +1,6 @@
 package com.sebastiannarvaez.pokedex.android.detail
 
+import android.content.Intent
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -21,6 +22,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilledTonalIconButton
@@ -37,6 +39,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -49,6 +52,8 @@ import com.sebastiannarvaez.pokedex.domain.PokemonDetail
 import com.sebastiannarvaez.pokedex.domain.PokemonStat
 import com.sebastiannarvaez.pokedex.domain.StatKind
 import com.sebastiannarvaez.pokedex.feature.detail.PokemonDetailViewModel
+import com.sebastiannarvaez.pokedex.navigation.Destination
+import com.sebastiannarvaez.pokedex.navigation.toShareUrl
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 
@@ -111,12 +116,36 @@ private fun Ficha(detalle: PokemonDetail, alVolver: () -> Unit) {
                 Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
             }
 
+            // Compartir usa el selector del sistema: no se decide por el
+            // usuario a que app va. Se comparte el enlace `https` y no el
+            // `pokedex://`, porque los esquemas propios no se convierten en
+            // enlace pulsable en la mayoria de apps de mensajeria.
+            val contexto = LocalContext.current
+            FilledTonalIconButton(
+                onClick = {
+                    val enlace = Destination.Detalle(detalle.id).toShareUrl()
+                    val texto = "${detalle.name.replaceFirstChar { it.uppercase() }} · $enlace"
+                    contexto.startActivity(
+                        Intent.createChooser(
+                            Intent(Intent.ACTION_SEND).apply {
+                                type = "text/plain"
+                                putExtra(Intent.EXTRA_TEXT, texto)
+                            },
+                            null,
+                        ),
+                    )
+                },
+                modifier = Modifier.statusBarsPadding().padding(12.dp).align(Alignment.TopEnd),
+            ) {
+                Icon(Icons.Default.Share, contentDescription = "Compartir")
+            }
+
             Text(
                 text = "N.º ${detalle.id.toString().padStart(4, '0')}",
                 style = MaterialTheme.typography.labelLarge,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.45f),
-                modifier = Modifier.statusBarsPadding().padding(20.dp).align(Alignment.TopEnd),
+                modifier = Modifier.statusBarsPadding().padding(top = 26.dp, end = 68.dp).align(Alignment.TopEnd),
             )
 
             AsyncImage(
