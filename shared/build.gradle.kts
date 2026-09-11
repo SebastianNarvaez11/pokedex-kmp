@@ -10,6 +10,13 @@ plugins {
 }
 
 kotlin {
+    // Room genera un `expect object` para construir la base de datos, y las
+    // clases expect/actual siguen en Beta. El aviso lo pide el propio
+    // compilador: sin la bandera, cada compilacion escupe la misma linea.
+    compilerOptions {
+        freeCompilerArgs.add("-Xexpect-actual-classes")
+    }
+
     // La JVM no es una plataforma de producto: esta para que los tests corran
     // en segundos, sin emulador ni simulador de por medio.
     jvm()
