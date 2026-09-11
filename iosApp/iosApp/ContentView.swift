@@ -1,4 +1,6 @@
 import SwiftUI
+import Shared
+import KMPNativeCoroutinesAsync
 
 /// Las dos secciones de la app.
 ///
@@ -14,6 +16,9 @@ struct ContentView: View {
     @State private var caminoLista: [Int32] = []
     @State private var caminoFavoritos: [Int32] = []
 
+    @StateObject private var owner = IosViewModelStoreOwner()
+    @State private var ajustes = Settings(tema: Tema.sistema, favoritosPorNumero: false)
+
     var body: some View {
         TabView {
             PokemonListView(camino: $caminoLista)
@@ -21,6 +26,21 @@ struct ContentView: View {
 
             FavoritesView(camino: $caminoFavoritos)
                 .tabItem { Label("Favoritos", systemImage: "heart.fill") }
+
+            SettingsView()
+                .tabItem { Label("Ajustes", systemImage: "gearshape") }
+        }
+        // El tema se aplica en la raíz: un `.preferredColorScheme` dentro de la
+        // pantalla de ajustes solo pintaría esa pestaña.
+        .preferredColorScheme(ajustes.tema.esquema)
+        .task {
+            let vm = SettingsIosKt.settingsViewModel(owner: owner)
+            ajustes = vm.settingsForIos
+            do {
+                for try await nuevo in asyncSequence(for: vm.settingsForIosFlow) {
+                    ajustes = nuevo
+                }
+            } catch { }
         }
     }
 }
