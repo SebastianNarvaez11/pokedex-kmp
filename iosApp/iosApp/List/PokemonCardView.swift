@@ -9,6 +9,8 @@ import Shared
 struct PokemonCardView: View {
 
     let pokemon: Pokemon
+    let esFavorito: Bool
+    let alMarcar: () -> Void
 
     private var tinte: Color { pokemon.types.first?.tinte ?? .accentColor }
 
@@ -37,10 +39,23 @@ struct PokemonCardView: View {
                 }
                 .padding(14)
 
-                Text(String(format: "N.º %04d", pokemon.id))
-                    .font(.caption2.weight(.semibold))
-                    .foregroundStyle(.secondary)
-                    .padding(12)
+                HStack {
+                    Text(String(format: "N.º %04d", pokemon.id))
+                        .font(.caption2.weight(.semibold))
+                        .foregroundStyle(.secondary)
+                    Spacer()
+                    // El corazón con su propia zona táctil: marcar no debe
+                    // abrir la ficha.
+                    Button(action: alMarcar) {
+                        Image(systemName: esFavorito ? "heart.fill" : "heart")
+                            .font(.subheadline)
+                            .foregroundStyle(esFavorito ? Color.red : Color.secondary)
+                            .contentTransition(.symbolEffect(.replace))
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(esFavorito ? "Quitar de favoritos" : "Añadir a favoritos")
+                }
+                .padding(12)
             }
             .aspectRatio(1.15, contentMode: .fit)
 

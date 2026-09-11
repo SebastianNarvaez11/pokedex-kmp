@@ -29,6 +29,11 @@ class FavoritesViewModel internal constructor(
     val favoriteIds: StateFlow<Set<Int>> = repository.observeFavoriteIds()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptySet())
 
+    /** La misma informacion como lista, para que cruce comoda a Swift. */
+    internal val favoriteIdsList: StateFlow<List<Int>> = repository.observeFavoriteIds()
+        .map { it.toList() }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+
     fun toggle(id: Int, name: String) {
         viewModelScope.launch { repository.toggle(id, name) }
     }

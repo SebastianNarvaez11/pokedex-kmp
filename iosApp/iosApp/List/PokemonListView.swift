@@ -15,6 +15,8 @@ struct PokemonListView: View {
     )
     @State private var presenter: PokemonListPresenter?
 
+    @State private var favoritos: FavoritesViewModel?
+    @State private var idsFavoritos: Set<Int32> = []
     @State private var buscador: PokemonSearchViewModel?
     @State private var busqueda = SearchUiState(
         consulta: "", resultados: [], buscando: false, error: nil
@@ -24,7 +26,7 @@ struct PokemonListView: View {
     /// La pila, como dato. El equivalente de la lista de Navigation 3, solo
     /// que aquí lo trae el sistema: `NavigationStack` recibe el camino y
     /// `navigationDestination` dice qué pintar en cada paso.
-    @State private var camino: [Int32] = []
+    @Binding var camino: [Int32]
 
     private let columnas = [GridItem(.adaptive(minimum: 164), spacing: 12)]
 
@@ -67,6 +69,17 @@ struct PokemonListView: View {
             }
         }
         .task {
+            let vm = favoritos ?? FavoritesIosKt.favoritesViewModel(owner: owner)
+            favoritos = vm
+            do {
+                for try await ids in asyncSequence(for: vm.favoriteIdsForIosFlow) {
+                    idsFavoritos = Set(ids.map { $0.int32Value })
+                }
+            } catch {
+                // Cancelar no es fallar.
+            }
+        }
+        .task {
             let vm = buscador ?? SearchIosKt.pokemonSearchViewModel(owner: owner)
             buscador = vm
             do {
@@ -93,7 +106,11 @@ struct PokemonListView: View {
                         // resaltado al pulsar y VoiceOver lo anuncia como algo
                         // pulsable, sin escribir nada.
                         Button { camino.append(pokemon.id) } label: {
-                            PokemonCardView(pokemon: pokemon)
+                            PokemonCardView(
+                                pokemon: pokemon,
+                                esFavorito: idsFavoritos.contains(pokemon.id),
+                                alMarcar: { favoritos?.toggle(id: pokemon.id, name: pokemon.name) }
+                            )
                         }
                         .buttonStyle(.plain)
                         // Así se pide la página siguiente: la vista dice por
