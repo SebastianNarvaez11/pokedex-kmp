@@ -6,7 +6,7 @@ import com.sebastiannarvaez.pokedex.domain.Session
 /**
  * Quien esta usando la app.
  *
- * `Desconocido` no es un estado de adorno: al arrancar hay que leer el token
+ * `comprobando` no es un estado de adorno: al arrancar hay que leer el token
  * guardado, y eso tarda. Sin este estado, la app ensenaria la pantalla de
  * entrada durante un instante a alguien que ya tenia sesion, que es de los
  * parpadeos que mas molestan.
