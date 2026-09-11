@@ -1,6 +1,6 @@
 package com.sebastiannarvaez.pokedex.data.network
 
-import com.sebastiannarvaez.pokedex.core.AppConfig
+import com.sebastiannarvaez.pokedex.core.BaseAppConfig
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.respond
 import io.ktor.http.HttpStatusCode
@@ -12,8 +12,11 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-private class FakeConfig : AppConfig {
-    override val pokeApiBaseUrl = "https://pokeapi.co/api/v2/"
+private class FakeConfig : BaseAppConfig() {
+    // Sin Supabase: el test de PokeAPI no lo necesita, y `haySupabase` lo
+    // resuelve solo a partir de estos dos.
+    override val supabaseUrl = ""
+    override val supabaseKey = ""
 }
 
 /**
