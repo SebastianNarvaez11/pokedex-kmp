@@ -35,10 +35,12 @@ kotlin {
         commonMain.dependencies {
             // api y no implementation: el Logger asoma en la cara publica del
             // modulo, asi que Swift tiene que poder verlo desde el framework.
+            implementation(libs.kotlinx.coroutines.core)
             api(libs.kermit)
         }
         commonTest.dependencies {
             implementation(kotlin("test"))
+            implementation(libs.kotlinx.coroutines.test)
         }
     }
 }
