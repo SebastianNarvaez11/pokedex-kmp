@@ -42,16 +42,27 @@ kotlin {
             // api y no implementation: los ViewModel son parte de la cara
             // publica del modulo, porque quien los crea es cada interfaz.
             api(libs.androidx.lifecycle.viewmodel)
+            // api: el grafo de Koin es parte de la cara publica del modulo,
+            // porque quien arranca la app es cada interfaz nativa, no esto.
+            api(libs.koin.core)
+            implementation(libs.koin.core.viewmodel)
             // api y no implementation: el Logger asoma en la cara publica del
             // modulo, asi que Swift tiene que poder verlo desde el framework.
             implementation(libs.kotlinx.coroutines.core)
             api(libs.kermit)
+        }
+        androidMain.dependencies {
+            implementation(libs.koin.android)
         }
         // Solo iOS: la anotacion que hace recorrible un Flow desde Swift no
         // pinta nada en Android ni en la JVM.
         iosMain.dependencies {
             implementation(libs.kmp.nativecoroutines.annotations)
             implementation(libs.kmp.nativecoroutines.core)
+        }
+        // koin-test verifica el grafo por reflexion, que Kotlin/Native no tiene.
+        jvmTest.dependencies {
+            implementation(libs.koin.test)
         }
         commonTest.dependencies {
             implementation(kotlin("test"))

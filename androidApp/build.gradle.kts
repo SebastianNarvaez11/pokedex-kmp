@@ -22,6 +22,8 @@ android {
 
 dependencies {
     implementation(projects.shared)
+    implementation(libs.koin.android)
+    implementation(libs.koin.compose.viewmodel)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     // viewmodel-compose trae viewModel(); runtime-compose trae

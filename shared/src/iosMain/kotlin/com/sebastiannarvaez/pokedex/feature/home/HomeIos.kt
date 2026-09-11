@@ -5,7 +5,7 @@ import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.rickclephas.kmp.nativecoroutines.NativeCoroutinesState
-import com.sebastiannarvaez.pokedex.Pokedex
+import org.koin.mp.KoinPlatform
 import kotlinx.coroutines.flow.StateFlow
 
 /**
@@ -15,10 +15,11 @@ import kotlinx.coroutines.flow.StateFlow
  * de la receta oficial obliga a pelearse con `KClass` desde Swift. Una funcion
  * por pantalla es mas codigo, pero es codigo que se lee.
  */
-fun homeViewModel(owner: ViewModelStoreOwner, pokedex: Pokedex): HomeViewModel =
+fun homeViewModel(owner: ViewModelStoreOwner): HomeViewModel =
     ViewModelProvider.create(
         owner = owner,
-        factory = viewModelFactory { initializer { HomeViewModel(pokedex) } },
+        // Koin lo construye, el almacen lo entierra: cada uno hace lo suyo.
+        factory = viewModelFactory { initializer { KoinPlatform.getKoin().get<HomeViewModel>() } },
     )[HomeViewModel::class]
 
 /**

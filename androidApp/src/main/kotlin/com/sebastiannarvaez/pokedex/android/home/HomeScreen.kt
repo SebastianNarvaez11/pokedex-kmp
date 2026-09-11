@@ -13,8 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.sebastiannarvaez.pokedex.Pokedex
+import org.koin.compose.viewmodel.koinViewModel
 import com.sebastiannarvaez.pokedex.feature.home.HomeUiState
 import com.sebastiannarvaez.pokedex.feature.home.HomeViewModel
 
@@ -26,7 +25,7 @@ import com.sebastiannarvaez.pokedex.feature.home.HomeViewModel
  * compartido. Es la separacion que hace que las vistas previas sirvan.
  */
 @Composable
-fun HomeScreen(modifier: Modifier = Modifier, viewModel: HomeViewModel = viewModel { HomeViewModel(Pokedex()) }) {
+fun HomeScreen(modifier: Modifier = Modifier, viewModel: HomeViewModel = koinViewModel()) {
     // collectAsStateWithLifecycle y no collectAsState: deja de escuchar cuando
     // la pantalla no se ve, y con el flujo frio de debajo eso apaga el trabajo.
     val estado by viewModel.uiState.collectAsStateWithLifecycle()

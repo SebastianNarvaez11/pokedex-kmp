@@ -9,12 +9,10 @@ struct ContentView: View {
     /// estado se perdería sin que nada avisara.
     @StateObject private var owner = IosViewModelStoreOwner()
 
-    private let pokedex = Pokedex()
-
     @State private var estado = HomeUiState(greeting: "", heartbeat: 0)
 
     var body: some View {
-        let viewModel = HomeIosKt.homeViewModel(owner: owner, pokedex: pokedex)
+        let viewModel = HomeIosKt.homeViewModel(owner: owner)
 
         VStack(spacing: 8) {
             Text(estado.greeting)
