@@ -30,7 +30,7 @@ fun PokedexApp(inicio: NavKey = ListaKey) {
         entryProvider = entryProvider {
             entry<ListaKey> {
                 PokemonListScreen(
-                    alPulsar = { pokemon -> pila.add(DetalleKey(pokemon.id)) },
+                    alPulsar = { id -> pila.add(DetalleKey(id)) },
                 )
             }
             entry<DetalleKey> { clave ->

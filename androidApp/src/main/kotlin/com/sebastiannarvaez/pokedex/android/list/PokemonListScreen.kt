@@ -1,5 +1,6 @@
 package com.sebastiannarvaez.pokedex.android.list
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -40,25 +41,50 @@ import com.sebastiannarvaez.pokedex.core.aAppError
 import com.sebastiannarvaez.pokedex.core.aUiError
 import com.sebastiannarvaez.pokedex.domain.Pokemon
 import com.sebastiannarvaez.pokedex.feature.list.PokemonListViewModel
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.sebastiannarvaez.pokedex.android.search.PokemonSearchBar
+import com.sebastiannarvaez.pokedex.feature.search.PokemonSearchViewModel
+import com.sebastiannarvaez.pokedex.feature.search.SearchUiState
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun PokemonListScreen(
-    alPulsar: (Pokemon) -> Unit,
+    alPulsar: (Int) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: PokemonListViewModel = koinViewModel(),
+    buscador: PokemonSearchViewModel = koinViewModel(),
 ) {
     // collectAsLazyPagingItems es el puente que Android ya trae hecho. En iOS
     // hubo que escribirlo a mano: es la misma pieza, aqui regalada.
     val pokemon = viewModel.pokemon.collectAsLazyPagingItems()
-    PokemonListContent(pokemon = pokemon, alPulsar = alPulsar, modifier = modifier)
+    val busqueda by buscador.uiState.collectAsStateWithLifecycle()
+    var expandida by rememberSaveable { mutableStateOf(false) }
+
+    PokemonListContent(
+        pokemon = pokemon,
+        busqueda = busqueda,
+        expandida = expandida,
+        alCambiarExpansion = { expandida = it },
+        alEscribir = buscador::escribir,
+        alLimpiar = buscador::limpiar,
+        alPulsar = alPulsar,
+        modifier = modifier,
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun PokemonListContent(
     pokemon: LazyPagingItems<Pokemon>,
-    alPulsar: (Pokemon) -> Unit,
+    busqueda: SearchUiState,
+    expandida: Boolean,
+    alCambiarExpansion: (Boolean) -> Unit,
+    alEscribir: (String) -> Unit,
+    alLimpiar: () -> Unit,
+    alPulsar: (Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     // La barra grande se encoge al hacer scroll: es un gesto de Android, no
@@ -69,10 +95,29 @@ private fun PokemonListContent(
     Scaffold(
         modifier = modifier.fillMaxSize().nestedScroll(comportamiento.nestedScrollConnection),
         topBar = {
-            LargeTopAppBar(
-                title = { Text("Pokédex", fontWeight = FontWeight.Bold) },
-                scrollBehavior = comportamiento,
-            )
+            Column {
+                // El titulo grande desaparece al abrir la busqueda: con la
+                // barra expandida ocupando la pantalla, dejarlo arriba deja un
+                // hueco muerto y compite por la atencion.
+                AnimatedVisibility(visible = !expandida) {
+                    LargeTopAppBar(
+                        title = { Text("Pokédex", fontWeight = FontWeight.Bold) },
+                        scrollBehavior = comportamiento,
+                    )
+                }
+                PokemonSearchBar(
+                    estado = busqueda,
+                    expandida = expandida,
+                    alCambiarExpansion = alCambiarExpansion,
+                    alEscribir = alEscribir,
+                    alLimpiar = alLimpiar,
+                    alElegir = { ref ->
+                        alCambiarExpansion(false)
+                        alPulsar(ref.id)
+                    },
+                    modifier = Modifier.align(Alignment.CenterHorizontally).padding(bottom = 8.dp),
+                )
+            }
         },
     ) { relleno ->
         PullToRefreshBox(
@@ -103,7 +148,7 @@ private fun PokemonListContent(
 }
 
 @Composable
-private fun Rejilla(pokemon: LazyPagingItems<Pokemon>, alPulsar: (Pokemon) -> Unit) {
+private fun Rejilla(pokemon: LazyPagingItems<Pokemon>, alPulsar: (Int) -> Unit) {
     LazyVerticalGrid(
         columns = GridCells.Adaptive(minSize = 164.dp),
         contentPadding = PaddingValues(16.dp),
@@ -122,7 +167,7 @@ private fun Rejilla(pokemon: LazyPagingItems<Pokemon>, alPulsar: (Pokemon) -> Un
             key = pokemon.itemKey { it.id },
             contentType = pokemon.itemContentType { "pokemon" },
         ) { indice ->
-            pokemon[indice]?.let { PokemonCard(it, alPulsar = { alPulsar(it) }) }
+            pokemon[indice]?.let { p -> PokemonCard(p, alPulsar = { alPulsar(p.id) }) }
         }
 
         // El pie: cargando mas, o el error de ampliar con su reintento.

@@ -15,6 +15,12 @@ struct PokemonListView: View {
     )
     @State private var presenter: PokemonListPresenter?
 
+    @State private var buscador: PokemonSearchViewModel?
+    @State private var busqueda = SearchUiState(
+        consulta: "", resultados: [], buscando: false, error: nil
+    )
+    @State private var texto = ""
+
     /// La pila, como dato. El equivalente de la lista de Navigation 3, solo
     /// que aquí lo trae el sistema: `NavigationStack` recibe el camino y
     /// `navigationDestination` dice qué pintar en cada paso.
@@ -24,11 +30,26 @@ struct PokemonListView: View {
 
     var body: some View {
         NavigationStack(path: $camino) {
-            contenido
-                .navigationDestination(for: Int32.self) { id in
-                    PokemonDetailView(pokemonId: id)
+            Group {
+                // `.searchable` es un modificador: el campo lo pone el sistema
+                // en la barra de navegación y se recoge solo al hacer scroll.
+                // En Android la barra de búsqueda es un componente que hay que
+                // colocar, y hay que decidir qué pasa con el título grande.
+                if texto.isEmpty {
+                    contenido
+                } else {
+                    SearchResultsView(estado: busqueda) { id in
+                        texto = ""
+                        camino.append(id)
+                    }
                 }
-                .navigationTitle("Pokédex")
+            }
+            .searchable(text: $texto, prompt: "Buscar Pokémon")
+            .onChange(of: texto) { _, nuevo in buscador?.escribir(texto: nuevo) }
+            .navigationDestination(for: Int32.self) { id in
+                PokemonDetailView(pokemonId: id)
+            }
+            .navigationTitle("Pokédex")
                 // El título grande que se encoge al hacer scroll es de iOS, y
                 // no es lo mismo que la barra grande de Material: aquí lo pone
                 // el sistema y hereda el aspecto de la versión instalada.
@@ -43,6 +64,17 @@ struct PokemonListView: View {
                 }
             } catch {
                 // Cancelar no es fallar: la vista desapareció.
+            }
+        }
+        .task {
+            let vm = buscador ?? SearchIosKt.pokemonSearchViewModel(owner: owner)
+            buscador = vm
+            do {
+                for try await nuevo in asyncSequence(for: vm.uiStateForIosFlow) {
+                    busqueda = nuevo
+                }
+            } catch {
+                // Cancelar no es fallar.
             }
         }
     }
