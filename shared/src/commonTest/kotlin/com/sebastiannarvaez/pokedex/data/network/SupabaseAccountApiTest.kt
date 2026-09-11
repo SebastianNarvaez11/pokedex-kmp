@@ -20,6 +20,7 @@ import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
@@ -93,9 +94,14 @@ class SupabaseAccountApiTest {
     }
 
     /**
-     * Dos peticiones caducadas a la vez: el token de refresco es de un solo
-     * uso, asi que solo puede haber un refresco. Aqui se comprueba de punta a
-     * punta, con el plugin de por medio y no solo el repositorio.
+     * Tres peticiones caducadas a la vez tienen que producir **un** refresco.
+     *
+     * No porque el segundo fuera a romper la sesion: medido contra Supabase el
+     * 11 de septiembre de 2026, reutilizar el token anterior se acepta y la
+     * sesion sobrevive. Es por lo de siempre: dos refrescos simultaneos son dos
+     * viajes de red para el mismo resultado, y dos escrituras compitiendo por
+     * el estado del repositorio, que es la que de verdad puede dejar guardada
+     * la sesion perdedora.
      */
     @Test
     fun `tres 401 a la vez refrescan una sola vez`() = runTest {
@@ -118,6 +124,68 @@ class SupabaseAccountApiTest {
 
         assertTrue(perfiles.all { it.id == "u-1" })
         assertEquals(1, api.refrescos)
+    }
+
+    /**
+     * El mismo caso, pero con el codigo que Supabase manda de verdad.
+     *
+     * `/auth/v1` no contesta 401 a un token caducado: contesta **403** con
+     * `bad_jwt`. Ktor solo reacciona al 401, asi que sin el interceptor esta
+     * peticion no se recuperaba sola.
+     */
+    @Test
+    fun `un 403 de auth tambien refresca y repite`() = runTest {
+        val motor = MockEngine { peticion ->
+            if (peticion.headers[HttpHeaders.Authorization] == "Bearer access-entrada") {
+                respond(
+                    """{"code":403,"error_code":"bad_jwt","msg":"invalid JWT: token is expired"}""",
+                    HttpStatusCode.Forbidden,
+                    JSON,
+                )
+            } else {
+                respond(PERFIL, HttpStatusCode.OK, JSON)
+            }
+        }
+        val api = FakeAuthApi()
+        val repo = sesion(api)
+        repo.entrar("ash@pueblo-paleta.test", "pikachu")
+
+        val perfil = KtorSupabaseAccountApi(
+            createSupabaseAccountClient(ConfigDePrueba(), proveedor(repo), motor),
+            ConfigDePrueba(),
+        ).perfil()
+
+        assertEquals("ash@pueblo-paleta.test", perfil.email)
+        assertEquals(1, api.refrescos)
+        assertEquals(2, motor.requestHistory.size)
+        assertEquals("Bearer access-refresco-1", motor.requestHistory[1].headers[HttpHeaders.Authorization])
+        assertEquals("access-refresco-1", repo.state.value.session?.accessToken)
+    }
+
+    /**
+     * Y el reverso, que es lo que justifica el filtro por ruta.
+     *
+     * En `/rest/v1` un 403 no habla del token: dice que una regla de seguridad
+     * de filas nego la operacion. Refrescar ahi gastaria un token de refresco
+     * por cada negativa legitima.
+     */
+    @Test
+    fun `un 403 de rest no gasta un refresco`() = runTest {
+        val motor = MockEngine {
+            respond("""{"code":"42501","message":"permission denied"}""", HttpStatusCode.Forbidden, JSON)
+        }
+        val api = FakeAuthApi()
+        val repo = sesion(api)
+        repo.entrar("ash@pueblo-paleta.test", "pikachu")
+        val cuenta = KtorSupabaseAccountApi(
+            createSupabaseAccountClient(ConfigDePrueba(), proveedor(repo), motor),
+            ConfigDePrueba(),
+        )
+
+        assertFailsWith<AuthException> { cuenta.borrarCuenta() }
+
+        assertEquals(0, api.refrescos)
+        assertEquals(1, motor.requestHistory.size)
     }
 
     /**

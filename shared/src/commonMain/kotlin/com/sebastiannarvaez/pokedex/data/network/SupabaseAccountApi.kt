@@ -7,15 +7,21 @@ import io.ktor.client.HttpClient
 import io.ktor.client.HttpClientConfig
 import io.ktor.client.call.body
 import io.ktor.client.engine.HttpClientEngine
+import io.ktor.client.plugins.HttpSend
 import io.ktor.client.plugins.auth.Auth
+import io.ktor.client.plugins.auth.authProvider
+import io.ktor.client.plugins.auth.providers.BearerAuthProvider
 import io.ktor.client.plugins.auth.providers.BearerTokens
 import io.ktor.client.plugins.auth.providers.bearer
+import io.ktor.client.plugins.plugin
 import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.request.put
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.HttpResponse
 import io.ktor.http.ContentType
+import io.ktor.http.HttpHeaders
+import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import io.ktor.http.isSuccess
 import kotlinx.serialization.Serializable
@@ -80,7 +86,7 @@ internal interface ProveedorDeTokens {
     /** El par vigente, refrescando solo si toca por reloj. */
     suspend fun vigentes(): Pair<String, String>?
 
-    /** Refresca si o si. Lo llama el cliente cuando el servidor dijo 401. */
+    /** Refresca si o si. Lo llama el cliente cuando el servidor dijo 401 o 403. */
     suspend fun refrescar(): Pair<String, String>?
 }
 
@@ -131,5 +137,46 @@ internal fun createSupabaseAccountClient(
             }
         }
     }
-    return createSupabaseClient(config, engine, extra)
+    val cliente = createSupabaseClient(config, engine, extra)
+
+    /*
+     * El 403 que el plugin de Ktor no ve.
+     *
+     * Ktor refresca cuando el servidor contesta **401**, y solo entonces: «The
+     * resource server returns a 401 Unauthorized response. The client
+     * automatically invokes the refreshTokens {} callback». Supabase no se
+     * comporta igual en sus dos mitades, medido contra un proyecto real el 11
+     * de septiembre de 2026 con la caducidad puesta en 60 segundos:
+     *
+     *   GET  /auth/v1/user            -> 403 {"error_code":"bad_jwt"}
+     *   POST /rest/v1/rpc/delete_user -> 401 {"code":"PGRST303"}
+     *
+     * Asi que el refresco automatico funcionaba en las llamadas REST y no en
+     * las de autenticacion, que son las mas frecuentes. Esto lo iguala.
+     *
+     * Se filtra por `/auth/v1/` a proposito: en `/rest/v1/` un 403 significa
+     * que una regla de seguridad de filas dijo que no, y refrescar ahi seria
+     * gastar un token de refresco por cada negativa legitima.
+     *
+     * No se lee el cuerpo para confirmar que es `bad_jwt`: consumirlo aqui
+     * dejaria sin cuerpo a quien recibe la respuesta cuando el 403 sea de otra
+     * cosa. Con el filtro por ruta, el unico 403 que llega es ese.
+     */
+    cliente.plugin(HttpSend).intercept { peticion ->
+        val llamada = execute(peticion)
+        if (llamada.response.status != HttpStatusCode.Forbidden) return@intercept llamada
+        if (!peticion.url.buildString().contains("/auth/v1/")) return@intercept llamada
+
+        val nuevos = proveedor.refrescar() ?: return@intercept llamada
+
+        // El proveedor de Ktor cachea lo que devolvio `loadTokens`. Sin
+        // limpiarlo, la siguiente peticion volveria a firmar con el token que
+        // el servidor acaba de rechazar.
+        cliente.authProvider<BearerAuthProvider>()?.clearToken()
+
+        peticion.headers[HttpHeaders.Authorization] = "Bearer ${nuevos.first}"
+        execute(peticion)
+    }
+
+    return cliente
 }
