@@ -16,14 +16,14 @@ class DestinationTest {
         // Las dos formas llevan al mismo sitio: una sola traduccion, no dos.
         assertEquals(
             Destination.parse("pokedex://pokemon/25"),
-            Destination.parse("https://pokedex-kmp.example/pokemon/25"),
+            Destination.parse("https://sebastiannarvaez11.github.io/pokedex-kmp/pokemon/25"),
         )
     }
 
     @Test
     fun laRaizEsLaLista() {
         assertEquals(Destination.Lista, Destination.parse("pokedex://"))
-        assertEquals(Destination.Lista, Destination.parse("https://pokedex-kmp.example/"))
+        assertEquals(Destination.Lista, Destination.parse("https://sebastiannarvaez11.github.io/pokedex-kmp/"))
     }
 
     @Test

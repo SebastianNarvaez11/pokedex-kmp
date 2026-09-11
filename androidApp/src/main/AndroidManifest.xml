@@ -23,6 +23,33 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+
+            <!--
+                Esquema propio. Funciona siempre, sin dominio ni verificacion,
+                pero no es pulsable en la mayoria de apps de mensajeria.
+            -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="pokedex" />
+            </intent-filter>
+
+            <!--
+                App Link. `autoVerify` hace que Android compruebe
+                /.well-known/assetlinks.json en el dominio. Si la verificacion
+                pasa, el enlace abre la app directamente; si no, Android ensena
+                el selector de aplicaciones.
+            -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:scheme="https"
+                    android:host="sebastiannarvaez11.github.io"
+                    android:pathPrefix="/pokedex-kmp/pokemon/" />
+            </intent-filter>
         </activity>
     </application>
 

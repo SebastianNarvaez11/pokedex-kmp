@@ -14,6 +14,8 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import com.sebastiannarvaez.pokedex.navigation.Destination
 import androidx.compose.ui.Modifier
 import com.sebastiannarvaez.pokedex.android.favorites.FavoritesScreen
 import com.sebastiannarvaez.pokedex.android.settings.SettingsScreen
@@ -33,9 +35,23 @@ import com.sebastiannarvaez.pokedex.android.list.PokemonListScreen
  * quitar el ultimo.
  */
 @Composable
-fun PokedexApp(inicio: NavKey = ListaKey) {
-    val pila = rememberNavBackStack(inicio)
+fun PokedexApp(
+    destinoEntrante: Destination? = null,
+    alConsumirDestino: () -> Unit = {},
+) {
+    val pila = rememberNavBackStack(ListaKey)
     val actual = pila.lastOrNull()
+
+    // Un enlace entrante deja la lista debajo y el destino encima: asi volver
+    // desde una ficha abierta por enlace lleva a la app, no fuera de ella.
+    LaunchedEffect(destinoEntrante) {
+        val destino = destinoEntrante ?: return@LaunchedEffect
+        val clave = destino.aNavKey()
+        pila.clear()
+        if (clave != ListaKey) pila.add(ListaKey)
+        pila.add(clave)
+        alConsumirDestino()
+    }
 
     Scaffold(
         bottomBar = {

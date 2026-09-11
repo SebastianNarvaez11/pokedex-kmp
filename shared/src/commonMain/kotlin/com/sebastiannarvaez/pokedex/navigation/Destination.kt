@@ -40,7 +40,16 @@ sealed interface Destination {
         const val ESQUEMA = "pokedex"
 
         /** El dominio del enlace `https`, que si se puede compartir por chat. */
-        const val HOST = "pokedex-kmp.example"
+        const val HOST = "sebastiannarvaez11.github.io"
+
+        /**
+         * El prefijo de la ruta.
+         *
+         * GitHub Pages sirve las paginas de proyecto bajo el nombre del
+         * repositorio, no en la raiz del dominio. Eso tiene una consecuencia
+         * importante para los App Links de Android, y se cuenta en su leccion.
+         */
+        const val BASE_PATH = "/pokedex-kmp"
 
         /**
          * Traduce una URL entrante a una pantalla.
@@ -52,6 +61,7 @@ sealed interface Destination {
             val sinEsquema = url
                 .substringAfter("://", missingDelimiterValue = url)
                 .let { if (it.startsWith(HOST)) it.removePrefix(HOST) else it }
+                .let { if (it.startsWith(BASE_PATH)) it.removePrefix(BASE_PATH) else it }
             val ruta = "/" + sinEsquema.trim('/').substringBefore('?')
 
             return when {
@@ -65,7 +75,8 @@ sealed interface Destination {
 }
 
 /** El enlace que se comparte: `https`, para que sea pulsable en cualquier app. */
-fun Destination.toShareUrl(): String = "https://${Destination.HOST}${toPath()}"
+fun Destination.toShareUrl(): String =
+    "https://${Destination.HOST}${Destination.BASE_PATH}${toPath()}"
 
 /** El enlace interno, que abre la app sin pasar por el navegador. */
 fun Destination.toDeepLink(): String = "${Destination.ESQUEMA}://${toPath().trimStart('/')}"
