@@ -4,4 +4,4 @@ private class JvmPlatform : Platform {
     override val name: String = "JVM ${System.getProperty("java.version")}"
 }
 
-actual fun currentPlatform(): Platform = JvmPlatform()
+internal actual fun currentPlatform(): Platform = JvmPlatform()

@@ -7,4 +7,4 @@ private class IosPlatform : Platform {
         UIDevice.currentDevice.systemName() + " " + UIDevice.currentDevice.systemVersion
 }
 
-actual fun currentPlatform(): Platform = IosPlatform()
+internal actual fun currentPlatform(): Platform = IosPlatform()

@@ -19,4 +19,4 @@ interface Platform {
  * sola vez, y a partir de ahi la `Platform` viaja como parametro. Cuantas menos
  * llamadas tenga esta funcion, menos codigo queda atado a la plataforma.
  */
-expect fun currentPlatform(): Platform
+internal expect fun currentPlatform(): Platform
