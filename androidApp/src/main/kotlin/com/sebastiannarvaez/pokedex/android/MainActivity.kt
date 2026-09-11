@@ -5,6 +5,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -37,6 +38,9 @@ class MainActivity : ComponentActivity() {
     private val recuperacionEntrante = mutableStateOf<EnlaceDeRecuperacion?>(null)
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        // **Antes** de `super.onCreate`, siempre. Instalarla despues no hace
+        // nada y no avisa: la pantalla de arranque del sistema ya se ha ido.
+        installSplashScreen()
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         recibir(intent?.dataString)

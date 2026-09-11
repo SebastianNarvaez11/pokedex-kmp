@@ -1,0 +1,44 @@
+# Las reglas propias de esta app.
+#
+# Van en `src/main/keepRules/` con extension `.keep`, que es donde las busca la
+# DSL nueva de AGP 9.3. Las reglas de la plataforma ya vienen incluidas, asi que
+# aqui solo hay lo que es de este proyecto.
+#
+# La regla de oro: **cada regla lleva escrito por que existe**. Un fichero de
+# reglas sin explicaciones se convierte en un `-keep class **` al primer susto,
+# y eso apaga el optimizador entero.
+
+# --- Serializacion -----------------------------------------------------------
+#
+# kotlinx.serialization genera un serializador por clase y lo busca por su
+# nombre. R8 no ve esa llamada, asi que sin esto el nombre se ofusca y la
+# primera respuesta de PokeAPI revienta con SerializationException... solo en
+# release. El plugin de serialization ya aporta reglas, pero estas cubren los
+# `Companion` de las clases del proyecto, que es lo que se ha visto fallar.
+-keepclassmembers class com.sebastiannarvaez.pokedex.** {
+    *** Companion;
+}
+-keepclasseswithmembers class com.sebastiannarvaez.pokedex.** {
+    kotlinx.serialization.KSerializer serializer(...);
+}
+
+# --- Room 3 ------------------------------------------------------------------
+#
+# Room genera la implementacion del DAO y la de la base de datos con un nombre
+# derivado del de la clase, y las carga por reflexion. Ofuscadas, `Room.build()`
+# lanza «cannot find implementation for PokedexDatabase».
+-keep class com.sebastiannarvaez.pokedex.data.local.**_Impl { *; }
+-keep class * extends androidx.room3.RoomDatabase { <init>(); }
+
+# --- Ktor --------------------------------------------------------------------
+#
+# Ktor descubre los motores con ServiceLoader, que tambien es reflexion. Sin
+# esto, en release no hay motor y toda peticion falla al construir el cliente.
+-keep class io.ktor.client.engine.okhttp.** { *; }
+
+# --- Navigation 3 ------------------------------------------------------------
+#
+# Las claves de navegacion se serializan para sobrevivir a que el sistema mate
+# el proceso. Es el mismo caso que arriba, pero el sintoma es peor de
+# diagnosticar: la app funciona hasta que vuelve de segundo plano.
+-keep class com.sebastiannarvaez.pokedex.android.navigation.** { *; }

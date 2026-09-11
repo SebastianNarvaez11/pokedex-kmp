@@ -16,6 +16,15 @@ val secretos = Properties().apply {
     if (fichero.exists()) fichero.inputStream().use { load(it) }
 }
 
+// La firma de release. Si el fichero no esta, la app se compila **sin firmar**
+// en vez de fallar: quien clone el repositorio puede construirla para probar
+// sin tener que inventarse un almacen de claves.
+val firma = Properties().apply {
+    val fichero = rootProject.file("keystore.properties")
+    if (fichero.exists()) fichero.inputStream().use { load(it) }
+}
+val hayFirma = firma.getProperty("RELEASE_STORE_PASSWORD").orEmpty().isNotBlank()
+
 android {
     namespace = "com.sebastiannarvaez.pokedex.android"
     compileSdk = libs.versions.androidCompileSdk.get().toInt()
@@ -24,8 +33,38 @@ android {
         applicationId = "com.sebastiannarvaez.pokedex"
         minSdk = libs.versions.androidMinSdk.get().toInt()
         targetSdk = libs.versions.androidTargetSdk.get().toInt()
-        versionCode = 1
-        versionName = "0.1.0"
+        // Del catalogo, que es el unico sitio donde se escribe un numero.
+        versionCode = libs.versions.appVersionCode.get().toInt()
+        versionName = libs.versions.appVersionName.get()
+    }
+
+    signingConfigs {
+        if (hayFirma) {
+            create("release") {
+                storeFile = rootProject.file(firma.getProperty("RELEASE_STORE_FILE"))
+                storePassword = firma.getProperty("RELEASE_STORE_PASSWORD")
+                keyAlias = firma.getProperty("RELEASE_KEY_ALIAS")
+                keyPassword = firma.getProperty("RELEASE_KEY_PASSWORD")
+                // v1 desactivado: desde minSdk 24 no hace falta, y quitarlo
+                // acelera la firma y evita el zip que se puede alterar.
+                enableV1Signing = false
+                enableV2Signing = true
+                enableV3Signing = true
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            if (hayFirma) signingConfig = signingConfigs.getByName("release")
+            // La DSL nueva de AGP 9.3: una linea enciende **las dos** cosas,
+            // optimizacion de codigo y de recursos, y ya trae las reglas de la
+            // plataforma. Antes habia que activarlas por separado y nombrar el
+            // fichero `proguard-android-optimize.txt` a mano.
+            optimization {
+                enable = true
+            }
+        }
     }
 
     buildFeatures {
@@ -65,6 +104,10 @@ dependencies {
     // detalle se ve el del anterior.
     implementation(libs.androidx.lifecycle.viewmodel.navigation3)
     implementation(libs.androidx.core.ktx)
+    // La pantalla de arranque oficial. Desde Android 12 el sistema **siempre**
+    // pinta una; esta libreria deja decidir que se ve en ella y la hace
+    // funcionar igual en versiones anteriores.
+    implementation(libs.androidx.core.splashscreen)
     implementation(libs.androidx.work.runtime)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     // viewmodel-compose trae viewModel(); runtime-compose trae

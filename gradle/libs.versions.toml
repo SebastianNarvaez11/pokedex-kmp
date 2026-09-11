@@ -4,6 +4,12 @@
 # Maven (maven-metadata.xml), nunca contra un blog ni contra la documentacion.
 
 [versions]
+# La version de la app, en un solo sitio. Android la lee aqui y el .xcconfig de
+# iOS tiene la misma: si se tocan por separado, las dos tiendas acaban
+# publicando numeros distintos de la misma version.
+appVersionName = "1.0.0"
+appVersionCode = "1"
+splashscreen = "1.2.0"
 kotlin = "2.4.20"
 agp = "9.4.0"
 androidCompileSdk = "37"
@@ -74,6 +80,7 @@ androidx-compose-ui-test-junit4 = { module = "androidx.compose.ui:ui-test-junit4
 androidx-compose-ui-test-manifest = { module = "androidx.compose.ui:ui-test-manifest" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "coroutines" }
 androidx-work-runtime = { module = "androidx.work:work-runtime-ktx", version.ref = "work" }
+androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "splashscreen" }
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "coreKtx" }
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activityCompose" }
 androidx-lifecycle-viewmodel = { module = "androidx.lifecycle:lifecycle-viewmodel", version.ref = "lifecycle" }

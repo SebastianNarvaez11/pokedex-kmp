@@ -1,4 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!--
+      El tema de arranque, no el de la app.
+
+      Desde Android 12 el sistema pinta **siempre** una pantalla de arranque; lo
+      unico que se elige es que aparece en ella. Sin declararla, sale el icono
+      sobre el color por defecto y el cambio a la app es un parpadeo blanco.
+
+      `postSplashScreenTheme` es la linea que mas confunde: el tema que se
+      aplica **despues**. Sin ella, la app se queda con el tema de arranque y la
+      barra de estado aparece con el color equivocado.
+    -->
+    <style name="Theme.Pokedex.Arranque" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/arranque</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_launcher_foreground</item>
+        <item name="postSplashScreenTheme">@style/Theme.Pokedex</item>
+    </style>
+
     <style name="Theme.Pokedex" parent="android:Theme.Material.Light.NoActionBar" />
 </resources>

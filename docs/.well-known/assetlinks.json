@@ -5,7 +5,8 @@
       "namespace": "android_app",
       "package_name": "com.sebastiannarvaez.pokedex",
       "sha256_cert_fingerprints": [
-        "90:1F:FE:93:71:40:CE:6F:F0:7E:38:CD:CF:28:0B:89:1B:64:4B:19:0A:0E:70:D5:B8:6C:8D:A9:2D:85:D6:84"
+        "90:1F:FE:93:71:40:CE:6F:F0:7E:38:CD:CF:28:0B:89:1B:64:4B:19:0A:0E:70:D5:B8:6C:8D:A9:2D:85:D6:84",
+        "F4:42:A1:7A:1F:0F:11:C7:BC:C3:45:5E:3E:AB:3E:55:11:2C:6C:47:64:5B:02:4F:BC:0C:FF:86:10:B3:10:34"
       ]
     }
   }
