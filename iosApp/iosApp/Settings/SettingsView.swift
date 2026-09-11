@@ -15,6 +15,9 @@ struct SettingsView: View {
     @State private var viewModel: SettingsViewModel?
     @State private var permiso: EstadoDelPermiso = .sinPreguntar
     @State private var pendientes = 0
+    @State private var auth: AuthViewModel?
+    @State private var sesion: Session?
+    @State private var confirmandoSalida = false
 
     var body: some View {
         NavigationStack {
@@ -73,12 +76,49 @@ struct SettingsView: View {
                     Text("Se programan siete días por adelantado. iOS admite 64 notificaciones pendientes por app.")
                 }
 
+                if let sesion {
+                    Section {
+                        LabeledContent("Correo", value: sesion.email ?? "Sesión iniciada")
+                        Button("Cerrar sesión", role: .destructive) {
+                            confirmandoSalida = true
+                        }
+                    } header: {
+                        Text("Cuenta")
+                    } footer: {
+                        Text("Tus favoritos se guardan en este dispositivo y seguirán aquí cuando vuelvas a entrar.")
+                    }
+                }
+
                 Section("Acerca de") {
                     LabeledContent("App", value: "Pokédex")
                     LabeledContent("Datos", value: "PokeAPI")
                 }
             }
             .navigationTitle("Ajustes")
+            // El diálogo de confirmación de iOS sube desde abajo y marca en
+            // rojo la acción destructiva. Es el equivalente de la hoja inferior
+            // de Android, y ninguno de los dos se parece al otro.
+            .confirmationDialog(
+                "¿Cerrar la sesión?",
+                isPresented: $confirmandoSalida,
+                titleVisibility: .visible
+            ) {
+                Button("Cerrar sesión", role: .destructive) { auth?.salir() }
+                Button("Cancelar", role: .cancel) { }
+            } message: {
+                Text("Tendrás que volver a entrar para usar la app.")
+            }
+        }
+        .task {
+            guard AuthIosKt.hayCuentas() else { return }
+            let vm = auth ?? AuthIosKt.authViewModel(owner: owner)
+            auth = vm
+            sesion = vm.authStateForIos.session
+            do {
+                for try await nuevo in asyncSequence(for: vm.authStateForIosFlow) {
+                    sesion = nuevo.session
+                }
+            } catch { }
         }
         .task {
             permiso = await RecordatorioDiario.estadoDelPermiso()

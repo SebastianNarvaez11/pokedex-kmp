@@ -18,7 +18,10 @@ struct iOSApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            // Sin sesión no se compone nada de la app: ni pestañas, ni pilas.
+            RaizConSesion {
+                ContentView()
+            }
         }
     }
 }
