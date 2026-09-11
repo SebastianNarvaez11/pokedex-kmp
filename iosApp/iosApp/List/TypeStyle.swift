@@ -32,7 +32,19 @@ extension PokemonType {
         }
     }
 
+    /// El nombre del tipo, **ya traducido**.
+    ///
+    /// `String(localized:)` y no la cadena a secas: `Text` solo traduce cuando
+    /// recibe un literal, porque entonces el compilador lo convierte en
+    /// `LocalizedStringKey`. Con una variable de tipo `String` usa el otro
+    /// inicializador y pinta el texto tal cual, sin mirar el catálogo. Es de
+    /// los fallos más silenciosos que hay: la app se ve perfecta en el idioma
+    /// del proyecto y solo falla en los demás.
     var etiqueta: String {
+        String(localized: String.LocalizationValue(claveDelTipo))
+    }
+
+    private var claveDelTipo: String {
         switch name {
         case "NORMAL":   return "Normal"
         case "FIGHTING": return "Lucha"

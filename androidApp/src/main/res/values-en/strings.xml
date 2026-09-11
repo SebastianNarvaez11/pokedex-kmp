@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  English. Only what a person reads; keys and identifiers stay in `values/`.
+
+  `app_name` is deliberately missing: the app is called Pokédex in every
+  language. A resource that is not here falls back to `values/`, which is what
+  should happen with a proper noun.
+-->
+<resources>
+    <string name="pestana_pokedex">Pokédex</string>
+    <string name="pestana_favoritos">Favourites</string>
+    <string name="pestana_ajustes">Settings</string>
+    <string name="volver">Back</string>
+    <string name="mas_opciones">More options</string>
+    <string name="compartir">Share</string>
+    <string name="reintentar">Try again</string>
+
+    <string name="buscar_pokemon">Search Pokémon</string>
+    <string name="borrar_busqueda">Clear search</string>
+    <string name="busqueda_vacia">Type a name to start</string>
+    <string name="busqueda_sin_resultados">No Pokémon is called that</string>
+    <string name="lista_vacia_titulo">Nothing to show</string>
+    <string name="lista_vacia_detalle">PokeAPI returned no Pokémon.</string>
+    <string name="numero_pokemon">No. %04d</string>
+
+    <string name="anadir_a_favoritos">Add to favourites</string>
+    <string name="quitar_de_favoritos">Remove from favourites</string>
+    <string name="favoritos_vacio">No favourites yet</string>
+    <string name="favoritos_quitar_todos">Remove all</string>
+    <string name="favoritos_solo_local">Favourites are stored on this device only.</string>
+    <plurals name="favoritos_contados">
+        <item quantity="one">%d favourite</item>
+        <item quantity="other">%d favourites</item>
+    </plurals>
+
+    <string name="ficha_estadisticas">Base stats</string>
+    <string name="ficha_altura">Height</string>
+    <string name="ficha_peso">Weight</string>
+    <string name="ficha_legendario">Legendary</string>
+
+    <string name="ajustes_tema">Theme</string>
+    <string name="ajustes_tema_sistema">Follow the system</string>
+    <string name="ajustes_tema_claro">Light</string>
+    <string name="ajustes_tema_oscuro">Dark</string>
+    <string name="ajustes_tema_nota">“Follow the system” uses the Android setting.</string>
+    <string name="ajustes_orden">Sort favourites by number</string>
+    <string name="ajustes_orden_numero">From 1 to the last</string>
+    <string name="ajustes_orden_reciente">Most recent first</string>
+    <string name="ajustes_acerca_de">About</string>
+    <string name="ajustes_acerca_de_detalle">Pokédex · data from PokeAPI</string>
+    <string name="ajustes_cuenta">Account</string>
+
+    <string name="dia_titulo">Pokémon of the day</string>
+    <string name="dia_activo">One notification a day</string>
+    <string name="dia_pedir">Tap to turn notifications on</string>
+    <string name="dia_denegado">Notifications are turned off</string>
+    <string name="dia_canal">Today’s Pokémon</string>
+    <string name="dia_canal_descripcion">A different Pokémon every day</string>
+    <string name="dia_notificacion_texto">Find out who number %1$d is</string>
+
+    <string name="auth_bienvenida">Sign in to keep your favourites and get the Pokémon of the day.</string>
+    <string name="auth_entrar">Sign in</string>
+    <string name="auth_crear_cuenta">Create account</string>
+    <string name="auth_correo">Email</string>
+    <string name="auth_password">Password</string>
+    <string name="auth_password_ver">Show</string>
+    <string name="auth_password_ocultar">Hide</string>
+    <string name="auth_password_minimo">At least %1$d characters</string>
+    <string name="auth_olvidaste">Forgot your password?</string>
+    <string name="auth_olvidaste_ayuda">Type your email above and we’ll send you a link.</string>
+    <string name="auth_revisa_correo">Check your email</string>
+    <string name="auth_revisa_correo_detalle">If there is an account with that email, we have sent it a link to set a new password.</string>
+    <string name="auth_entendido">Got it</string>
+    <string name="auth_sesion_iniciada">Signed in</string>
+    <string name="auth_tu_cuenta">Your account</string>
+    <string name="auth_favoritos_locales">Your favourites live on this device, so they will still be here when you come back.</string>
+    <string name="auth_cerrar_sesion">Sign out</string>
+    <string name="auth_eliminar_cuenta">Delete my account</string>
+    <string name="auth_eliminar_cuenta_titulo">Delete your account?</string>
+    <string name="auth_eliminar_cuenta_detalle">Your user is deleted on the server and this cannot be undone. Your favourites, which live on this phone, are untouched.</string>
+    <string name="auth_eliminar">Delete</string>
+    <string name="auth_cancelar">Cancel</string>
+    <string name="auth_password_nueva">New password</string>
+    <string name="auth_guardar">Save</string>
+    <string name="auth_ahora_no">Not now</string>
+    <string name="auth_password_cambiada">Password changed</string>
+    <string name="auth_password_cambiada_detalle">You can carry on using the app with the new password.</string>
+    <string name="auth_listo">Done</string>
+
+    <string name="tipo_normal">Normal</string>
+    <string name="tipo_fighting">Fighting</string>
+    <string name="tipo_flying">Flying</string>
+    <string name="tipo_poison">Poison</string>
+    <string name="tipo_ground">Ground</string>
+    <string name="tipo_rock">Rock</string>
+    <string name="tipo_bug">Bug</string>
+    <string name="tipo_ghost">Ghost</string>
+    <string name="tipo_steel">Steel</string>
+    <string name="tipo_fire">Fire</string>
+    <string name="tipo_water">Water</string>
+    <string name="tipo_grass">Grass</string>
+    <string name="tipo_electric">Electric</string>
+    <string name="tipo_psychic">Psychic</string>
+    <string name="tipo_ice">Ice</string>
+    <string name="tipo_dragon">Dragon</string>
+    <string name="tipo_dark">Dark</string>
+    <string name="tipo_fairy">Fairy</string>
+
+    <string name="stat_hp">HP</string>
+    <string name="stat_attack">Attack</string>
+    <string name="stat_defense">Defence</string>
+    <string name="stat_special_attack">Sp. attack</string>
+    <string name="stat_special_defense">Sp. defence</string>
+    <string name="stat_speed">Speed</string>
+    <string name="tarjeta_descripcion">%1$s, %2$s type</string>
+    <string name="separador_tipos"> and </string>
+    <string name="favoritos_vacio_detalle">Tap the heart on any Pokémon to keep it here.</string>
+</resources>

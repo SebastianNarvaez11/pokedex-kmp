@@ -1,5 +1,6 @@
 package com.sebastiannarvaez.pokedex.android.auth
 
+import com.sebastiannarvaez.pokedex.android.R
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -40,6 +41,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
@@ -130,13 +132,13 @@ fun AuthContent(
         ) {
             Spacer(Modifier.height(48.dp))
             Text(
-                "Pokédex",
+                stringResource(R.string.pestana_pokedex),
                 style = MaterialTheme.typography.displaySmall,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary,
             )
             Text(
-                "Entra para guardar tus favoritos y recibir el Pokémon del día.",
+                stringResource(R.string.auth_bienvenida),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
@@ -153,13 +155,13 @@ fun AuthContent(
                     onClick = { registrando = false },
                     shape = SegmentedButtonDefaults.itemShape(index = 0, count = 2),
                     modifier = Modifier.testTag(TAG_MODO_ENTRAR),
-                ) { Text("Entrar") }
+                ) { Text(stringResource(R.string.auth_entrar)) }
                 SegmentedButton(
                     selected = registrando,
                     onClick = { registrando = true },
                     shape = SegmentedButtonDefaults.itemShape(index = 1, count = 2),
                     modifier = Modifier.testTag(TAG_MODO_REGISTRAR),
-                ) { Text("Crear cuenta") }
+                ) { Text(stringResource(R.string.auth_crear_cuenta)) }
             }
 
             Spacer(Modifier.height(24.dp))
@@ -167,7 +169,7 @@ fun AuthContent(
             OutlinedTextField(
                 value = formulario.email,
                 onValueChange = alEscribirEmail,
-                label = { Text("Correo") },
+                label = { Text(stringResource(R.string.auth_correo)) },
                 leadingIcon = { Icon(Icons.Default.Email, contentDescription = null) },
                 singleLine = true,
                 // El teclado de correo trae la arroba a mano y quita la
@@ -187,11 +189,11 @@ fun AuthContent(
             OutlinedTextField(
                 value = formulario.password,
                 onValueChange = alEscribirPassword,
-                label = { Text("Contraseña") },
+                label = { Text(stringResource(R.string.auth_password)) },
                 leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null) },
                 trailingIcon = {
                     TextButton(onClick = { verPassword = !verPassword }) {
-                        Text(if (verPassword) "Ocultar" else "Ver")
+                        Text(if (verPassword) stringResource(R.string.auth_password_ocultar) else stringResource(R.string.auth_password_ver))
                     }
                 },
                 visualTransformation = if (verPassword) {
@@ -206,7 +208,7 @@ fun AuthContent(
                 ),
                 keyboardActions = KeyboardActions(onDone = { if (formulario.sePuedeEnviar) enviar() }),
                 supportingText = {
-                    if (registrando) Text("Al menos ${AuthFormState.MINIMO_PASSWORD} caracteres")
+                    if (registrando) Text(stringResource(R.string.auth_password_minimo, AuthFormState.MINIMO_PASSWORD))
                 },
                 modifier = Modifier.fillMaxWidth(),
             )
@@ -231,7 +233,7 @@ fun AuthContent(
                         color = MaterialTheme.colorScheme.onPrimary,
                     )
                 } else {
-                    Text(if (registrando) "Crear cuenta" else "Entrar")
+                    Text(if (registrando) stringResource(R.string.auth_crear_cuenta) else stringResource(R.string.auth_entrar))
                 }
             }
 
@@ -246,11 +248,11 @@ fun AuthContent(
                     enabled = formulario.emailValido && !formulario.enviando,
                     modifier = Modifier.padding(top = 8.dp).testTag(TAG_RECUPERAR),
                 ) {
-                    Text("¿Olvidaste tu contraseña?")
+                    Text(stringResource(R.string.auth_olvidaste))
                 }
                 if (!formulario.emailValido) {
                     Text(
-                        "Escribe tu correo arriba y te mandamos un enlace.",
+                        stringResource(R.string.auth_olvidaste_ayuda),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Center,
@@ -268,13 +270,12 @@ fun AuthContent(
         AlertDialog(
             onDismissRequest = alDescartar,
             confirmButton = {
-                TextButton(onClick = alDescartar) { Text("Entendido") }
+                TextButton(onClick = alDescartar) { Text(stringResource(R.string.auth_entendido)) }
             },
-            title = { Text("Revisa tu correo") },
+            title = { Text(stringResource(R.string.auth_revisa_correo)) },
             text = {
                 Text(
-                    "Si hay una cuenta con ese correo, le hemos mandado un enlace " +
-                        "para poner una contraseña nueva.",
+                    stringResource(R.string.auth_revisa_correo_detalle),
                 )
             },
         )

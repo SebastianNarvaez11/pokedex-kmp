@@ -44,7 +44,7 @@ struct SearchResultsView: View {
                         VStack(alignment: .leading, spacing: 1) {
                             Text(ref.name.capitalized)
                                 .font(.body.weight(.medium))
-                            Text(String(format: "N.º %04d", ref.id))
+                            Text(numeroDePokedex(ref.id))
                                 .font(.caption2)
                                 .foregroundStyle(.secondary)
                         }

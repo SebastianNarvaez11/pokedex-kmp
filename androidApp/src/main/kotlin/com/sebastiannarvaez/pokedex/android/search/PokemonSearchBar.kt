@@ -1,5 +1,6 @@
 package com.sebastiannarvaez.pokedex.android.search
 
+import com.sebastiannarvaez.pokedex.android.R
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -25,6 +26,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
@@ -64,12 +66,12 @@ fun PokemonSearchBar(
                 onSearch = { alCambiarExpansion(true) },
                 expanded = expandida,
                 onExpandedChange = alCambiarExpansion,
-                placeholder = { Text("Buscar Pokémon") },
+                placeholder = { Text(stringResource(R.string.buscar_pokemon)) },
                 leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
                 trailingIcon = {
                     if (estado.consulta.isNotEmpty()) {
                         IconButton(onClick = alLimpiar) {
-                            Icon(Icons.Default.Close, contentDescription = "Borrar la búsqueda")
+                            Icon(Icons.Default.Close, contentDescription = stringResource(R.string.borrar_busqueda))
                         }
                     }
                 },
@@ -79,14 +81,14 @@ fun PokemonSearchBar(
         onExpandedChange = alCambiarExpansion,
     ) {
         when {
-            estado.enReposo -> Aviso("Escribe un nombre para empezar")
+            estado.enReposo -> Aviso(stringResource(R.string.busqueda_vacia))
 
             estado.buscando && estado.resultados.isEmpty() ->
                 Box(Modifier.fillMaxWidth().padding(32.dp), Alignment.Center) { CircularProgressIndicator() }
 
             estado.error != null -> Aviso(estado.error!!.detalle)
 
-            estado.sinResultados -> Aviso("Ningún Pokémon se llama así")
+            estado.sinResultados -> Aviso(stringResource(R.string.busqueda_sin_resultados))
 
             else -> LazyColumn {
                 items(estado.resultados, key = { it.id }) { ref ->
@@ -122,7 +124,7 @@ private fun FilaDeResultado(ref: PokemonRef, alPulsar: () -> Unit) {
                 fontWeight = FontWeight.Medium,
             )
             Text(
-                "N.º ${ref.id.toString().padStart(4, '0')}",
+                stringResource(R.string.numero_pokemon, ref.id),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )

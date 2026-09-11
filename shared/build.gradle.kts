@@ -90,6 +90,9 @@ kotlin {
             // Cada plataforma usa su motor: el cliente de Ktor es comun, quien
             // hace la peticion de verdad no lo es.
             implementation(libs.ktor.client.okhttp)
+            // Para leer la lista de idiomas preferidos teniendo en cuenta el
+            // idioma por app de Android 13, que `Locale.getDefault()` no ve.
+            implementation(libs.androidx.core.ktx)
         }
         // Solo iOS: la anotacion que hace recorrible un Flow desde Swift no
         // pinta nada en Android ni en la JVM.

@@ -1,5 +1,6 @@
 package com.sebastiannarvaez.pokedex.android.favorites
 
+import com.sebastiannarvaez.pokedex.android.R
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -15,7 +16,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import com.sebastiannarvaez.pokedex.android.ui.color
-import com.sebastiannarvaez.pokedex.android.ui.etiqueta
+import com.sebastiannarvaez.pokedex.android.ui.etiquetaRes
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.FavoriteBorder
@@ -40,6 +41,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.semantics
@@ -77,11 +80,32 @@ fun FavoritesScreen(
         modifier = modifier.fillMaxSize(),
         topBar = {
             TopAppBar(
-                title = { Text("Favoritos", fontWeight = FontWeight.Bold) },
+                title = {
+                    Column {
+                        Text(stringResource(R.string.pestana_favoritos), fontWeight = FontWeight.Bold)
+                        if (estado.favoritos.isNotEmpty()) {
+                            // `pluralStringResource` y no un `if (n == 1)`: la
+                            // regla del plural es del idioma, no del programa.
+                            // El numero va **dos veces** a proposito: una para
+                            // elegir la forma y otra para sustituir el %d. Es
+                            // la trampa clasica de esta funcion, y olvidar la
+                            // segunda deja un «%d favoritos» en pantalla.
+                            Text(
+                                pluralStringResource(
+                                    R.plurals.favoritos_contados,
+                                    estado.favoritos.size,
+                                    estado.favoritos.size,
+                                ),
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                    }
+                },
                 actions = {
                     if (estado.favoritos.isNotEmpty()) {
                         IconButton(onClick = { hojaAbierta = true }) {
-                            Icon(Icons.Default.MoreVert, contentDescription = "Más opciones")
+                            Icon(Icons.Default.MoreVert, contentDescription = stringResource(R.string.mas_opciones))
                         }
                     }
                 },
@@ -107,7 +131,7 @@ fun FavoritesScreen(
     if (hojaAbierta) {
         ModalBottomSheet(onDismissRequest = { hojaAbierta = false }, sheetState = estadoHoja) {
             Text(
-                "Favoritos",
+                stringResource(R.string.pestana_favoritos),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp),
@@ -124,10 +148,10 @@ fun FavoritesScreen(
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
             ) {
                 Icon(Icons.Default.Delete, contentDescription = null, tint = MaterialTheme.colorScheme.error)
-                Text("Quitar todos", color = MaterialTheme.colorScheme.error)
+                Text(stringResource(R.string.favoritos_quitar_todos), color = MaterialTheme.colorScheme.error)
             }
             Text(
-                "Los favoritos se guardan solo en este dispositivo.",
+                stringResource(R.string.favoritos_solo_local),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(horizontal = 24.dp).padding(bottom = 32.dp),
@@ -152,6 +176,11 @@ private fun FilaDeslizable(favorito: FavoritePokemon, alPulsar: () -> Unit, alQu
         },
     )
 
+    // La etiqueta se resuelve **antes** del bloque: `semantics { }` no es
+    // composable, y `stringResource` si. Es el mismo motivo por el que las
+    // etiquetas de tipo devuelven un identificador y no un texto.
+    val etiquetaQuitar = stringResource(R.string.quitar_de_favoritos)
+
     SwipeToDismissBox(
         state = estadoDeslizamiento,
         enableDismissFromStartToEnd = false,
@@ -163,7 +192,7 @@ private fun FilaDeslizable(favorito: FavoritePokemon, alPulsar: () -> Unit, alQu
         // Android no.
         modifier = Modifier.semantics {
             customActions = listOf(
-                CustomAccessibilityAction("Quitar de favoritos") {
+                CustomAccessibilityAction(etiquetaQuitar) {
                     alQuitar()
                     true
                 },
@@ -218,7 +247,7 @@ private fun Fila(favorito: FavoritePokemon, alPulsar: () -> Unit) {
             )
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(
-                    "N.º ${favorito.id.toString().padStart(4, '0')}",
+                    stringResource(R.string.numero_pokemon, favorito.id),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -232,7 +261,7 @@ private fun Fila(favorito: FavoritePokemon, alPulsar: () -> Unit) {
                     ) {
                         Box(Modifier.size(7.dp).clip(CircleShape).background(tipo.color))
                         Text(
-                            tipo.etiqueta,
+                            stringResource(tipo.etiquetaRes),
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -256,9 +285,9 @@ private fun Vacio(modifier: Modifier = Modifier) {
             tint = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.size(44.dp),
         )
-        Text("Todavía no hay favoritos", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+        Text(stringResource(R.string.favoritos_vacio), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
         Text(
-            "Toca el corazón de cualquier Pokémon para guardarlo aquí.",
+            stringResource(R.string.favoritos_vacio_detalle),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,

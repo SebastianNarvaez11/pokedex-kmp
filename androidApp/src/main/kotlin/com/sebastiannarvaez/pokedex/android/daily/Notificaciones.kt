@@ -29,12 +29,16 @@ const val CANAL_DIARIO = "pokemon_del_dia"
 fun crearCanalDiario(context: Context) {
     val canal = NotificationChannel(
         CANAL_DIARIO,
-        "Pokémon del día",
+        // Fuera de Compose no hay `stringResource`: aqui se usa el `Context`,
+        // que es lo que `stringResource` acaba usando por dentro. El nombre del
+        // canal lo ve el usuario en los ajustes del sistema, asi que se traduce
+        // igual que el resto.
+        context.getString(R.string.dia_titulo),
         // DEFAULT y no HIGH: esto no es urgente. Una notificacion diaria que
         // suena e interrumpe es una notificacion que el usuario desactiva.
         NotificationManager.IMPORTANCE_DEFAULT,
     ).apply {
-        description = "Un Pokémon distinto cada día"
+        description = context.getString(R.string.dia_canal_descripcion)
     }
 
     NotificationManagerCompat.from(context).createNotificationChannel(canal)
@@ -61,8 +65,8 @@ fun mostrarPokemonDelDia(context: Context, fecha: LocalDate) {
 
     val notificacion = NotificationCompat.Builder(context, CANAL_DIARIO)
         .setSmallIcon(R.drawable.ic_notificacion)
-        .setContentTitle("El Pokémon de hoy")
-        .setContentText("Descubre quién es el número $id")
+        .setContentTitle(context.getString(R.string.dia_canal))
+        .setContentText(context.getString(R.string.dia_notificacion_texto, id))
         .setContentIntent(intent)
         .setAutoCancel(true)
         .build()

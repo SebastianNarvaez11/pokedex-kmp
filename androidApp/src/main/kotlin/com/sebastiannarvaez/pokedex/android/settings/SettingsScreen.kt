@@ -1,5 +1,7 @@
 package com.sebastiannarvaez.pokedex.android.settings
 
+import com.sebastiannarvaez.pokedex.android.R
+import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -30,6 +32,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -70,18 +73,18 @@ fun SettingsScreen(
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
-        topBar = { TopAppBar(title = { Text("Ajustes", fontWeight = FontWeight.Bold) }) },
+        topBar = { TopAppBar(title = { Text(stringResource(R.string.pestana_ajustes), fontWeight = FontWeight.Bold) }) },
     ) { relleno ->
         Column(modifier = Modifier.padding(relleno).fillMaxSize()) {
             Fila(
-                titulo = "Tema",
-                detalle = ajustes.tema.etiqueta,
+                titulo = stringResource(R.string.ajustes_tema),
+                detalle = stringResource(ajustes.tema.etiquetaRes),
                 icono = { Icon(Icons.Outlined.Settings, contentDescription = null) },
                 alPulsar = { hojaTema = true },
             )
             Fila(
-                titulo = "Ordenar favoritos por número",
-                detalle = if (ajustes.favoritosPorNumero) "Del 1 al último" else "Lo más reciente primero",
+                titulo = stringResource(R.string.ajustes_orden),
+                detalle = if (ajustes.favoritosPorNumero) stringResource(R.string.ajustes_orden_numero) else stringResource(R.string.ajustes_orden_reciente),
                 icono = {
                     Switch(
                         checked = ajustes.favoritosPorNumero,
@@ -93,11 +96,11 @@ fun SettingsScreen(
             val (permiso, pedirPermiso) = recordarPermisoDeNotificaciones()
             val contexto = LocalContext.current
             Fila(
-                titulo = "Pokémon del día",
+                titulo = stringResource(R.string.dia_titulo),
                 detalle = when (permiso) {
-                    EstadoDelPermiso.CONCEDIDO -> "Una notificación al día"
-                    EstadoDelPermiso.SIN_PREGUNTAR -> "Toca para activar las notificaciones"
-                    EstadoDelPermiso.DENEGADO -> "Las notificaciones están desactivadas"
+                    EstadoDelPermiso.CONCEDIDO -> stringResource(R.string.dia_activo)
+                    EstadoDelPermiso.SIN_PREGUNTAR -> stringResource(R.string.dia_pedir)
+                    EstadoDelPermiso.DENEGADO -> stringResource(R.string.dia_denegado)
                 },
                 icono = {
                     Icon(
@@ -125,15 +128,15 @@ fun SettingsScreen(
             )
             sesion.session?.let { activa ->
                 Fila(
-                    titulo = "Cuenta",
-                    detalle = activa.email ?: "Sesión iniciada",
+                    titulo = stringResource(R.string.ajustes_cuenta),
+                    detalle = activa.email ?: stringResource(R.string.auth_sesion_iniciada),
                     icono = { Icon(Icons.Default.Person, contentDescription = null) },
                     alPulsar = { hojaCuenta = true },
                 )
             }
             Fila(
-                titulo = "Acerca de",
-                detalle = "Pokédex · datos de PokeAPI",
+                titulo = stringResource(R.string.ajustes_acerca_de),
+                detalle = stringResource(R.string.ajustes_acerca_de_detalle),
                 icono = { Icon(Icons.Default.Info, contentDescription = null) },
                 alPulsar = {},
             )
@@ -154,7 +157,7 @@ fun SettingsScreen(
     if (hojaTema) {
         ModalBottomSheet(onDismissRequest = { hojaTema = false }, sheetState = estadoHoja) {
             Text(
-                "Tema",
+                stringResource(R.string.ajustes_tema),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp),
@@ -181,11 +184,11 @@ fun SettingsScreen(
                         },
                         modifier = Modifier.size(20.dp),
                     )
-                    Text(opcion.etiqueta)
+                    Text(stringResource(opcion.etiquetaRes))
                 }
             }
             Text(
-                "«Lo que diga el sistema» sigue el ajuste de Android.",
+                stringResource(R.string.ajustes_tema_nota),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(horizontal = 24.dp).padding(bottom = 32.dp),
@@ -216,11 +219,23 @@ private fun Fila(titulo: String, detalle: String, icono: @Composable () -> Unit,
     }
 }
 
-val Tema.etiqueta: String
+/**
+ * El texto de cada tema, como **identificador de recurso** y no como cadena.
+ *
+ * `stringResource` es una funcion `@Composable`: lee el `LocalContext` y se
+ * vuelve a evaluar si cambia el idioma. Por eso no se puede llamar desde una
+ * propiedad normal, y el compilador lo dice con «@Composable invocations can
+ * only happen from the context of a @Composable function».
+ *
+ * La solucion no es marcar la propiedad como `@Composable`: es que devuelva el
+ * identificador y que sea quien pinta el texto quien lo resuelva.
+ */
+@get:StringRes
+val Tema.etiquetaRes: Int
     get() = when (this) {
-        Tema.SISTEMA -> "Lo que diga el sistema"
-        Tema.CLARO -> "Claro"
-        Tema.OSCURO -> "Oscuro"
+        Tema.SISTEMA -> R.string.ajustes_tema_sistema
+        Tema.CLARO -> R.string.ajustes_tema_claro
+        Tema.OSCURO -> R.string.ajustes_tema_oscuro
     }
 
 /** La fecha de hoy en la zona del dispositivo, que es la que ve el usuario. */

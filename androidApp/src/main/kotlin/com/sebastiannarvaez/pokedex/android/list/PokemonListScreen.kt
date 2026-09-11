@@ -1,5 +1,6 @@
 package com.sebastiannarvaez.pokedex.android.list
 
+import com.sebastiannarvaez.pokedex.android.R
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -28,6 +29,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -115,7 +117,7 @@ internal fun PokemonListContent(
                 // hueco muerto y compite por la atencion.
                 AnimatedVisibility(visible = !expandida) {
                     LargeTopAppBar(
-                        title = { Text("Pokédex", fontWeight = FontWeight.Bold) },
+                        title = { Text(stringResource(R.string.pestana_pokedex), fontWeight = FontWeight.Bold) },
                         scrollBehavior = comportamiento,
                     )
                 }
@@ -161,8 +163,8 @@ internal fun PokemonListContent(
                 pokemon.loadState.refresh is LoadState.NotLoading && pokemon.itemCount == 0 ->
                     Centrado {
                         EstadoDeError(
-                            titulo = "No hay nada que enseñar",
-                            detalle = "PokeAPI no devolvió ningún Pokémon.",
+                            titulo = stringResource(R.string.lista_vacia_titulo),
+                            detalle = stringResource(R.string.lista_vacia_detalle),
                             reintentar = { pokemon.refresh() },
                         )
                     }
@@ -251,7 +253,7 @@ private fun EstadoDeError(titulo: String, detalle: String, reintentar: (() -> Un
             textAlign = TextAlign.Center,
         )
         if (reintentar != null) {
-            Button(onClick = reintentar, modifier = Modifier.padding(top = 8.dp)) { Text("Reintentar") }
+            Button(onClick = reintentar, modifier = Modifier.padding(top = 8.dp)) { Text(stringResource(R.string.reintentar)) }
         }
     }
 }

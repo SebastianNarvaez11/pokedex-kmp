@@ -75,7 +75,7 @@ private struct Ficha: View {
                     }
                     .padding(42)
 
-                    Text(String(format: "N.º %04d", detalle.id))
+                    Text(numeroDePokedex(detalle.id))
                         .font(.subheadline.weight(.bold))
                         .foregroundStyle(.secondary)
                         .padding(20)

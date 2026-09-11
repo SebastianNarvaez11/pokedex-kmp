@@ -18,6 +18,11 @@ final class PokedexUITests: XCTestCase {
     override func setUp() {
         continueAfterFailure = false
         app = XCUIApplication()
+        // El idioma, dicho a las claras. Sin esto, los tests corren en el del
+        // simulador —que en un runner de CI es ingles— y los que buscan
+        // «Ajustes» encuentran «Settings». No es que el test este mal: es que
+        // no decia en que idioma miraba.
+        app.launchArguments = ["-AppleLanguages", "(es)", "-AppleLocale", "es_ES"]
         app.launch()
     }
 

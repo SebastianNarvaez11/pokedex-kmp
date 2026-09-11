@@ -1,5 +1,7 @@
 package com.sebastiannarvaez.pokedex.android.detail
 
+import androidx.annotation.StringRes
+import com.sebastiannarvaez.pokedex.android.R
 import android.content.Intent
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
@@ -35,6 +37,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -47,7 +50,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.sebastiannarvaez.pokedex.android.ui.color
-import com.sebastiannarvaez.pokedex.android.ui.etiqueta
+import com.sebastiannarvaez.pokedex.android.ui.etiquetaRes
 import com.sebastiannarvaez.pokedex.domain.PokemonDetail
 import com.sebastiannarvaez.pokedex.domain.PokemonStat
 import com.sebastiannarvaez.pokedex.domain.StatKind
@@ -85,7 +88,7 @@ fun PokemonDetailScreen(
                     textAlign = TextAlign.Center,
                 )
                 if (estado.error!!.sePuedeReintentar) {
-                    Button(onClick = viewModel::reintentar) { Text("Reintentar") }
+                    Button(onClick = viewModel::reintentar) { Text(stringResource(R.string.reintentar)) }
                 }
             }
 
@@ -113,7 +116,7 @@ private fun Ficha(detalle: PokemonDetail, alVolver: () -> Unit) {
                 onClick = alVolver,
                 modifier = Modifier.statusBarsPadding().padding(12.dp).align(Alignment.TopStart),
             ) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.volver))
             }
 
             // Compartir usa el selector del sistema: no se decide por el
@@ -137,11 +140,13 @@ private fun Ficha(detalle: PokemonDetail, alVolver: () -> Unit) {
                 },
                 modifier = Modifier.statusBarsPadding().padding(12.dp).align(Alignment.TopEnd),
             ) {
-                Icon(Icons.Default.Share, contentDescription = "Compartir")
+                Icon(Icons.Default.Share, contentDescription = stringResource(R.string.compartir))
             }
 
             Text(
-                text = "N.º ${detalle.id.toString().padStart(4, '0')}",
+                // El formato del numero tambien es un recurso: en ingles es
+                // «No. 0001», no «N.º 0001».
+                text = stringResource(R.string.numero_pokemon, detalle.id),
                 style = MaterialTheme.typography.labelLarge,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.45f),
@@ -174,7 +179,7 @@ private fun Ficha(detalle: PokemonDetail, alVolver: () -> Unit) {
                     )
                     if (detalle.isLegendary) {
                         Text(
-                            "Legendario",
+                            stringResource(R.string.ficha_legendario),
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onTertiaryContainer,
@@ -205,7 +210,7 @@ private fun Ficha(detalle: PokemonDetail, alVolver: () -> Unit) {
                         horizontalArrangement = Arrangement.spacedBy(6.dp),
                     ) {
                         Box(Modifier.size(8.dp).clip(CircleShape).background(tipo.color))
-                        Text(tipo.etiqueta, style = MaterialTheme.typography.labelLarge)
+                        Text(stringResource(tipo.etiquetaRes), style = MaterialTheme.typography.labelLarge)
                     }
                 }
             }
@@ -218,12 +223,12 @@ private fun Ficha(detalle: PokemonDetail, alVolver: () -> Unit) {
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
             ) {
-                Medida("Altura", "${detalle.heightCm / 100.0} m", Modifier.weight(1f))
-                Medida("Peso", "${detalle.weightG / 1000.0} kg", Modifier.weight(1f))
+                Medida(stringResource(R.string.ficha_altura), "${detalle.heightCm / 100.0} m", Modifier.weight(1f))
+                Medida(stringResource(R.string.ficha_peso), "${detalle.weightG / 1000.0} kg", Modifier.weight(1f))
             }
 
             if (detalle.stats.isNotEmpty()) {
-                Text("Estadísticas base", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.ficha_estadisticas), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                 detalle.stats.forEach { stat -> Estadistica(stat, tono) }
             }
         }
@@ -253,7 +258,7 @@ private fun Estadistica(stat: PokemonStat, tono: Color) {
 
     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
         Text(
-            stat.kind.etiqueta,
+            stringResource(stat.kind.etiquetaRes),
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.size(width = 96.dp, height = 20.dp),
@@ -273,12 +278,13 @@ private fun Estadistica(stat: PokemonStat, tono: Color) {
     }
 }
 
-private val StatKind.etiqueta: String
+@get:StringRes
+private val StatKind.etiquetaRes: Int
     get() = when (this) {
-        StatKind.HP -> "PS"
-        StatKind.ATTACK -> "Ataque"
-        StatKind.DEFENSE -> "Defensa"
-        StatKind.SPECIAL_ATTACK -> "At. especial"
-        StatKind.SPECIAL_DEFENSE -> "Def. especial"
-        StatKind.SPEED -> "Velocidad"
+        StatKind.HP -> R.string.stat_hp
+        StatKind.ATTACK -> R.string.stat_attack
+        StatKind.DEFENSE -> R.string.stat_defense
+        StatKind.SPECIAL_ATTACK -> R.string.stat_special_attack
+        StatKind.SPECIAL_DEFENSE -> R.string.stat_special_defense
+        StatKind.SPEED -> R.string.stat_speed
     }

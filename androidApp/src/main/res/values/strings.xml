@@ -1,4 +1,146 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  Los textos de la app, en su idioma por defecto.
+
+  Este fichero es `values/`, sin sufijo: es el que se usa cuando no hay ninguno
+  mejor. Que sea el español no es una propiedad del idioma, es una decisión:
+  el idioma del proyecto. El inglés vive en `values-en/`.
+
+  Regla: aquí no entra nada que no lea una persona. Las claves de trabajo, los
+  nombres de canal internos y las etiquetas de prueba no son texto de interfaz.
+-->
 <resources>
     <string name="app_name">Pokédex</string>
+
+    <!-- Navegación y pantallas -->
+    <string name="pestana_pokedex">Pokédex</string>
+    <string name="pestana_favoritos">Favoritos</string>
+    <string name="pestana_ajustes">Ajustes</string>
+    <string name="volver">Volver</string>
+    <string name="mas_opciones">Más opciones</string>
+    <string name="compartir">Compartir</string>
+    <string name="reintentar">Reintentar</string>
+
+    <!-- Lista y búsqueda -->
+    <string name="buscar_pokemon">Buscar Pokémon</string>
+    <string name="borrar_busqueda">Borrar la búsqueda</string>
+    <string name="busqueda_vacia">Escribe un nombre para empezar</string>
+    <string name="busqueda_sin_resultados">Ningún Pokémon se llama así</string>
+    <string name="lista_vacia_titulo">No hay nada que enseñar</string>
+    <string name="lista_vacia_detalle">PokeAPI no devolvió ningún Pokémon.</string>
+    <string name="numero_pokemon">N.º %04d</string>
+
+    <!-- Favoritos -->
+    <string name="anadir_a_favoritos">Añadir a favoritos</string>
+    <string name="quitar_de_favoritos">Quitar de favoritos</string>
+    <string name="favoritos_vacio">Todavía no hay favoritos</string>
+    <string name="favoritos_quitar_todos">Quitar todos</string>
+    <string name="favoritos_solo_local">Los favoritos se guardan solo en este dispositivo.</string>
+    <!--
+      Un plural de verdad, no un «(s)».
+
+      El español y el inglés coinciden en tener solo `one` y `other`, así que
+      esta entrada parece innecesaria. No lo es: el día que la app se traduzca
+      al polaco o al ruso, que tienen `few` y `many`, el código no cambia. Y hay
+      una trampa clásica: el `%d` hay que pasarlo **dos veces**, una para elegir
+      la forma y otra para sustituirlo en el texto.
+    -->
+    <plurals name="favoritos_contados">
+        <item quantity="one">%d favorito</item>
+        <item quantity="other">%d favoritos</item>
+    </plurals>
+
+    <!-- Ficha -->
+    <string name="ficha_estadisticas">Estadísticas base</string>
+    <string name="ficha_altura">Altura</string>
+    <string name="ficha_peso">Peso</string>
+    <string name="ficha_legendario">Legendario</string>
+
+    <!-- Ajustes -->
+    <string name="ajustes_tema">Tema</string>
+    <string name="ajustes_tema_sistema">Lo que diga el sistema</string>
+    <string name="ajustes_tema_claro">Claro</string>
+    <string name="ajustes_tema_oscuro">Oscuro</string>
+    <string name="ajustes_tema_nota">«Lo que diga el sistema» sigue el ajuste de Android.</string>
+    <string name="ajustes_orden">Ordenar favoritos por número</string>
+    <string name="ajustes_orden_numero">Del 1 al último</string>
+    <string name="ajustes_orden_reciente">Lo más reciente primero</string>
+    <string name="ajustes_acerca_de">Acerca de</string>
+    <string name="ajustes_acerca_de_detalle">Pokédex · datos de PokeAPI</string>
+    <string name="ajustes_cuenta">Cuenta</string>
+
+    <!-- Pokémon del día -->
+    <string name="dia_titulo">Pokémon del día</string>
+    <string name="dia_activo">Una notificación al día</string>
+    <string name="dia_pedir">Toca para activar las notificaciones</string>
+    <string name="dia_denegado">Las notificaciones están desactivadas</string>
+    <string name="dia_canal">El Pokémon de hoy</string>
+    <string name="dia_canal_descripcion">Un Pokémon distinto cada día</string>
+    <string name="dia_notificacion_texto">Descubre quién es el número %1$d</string>
+
+    <!-- Sesión -->
+    <string name="auth_bienvenida">Entra para guardar tus favoritos y recibir el Pokémon del día.</string>
+    <string name="auth_entrar">Entrar</string>
+    <string name="auth_crear_cuenta">Crear cuenta</string>
+    <string name="auth_correo">Correo</string>
+    <string name="auth_password">Contraseña</string>
+    <string name="auth_password_ver">Ver</string>
+    <string name="auth_password_ocultar">Ocultar</string>
+    <string name="auth_password_minimo">Al menos %1$d caracteres</string>
+    <string name="auth_olvidaste">¿Olvidaste tu contraseña?</string>
+    <string name="auth_olvidaste_ayuda">Escribe tu correo arriba y te mandamos un enlace.</string>
+    <string name="auth_revisa_correo">Revisa tu correo</string>
+    <string name="auth_revisa_correo_detalle">Si hay una cuenta con ese correo, le hemos mandado un enlace para poner una contraseña nueva.</string>
+    <string name="auth_entendido">Entendido</string>
+    <string name="auth_sesion_iniciada">Sesión iniciada</string>
+    <string name="auth_tu_cuenta">Tu cuenta</string>
+    <string name="auth_favoritos_locales">Tus favoritos se guardan en este dispositivo, así que seguirán aquí cuando vuelvas a entrar.</string>
+    <string name="auth_cerrar_sesion">Cerrar sesión</string>
+    <string name="auth_eliminar_cuenta">Eliminar mi cuenta</string>
+    <string name="auth_eliminar_cuenta_titulo">¿Eliminar tu cuenta?</string>
+    <string name="auth_eliminar_cuenta_detalle">Se borra tu usuario en el servidor y no se puede deshacer. Tus favoritos, que están en este teléfono, no se tocan.</string>
+    <string name="auth_eliminar">Eliminar</string>
+    <string name="auth_cancelar">Cancelar</string>
+    <string name="auth_password_nueva">Nueva contraseña</string>
+    <string name="auth_guardar">Guardar</string>
+    <string name="auth_ahora_no">Ahora no</string>
+    <string name="auth_password_cambiada">Contraseña cambiada</string>
+    <string name="auth_password_cambiada_detalle">Ya puedes seguir usando la app con la contraseña nueva.</string>
+    <string name="auth_listo">Listo</string>
+
+    <!-- Tipos -->
+    <string name="tipo_normal">Normal</string>
+    <string name="tipo_fighting">Lucha</string>
+    <string name="tipo_flying">Volador</string>
+    <string name="tipo_poison">Veneno</string>
+    <string name="tipo_ground">Tierra</string>
+    <string name="tipo_rock">Roca</string>
+    <string name="tipo_bug">Bicho</string>
+    <string name="tipo_ghost">Fantasma</string>
+    <string name="tipo_steel">Acero</string>
+    <string name="tipo_fire">Fuego</string>
+    <string name="tipo_water">Agua</string>
+    <string name="tipo_grass">Planta</string>
+    <string name="tipo_electric">Eléctrico</string>
+    <string name="tipo_psychic">Psíquico</string>
+    <string name="tipo_ice">Hielo</string>
+    <string name="tipo_dragon">Dragón</string>
+    <string name="tipo_dark">Siniestro</string>
+    <string name="tipo_fairy">Hada</string>
+
+    <!-- Estadísticas -->
+    <string name="stat_hp">Vida</string>
+    <string name="stat_attack">Ataque</string>
+    <string name="stat_defense">Defensa</string>
+    <string name="stat_special_attack">At. especial</string>
+    <string name="stat_special_defense">Def. especial</string>
+    <string name="stat_speed">Velocidad</string>
+    <!--
+      La descripcion que lee TalkBack. Lleva los dos huecos y el separador
+      dentro porque el orden de las palabras cambia entre idiomas, y « y » no
+      se traduce solo.
+    -->
+    <string name="tarjeta_descripcion">%1$s, tipo %2$s</string>
+    <string name="separador_tipos"> y </string>
+    <string name="favoritos_vacio_detalle">Toca el corazón de cualquier Pokémon para guardarlo aquí.</string>
 </resources>

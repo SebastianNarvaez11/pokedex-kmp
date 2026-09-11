@@ -48,7 +48,7 @@ struct PokemonCardView: View {
                 .padding(14)
 
                 HStack {
-                    Text(String(format: "N.º %04d", pokemon.id))
+                    Text(numeroDePokedex(pokemon.id))
                         .font(.caption2.weight(.semibold))
                         .foregroundStyle(.secondary)
                         // El número es una etiqueta sobre la ilustración: si

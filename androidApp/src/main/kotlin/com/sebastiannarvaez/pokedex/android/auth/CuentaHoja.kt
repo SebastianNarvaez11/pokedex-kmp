@@ -1,5 +1,6 @@
 package com.sebastiannarvaez.pokedex.android.auth
 
+import com.sebastiannarvaez.pokedex.android.R
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -29,6 +30,7 @@ import com.sebastiannarvaez.pokedex.feature.auth.AccountViewModel
 import org.koin.compose.viewmodel.koinViewModel
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.sebastiannarvaez.pokedex.domain.Session
@@ -75,12 +77,12 @@ fun CuentaHoja(
                 }
                 Column {
                     Text(
-                        session.email ?: "Tu cuenta",
+                        session.email ?: stringResource(R.string.auth_tu_cuenta),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                     )
                     Text(
-                        "Sesión iniciada",
+                        stringResource(R.string.auth_sesion_iniciada),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -88,14 +90,13 @@ fun CuentaHoja(
             }
 
             Text(
-                "Tus favoritos se guardan en este dispositivo, así que seguirán aquí " +
-                    "cuando vuelvas a entrar.",
+                stringResource(R.string.auth_favoritos_locales),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
 
             OutlinedButton(onClick = alSalir, modifier = Modifier.fillMaxWidth()) {
-                Text("Cerrar sesión")
+                Text(stringResource(R.string.auth_cerrar_sesion))
             }
 
             // Eliminar la cuenta es obligatorio en las dos tiendas si la app
@@ -106,7 +107,7 @@ fun CuentaHoja(
                 enabled = !estado.trabajando,
                 modifier = Modifier.fillMaxWidth(),
             ) {
-                Text("Eliminar mi cuenta", color = MaterialTheme.colorScheme.error)
+                Text(stringResource(R.string.auth_eliminar_cuenta), color = MaterialTheme.colorScheme.error)
             }
         }
     }
@@ -114,11 +115,10 @@ fun CuentaHoja(
     if (confirmandoBorrado) {
         AlertDialog(
             onDismissRequest = { confirmandoBorrado = false },
-            title = { Text("¿Eliminar tu cuenta?") },
+            title = { Text(stringResource(R.string.auth_eliminar_cuenta_titulo)) },
             text = {
                 Text(
-                    "Se borra tu usuario en el servidor y no se puede deshacer. " +
-                        "Tus favoritos, que están en este teléfono, no se tocan.",
+                    stringResource(R.string.auth_eliminar_cuenta_detalle),
                 )
             },
             confirmButton = {
@@ -128,11 +128,11 @@ fun CuentaHoja(
                         cuenta.borrarCuenta()
                     },
                 ) {
-                    Text("Eliminar", color = MaterialTheme.colorScheme.error)
+                    Text(stringResource(R.string.auth_eliminar), color = MaterialTheme.colorScheme.error)
                 }
             },
             dismissButton = {
-                TextButton(onClick = { confirmandoBorrado = false }) { Text("Cancelar") }
+                TextButton(onClick = { confirmandoBorrado = false }) { Text(stringResource(R.string.auth_cancelar)) }
             },
         )
     }

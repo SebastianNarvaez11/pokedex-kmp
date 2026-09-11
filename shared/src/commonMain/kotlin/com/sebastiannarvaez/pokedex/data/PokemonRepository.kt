@@ -1,6 +1,7 @@
 package com.sebastiannarvaez.pokedex.data
 
 import com.sebastiannarvaez.pokedex.core.AppDispatchers
+import com.sebastiannarvaez.pokedex.core.idiomasPreferidos
 import com.sebastiannarvaez.pokedex.data.network.PokeApi
 import com.sebastiannarvaez.pokedex.data.network.dto.PokemonDetailDto
 import com.sebastiannarvaez.pokedex.data.network.dto.SpeciesDto
@@ -109,8 +110,8 @@ internal class PokemonRepository(
             // habria que escribirla dos veces y una de las dos se equivocaria.
             heightCm = basico.height * 10,
             weightG = basico.weight * 100,
-            genus = especie.textoEnEspanol { it.genera.map { g -> g.genus to g.language.name } },
-            description = especie.textoEnEspanol { it.flavorTexts.map { f -> f.text to f.language.name } }
+            genus = especie.enElIdiomaDelUsuario { it.genera.map { g -> g.genus to g.language.name } },
+            description = especie.enElIdiomaDelUsuario { it.flavorTexts.map { f -> f.text to f.language.name } }
                 .limpiarSaltos(),
             stats = basico.stats.mapNotNull { s ->
                 StatKind.deApi(s.stat.name)?.let { PokemonStat(it, s.baseStat) }
@@ -120,16 +121,24 @@ internal class PokemonRepository(
 }
 
 /**
- * El texto en espanol si lo hay, y si no el ingles, y si no nada.
+ * El texto en el idioma del usuario, con los de repuesto detras.
  *
- * PokeAPI devuelve el mismo texto en once idiomas dentro del mismo array. No
- * hay endpoint por idioma: se filtra aqui.
+ * PokeAPI devuelve el mismo texto en once idiomas dentro del mismo array y no
+ * hay endpoint por idioma: se filtra aqui. Antes estaba fijado a espanol, asi
+ * que quien tuviera el telefono en ingles veia la ficha en espanol igualmente.
+ *
+ * Se recorre la lista de preferencias en orden y **no** al reves: buscar por
+ * cada texto disponible cual encaja daria el primero del array, que es el que
+ * PokeAPI devuelva primero, no el que el usuario quiere.
  */
-private fun SpeciesDto.textoEnEspanol(extraer: (SpeciesDto) -> List<Pair<String, String>>): String {
+private fun SpeciesDto.enElIdiomaDelUsuario(
+    extraer: (SpeciesDto) -> List<Pair<String, String>>,
+): String {
     val textos = extraer(this)
-    return textos.firstOrNull { it.second == "es" }?.first
-        ?: textos.firstOrNull { it.second == "en" }?.first
-        ?: ""
+    idiomasPreferidos().forEach { idioma ->
+        textos.firstOrNull { it.second == idioma }?.let { return it.first }
+    }
+    return textos.firstOrNull()?.first.orEmpty()
 }
 
 /**

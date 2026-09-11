@@ -1,5 +1,7 @@
 package com.sebastiannarvaez.pokedex.android.ui
 
+import androidx.annotation.StringRes
+import com.sebastiannarvaez.pokedex.android.R
 import androidx.compose.ui.graphics.Color
 import com.sebastiannarvaez.pokedex.domain.PokemonType
 
@@ -34,24 +36,31 @@ val PokemonType.color: Color
     }
 
 /** El nombre en castellano, que tampoco tiene por que compartirse. */
-val PokemonType.etiqueta: String
+/**
+ * El nombre del tipo, como identificador de recurso.
+ *
+ * Devuelve el identificador y no el texto porque `stringResource` es
+ * `@Composable`: quien pinta resuelve, esto solo dice cual.
+ */
+@get:StringRes
+val PokemonType.etiquetaRes: Int
     get() = when (this) {
-        PokemonType.NORMAL -> "Normal"
-        PokemonType.FIGHTING -> "Lucha"
-        PokemonType.FLYING -> "Volador"
-        PokemonType.POISON -> "Veneno"
-        PokemonType.GROUND -> "Tierra"
-        PokemonType.ROCK -> "Roca"
-        PokemonType.BUG -> "Bicho"
-        PokemonType.GHOST -> "Fantasma"
-        PokemonType.STEEL -> "Acero"
-        PokemonType.FIRE -> "Fuego"
-        PokemonType.WATER -> "Agua"
-        PokemonType.GRASS -> "Planta"
-        PokemonType.ELECTRIC -> "Eléctrico"
-        PokemonType.PSYCHIC -> "Psíquico"
-        PokemonType.ICE -> "Hielo"
-        PokemonType.DRAGON -> "Dragón"
-        PokemonType.DARK -> "Siniestro"
-        PokemonType.FAIRY -> "Hada"
+        PokemonType.NORMAL -> R.string.tipo_normal
+        PokemonType.FIGHTING -> R.string.tipo_fighting
+        PokemonType.FLYING -> R.string.tipo_flying
+        PokemonType.POISON -> R.string.tipo_poison
+        PokemonType.GROUND -> R.string.tipo_ground
+        PokemonType.ROCK -> R.string.tipo_rock
+        PokemonType.BUG -> R.string.tipo_bug
+        PokemonType.GHOST -> R.string.tipo_ghost
+        PokemonType.STEEL -> R.string.tipo_steel
+        PokemonType.FIRE -> R.string.tipo_fire
+        PokemonType.WATER -> R.string.tipo_water
+        PokemonType.GRASS -> R.string.tipo_grass
+        PokemonType.ELECTRIC -> R.string.tipo_electric
+        PokemonType.PSYCHIC -> R.string.tipo_psychic
+        PokemonType.ICE -> R.string.tipo_ice
+        PokemonType.DRAGON -> R.string.tipo_dragon
+        PokemonType.DARK -> R.string.tipo_dark
+        PokemonType.FAIRY -> R.string.tipo_fairy
     }

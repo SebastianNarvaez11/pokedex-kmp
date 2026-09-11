@@ -1,5 +1,6 @@
 package com.sebastiannarvaez.pokedex.android.list
 
+import com.sebastiannarvaez.pokedex.android.R
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.FlowRow
@@ -27,6 +28,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -39,7 +41,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import com.sebastiannarvaez.pokedex.android.ui.color
-import com.sebastiannarvaez.pokedex.android.ui.etiqueta
+import com.sebastiannarvaez.pokedex.android.ui.etiquetaRes
 import com.sebastiannarvaez.pokedex.domain.Pokemon
 
 /**
@@ -59,21 +61,29 @@ fun PokemonCard(
 ) {
     val tono = pokemon.types.firstOrNull()?.color ?: MaterialTheme.colorScheme.primary
 
+    // Se arma antes del bloque `semantics`, que no es composable. El
+    // separador y el orden de las palabras salen de los recursos: « y » no se
+    // traduce solo, y en ingles el tipo va **delante** de la palabra «type».
+    val nombre = pokemon.name.replaceFirstChar { it.uppercase() }
+    val separador = stringResource(R.string.separador_tipos)
+    // Los textos se resuelven **fuera** de `joinToString`: su lambda no es
+    // `inline`, asi que dentro no se puede llamar a nada `@Composable`. El
+    // compilador lo dice con «@Composable invocations can only happen from the
+    // context of a @Composable function», y el sitio que senala despista.
+    val etiquetas = pokemon.types.map { stringResource(it.etiquetaRes) }
+    val descripcion = if (etiquetas.isEmpty()) {
+        nombre
+    } else {
+        stringResource(R.string.tarjeta_descripcion, nombre, etiquetas.joinToString(separador))
+    }
+
     Card(
         onClick = alPulsar,
         modifier = modifier
             .fillMaxWidth()
             // Descripcion unica para el lector de pantalla, que si no leeria
             // el numero y el nombre como dos cosas sueltas.
-            .semantics {
-                contentDescription = buildString {
-                    append(pokemon.name.replaceFirstChar { it.uppercase() })
-                    if (pokemon.types.isNotEmpty()) {
-                        append(", tipo ")
-                        append(pokemon.types.joinToString(" y ") { it.etiqueta })
-                    }
-                }
-            },
+            .semantics { contentDescription = descripcion },
         shape = RoundedCornerShape(22.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
@@ -90,7 +100,7 @@ fun PokemonCard(
                     ),
             ) {
                 Text(
-                    text = "N.º ${pokemon.id.toString().padStart(4, '0')}",
+                    text = stringResource(R.string.numero_pokemon, pokemon.id),
                     style = MaterialTheme.typography.labelSmall,
                     fontWeight = FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.55f),
@@ -104,7 +114,7 @@ fun PokemonCard(
                 ) {
                     Icon(
                         imageVector = if (esFavorito) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
-                        contentDescription = if (esFavorito) "Quitar de favoritos" else "Añadir a favoritos",
+                        contentDescription = if (esFavorito) stringResource(R.string.quitar_de_favoritos) else stringResource(R.string.anadir_a_favoritos),
                         tint = if (esFavorito) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(20.dp),
                     )
@@ -142,7 +152,7 @@ fun PokemonCard(
                     horizontalArrangement = Arrangement.spacedBy(6.dp),
                     verticalArrangement = Arrangement.spacedBy(6.dp),
                 ) {
-                    pokemon.types.forEach { tipo -> TypeChip(tipo.etiqueta, tipo.color) }
+                    pokemon.types.forEach { tipo -> TypeChip(stringResource(tipo.etiquetaRes), tipo.color) }
                 }
             }
         }

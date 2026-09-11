@@ -83,7 +83,7 @@ struct FavoritesView: View {
                                 Text(favorito.name.capitalized)
                                     .font(.system(.headline, design: .rounded))
                                 HStack(spacing: 8) {
-                                    Text(String(format: "N.º %04d", favorito.id))
+                                    Text(numeroDePokedex(favorito.id))
                                         .font(.caption2)
                                         .foregroundStyle(.secondary)
                                     // El tipo viaja con el favorito: la fila se

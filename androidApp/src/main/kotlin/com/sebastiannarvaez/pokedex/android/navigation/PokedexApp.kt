@@ -1,5 +1,6 @@
 package com.sebastiannarvaez.pokedex.android.navigation
 
+import com.sebastiannarvaez.pokedex.android.R
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
@@ -17,6 +18,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import com.sebastiannarvaez.pokedex.navigation.Destination
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import com.sebastiannarvaez.pokedex.android.favorites.FavoritesScreen
 import com.sebastiannarvaez.pokedex.android.settings.SettingsScreen
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
@@ -68,19 +70,19 @@ fun PokedexApp(
                         selected = actual == ListaKey,
                         onClick = { irAPestana(pila, ListaKey) },
                         icon = { Icon(Icons.Default.Menu, contentDescription = null) },
-                        label = { Text("Pokédex") },
+                        label = { Text(stringResource(R.string.pestana_pokedex)) },
                     )
                     NavigationBarItem(
                         selected = actual == FavoritosKey,
                         onClick = { irAPestana(pila, FavoritosKey) },
                         icon = { Icon(Icons.Default.Favorite, contentDescription = null) },
-                        label = { Text("Favoritos") },
+                        label = { Text(stringResource(R.string.pestana_favoritos)) },
                     )
                     NavigationBarItem(
                         selected = actual == AjustesKey,
                         onClick = { irAPestana(pila, AjustesKey) },
                         icon = { Icon(Icons.Default.Settings, contentDescription = null) },
-                        label = { Text("Ajustes") },
+                        label = { Text(stringResource(R.string.pestana_ajustes)) },
                     )
                 }
             }
