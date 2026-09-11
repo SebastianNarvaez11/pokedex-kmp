@@ -15,11 +15,19 @@ struct PokemonListView: View {
     )
     @State private var presenter: PokemonListPresenter?
 
+    /// La pila, como dato. El equivalente de la lista de Navigation 3, solo
+    /// que aquí lo trae el sistema: `NavigationStack` recibe el camino y
+    /// `navigationDestination` dice qué pintar en cada paso.
+    @State private var camino: [Int32] = []
+
     private let columnas = [GridItem(.adaptive(minimum: 164), spacing: 12)]
 
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $camino) {
             contenido
+                .navigationDestination(for: Int32.self) { id in
+                    PokemonDetailView(pokemonId: id)
+                }
                 .navigationTitle("Pokédex")
                 // El título grande que se encoge al hacer scroll es de iOS, y
                 // no es lo mismo que la barra grande de Material: aquí lo pone
@@ -49,10 +57,16 @@ struct PokemonListView: View {
             ScrollView {
                 LazyVGrid(columns: columnas, spacing: 12) {
                     ForEach(Array(estado.items.enumerated()), id: \.element.id) { indice, pokemon in
-                        PokemonCardView(pokemon: pokemon)
-                            // Así se pide la página siguiente: la vista dice por
-                            // dónde va mirando y Paging decide si hace falta.
-                            .onAppear { presenter?.loadAround(index: Int32(indice)) }
+                        // Button y no un gesto de toque: así se hereda el
+                        // resaltado al pulsar y VoiceOver lo anuncia como algo
+                        // pulsable, sin escribir nada.
+                        Button { camino.append(pokemon.id) } label: {
+                            PokemonCardView(pokemon: pokemon)
+                        }
+                        .buttonStyle(.plain)
+                        // Así se pide la página siguiente: la vista dice por
+                        // dónde va mirando y Paging decide si hace falta.
+                        .onAppear { presenter?.loadAround(index: Int32(indice)) }
                     }
                 }
                 .padding(16)
