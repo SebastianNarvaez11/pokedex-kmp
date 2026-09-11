@@ -34,6 +34,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.platform.LocalContext
 import com.sebastiannarvaez.pokedex.android.daily.mostrarPokemonDelDia
+import com.sebastiannarvaez.pokedex.android.daily.programarRecordatorioDiario
 import com.sebastiannarvaez.pokedex.android.daily.recordarPermisoDeNotificaciones
 import com.sebastiannarvaez.pokedex.feature.daily.EstadoDelPermiso
 import com.sebastiannarvaez.pokedex.feature.settings.SettingsViewModel
@@ -105,6 +106,11 @@ fun SettingsScreen(
                 },
                 alPulsar = {
                     if (permiso == EstadoDelPermiso.CONCEDIDO) {
+                        // Programar es idempotente con KEEP, asi que tocar aqui
+                        // mas de una vez no duplica nada. Ademas se ensena el de
+                        // hoy al instante: esperar veinticuatro horas para saber
+                        // si funciona no es una forma de comprobar nada.
+                        programarRecordatorioDiario(contexto)
                         mostrarPokemonDelDia(contexto, hoy())
                     } else {
                         pedirPermiso()
