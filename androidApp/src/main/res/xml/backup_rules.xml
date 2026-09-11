@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Que entra en la copia de seguridad automatica (Android 11 y anteriores).
+
+  Por defecto entra **todo** el almacenamiento privado de la app, incluida la
+  sesion. Una copia se restaura en otro telefono, asi que el token del usuario
+  acabaria en un dispositivo distinto sin que el se entere.
+
+  Los favoritos si se copian: son suyos y no son secreto.
+-->
+<full-backup-content>
+    <exclude domain="sharedpref" path="sesion.xml" />
+</full-backup-content>

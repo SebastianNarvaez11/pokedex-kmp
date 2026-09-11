@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Lo mismo para Android 12 y posteriores, que separa dos casos:
+
+  - `cloud-backup`: la copia que sube a Google. La sesion no sube.
+  - `device-transfer`: el paso directo de un movil al siguiente. Tampoco:
+    el usuario vuelve a entrar una vez y a cambio el token no se duplica.
+
+  Hay que declarar los dos bloques. Poner solo uno deja el otro con el
+  comportamiento por defecto, que es copiarlo todo.
+-->
+<data-extraction-rules>
+    <cloud-backup>
+        <exclude domain="sharedpref" path="sesion.xml" />
+    </cloud-backup>
+    <device-transfer>
+        <exclude domain="sharedpref" path="sesion.xml" />
+    </device-transfer>
+</data-extraction-rules>

@@ -5,7 +5,7 @@ import com.sebastiannarvaez.pokedex.core.AppConfig
 import com.sebastiannarvaez.pokedex.core.AppDispatchers
 import com.sebastiannarvaez.pokedex.data.FavoritesRepository
 import com.sebastiannarvaez.pokedex.data.SessionRepository
-import com.sebastiannarvaez.pokedex.data.InMemoryTokenStore
+import com.sebastiannarvaez.pokedex.data.SecureStorageTokenStore
 import com.sebastiannarvaez.pokedex.data.TokenStore
 import com.sebastiannarvaez.pokedex.data.PokemonRepository
 import com.sebastiannarvaez.pokedex.data.SettingsRepository
@@ -68,9 +68,9 @@ val pokedexModule: Module = module {
     // sin nombre, el segundo sobrescribe al primero sin avisar.
     single(SUPABASE) { createSupabaseClient(get()) }
     single<SupabaseAuthApi> { KtorSupabaseAuthApi(get(SUPABASE)) }
-    // De momento, en memoria: al cerrar la app la sesion se pierde. Es una
-    // limitacion a proposito, y se arregla con el almacenamiento de verdad.
-    single<TokenStore> { InMemoryTokenStore() }
+    // El almacen lo pone cada plataforma; lo que se guarda y en que formato,
+    // este adaptador, que es comun.
+    single<TokenStore> { SecureStorageTokenStore(get(), get()) }
     single { SessionRepository(get(), get(), get()) }
 
     // El `get()` de dentro se resuelve al hacer la peticion, no al montar el

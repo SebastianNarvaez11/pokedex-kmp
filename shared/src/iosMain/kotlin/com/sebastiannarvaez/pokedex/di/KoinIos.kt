@@ -1,6 +1,7 @@
 package com.sebastiannarvaez.pokedex.di
 
 import com.sebastiannarvaez.pokedex.core.AppConfig
+import com.sebastiannarvaez.pokedex.data.SecureStorage
 import org.koin.dsl.module
 
 /**
@@ -13,9 +14,14 @@ import org.koin.dsl.module
  * Objective-C, asi que `initKoin` llegaria a Swift como `doInitKoin`. Por eso
  * esta funcion se llama distinto.
  */
-fun startKoinIos(config: AppConfig) {
+fun startKoinIos(config: AppConfig, secureStorage: SecureStorage) {
     initKoin {
-        // Igual que en Android: la configuracion la aporta la app.
-        modules(module { single { config } })
+        // Igual que en Android: la configuracion la aporta la app. Y ahora
+        // tambien el Llavero, que es de iOS y se escribe en Swift: aqui se ve
+        // el grafo recibiendo una implementacion que no esta en Kotlin.
+        modules(module {
+            single { config }
+            single { secureStorage }
+        })
     }
 }

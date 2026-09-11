@@ -1,5 +1,7 @@
 package com.sebastiannarvaez.pokedex.di
 
+import com.sebastiannarvaez.pokedex.data.AndroidSecureStorage
+import com.sebastiannarvaez.pokedex.data.SecureStorage
 import com.sebastiannarvaez.pokedex.data.local.createSettingsStore
 import com.sebastiannarvaez.pokedex.data.local.getDatabaseBuilder
 import com.sebastiannarvaez.pokedex.data.local.settingsPath
@@ -12,4 +14,5 @@ actual val platformModule: Module = module {
     // Una sola instancia por fichero: dos DataStore sobre el mismo fichero
     // lanzan excepcion. Por eso es `single` y nunca se crea en una pantalla.
     single { createSettingsStore(settingsPath(androidContext())) }
+    single<SecureStorage> { AndroidSecureStorage(androidContext()) }
 }
