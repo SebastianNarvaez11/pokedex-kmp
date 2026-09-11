@@ -1,5 +1,7 @@
 plugins {
     alias(libs.plugins.androidApplication)
+    // NavKey se serializa para sobrevivir a que el sistema mate el proceso.
+    alias(libs.plugins.kotlinxSerialization)
     alias(libs.plugins.composeCompiler)
 }
 
@@ -29,6 +31,11 @@ dependencies {
     // cargan y no hay ningun error visible.
     implementation(libs.coil.compose)
     implementation(libs.coil.network.ktor3)
+    implementation(libs.androidx.navigation3.runtime)
+    implementation(libs.androidx.navigation3.ui)
+    // Sin esto, todas las entradas comparten el mismo ViewModel y al abrir un
+    // detalle se ve el del anterior.
+    implementation(libs.androidx.lifecycle.viewmodel.navigation3)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     // viewmodel-compose trae viewModel(); runtime-compose trae
@@ -41,4 +48,5 @@ dependencies {
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
+    implementation(libs.androidx.compose.material.icons.core)
 }

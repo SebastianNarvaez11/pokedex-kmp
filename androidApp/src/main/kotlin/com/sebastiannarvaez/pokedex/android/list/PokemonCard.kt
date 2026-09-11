@@ -44,11 +44,13 @@ import com.sebastiannarvaez.pokedex.domain.Pokemon
 @Composable
 fun PokemonCard(
     pokemon: Pokemon,
+    alPulsar: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val tono = pokemon.types.firstOrNull()?.color ?: MaterialTheme.colorScheme.primary
 
     Card(
+        onClick = alPulsar,
         modifier = modifier
             .fillMaxWidth()
             // Descripcion unica para el lector de pantalla, que si no leeria

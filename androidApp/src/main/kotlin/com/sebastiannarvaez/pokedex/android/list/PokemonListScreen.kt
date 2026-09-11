@@ -44,19 +44,21 @@ import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun PokemonListScreen(
+    alPulsar: (Pokemon) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: PokemonListViewModel = koinViewModel(),
 ) {
     // collectAsLazyPagingItems es el puente que Android ya trae hecho. En iOS
     // hubo que escribirlo a mano: es la misma pieza, aqui regalada.
     val pokemon = viewModel.pokemon.collectAsLazyPagingItems()
-    PokemonListContent(pokemon = pokemon, modifier = modifier)
+    PokemonListContent(pokemon = pokemon, alPulsar = alPulsar, modifier = modifier)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun PokemonListContent(
     pokemon: LazyPagingItems<Pokemon>,
+    alPulsar: (Pokemon) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     // La barra grande se encoge al hacer scroll: es un gesto de Android, no
@@ -94,14 +96,14 @@ private fun PokemonListContent(
                     }
                 }
 
-                else -> Rejilla(pokemon)
+                else -> Rejilla(pokemon, alPulsar)
             }
         }
     }
 }
 
 @Composable
-private fun Rejilla(pokemon: LazyPagingItems<Pokemon>) {
+private fun Rejilla(pokemon: LazyPagingItems<Pokemon>, alPulsar: (Pokemon) -> Unit) {
     LazyVerticalGrid(
         columns = GridCells.Adaptive(minSize = 164.dp),
         contentPadding = PaddingValues(16.dp),
@@ -120,7 +122,7 @@ private fun Rejilla(pokemon: LazyPagingItems<Pokemon>) {
             key = pokemon.itemKey { it.id },
             contentType = pokemon.itemContentType { "pokemon" },
         ) { indice ->
-            pokemon[indice]?.let { PokemonCard(it) }
+            pokemon[indice]?.let { PokemonCard(it, alPulsar = { alPulsar(it) }) }
         }
 
         // El pie: cargando mas, o el error de ampliar con su reintento.
