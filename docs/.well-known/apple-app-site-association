@@ -1,0 +1,12 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": ["TEAMID.com.sebastiannarvaez.pokedex"],
+        "components": [
+          { "/": "/pokemon/*", "comment": "la ficha de un Pokemon" }
+        ]
+      }
+    ]
+  }
+}
