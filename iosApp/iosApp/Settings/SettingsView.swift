@@ -13,6 +13,8 @@ struct SettingsView: View {
     @StateObject private var owner = IosViewModelStoreOwner()
     @State private var ajustes = Settings(tema: Tema.sistema, favoritosPorNumero: false)
     @State private var viewModel: SettingsViewModel?
+    @State private var permiso: EstadoDelPermiso = .sinPreguntar
+    @State private var pendientes = 0
 
     var body: some View {
         NavigationStack {
@@ -39,12 +41,48 @@ struct SettingsView: View {
                     ))
                 }
 
+                Section {
+                    Button {
+                        Task {
+                            if permiso == .concedido {
+                                await RecordatorioDiario.programar()
+                                pendientes = await RecordatorioDiario.pendientes()
+                            } else {
+                                permiso = await RecordatorioDiario.pedirPermiso()
+                                if permiso == .concedido {
+                                    await RecordatorioDiario.programar()
+                                    pendientes = await RecordatorioDiario.pendientes()
+                                }
+                            }
+                        }
+                    } label: {
+                        LabeledContent("Pokémon del día") {
+                            switch permiso {
+                            case .concedido:
+                                Text(pendientes > 0 ? "\(pendientes) días programados" : "Activar")
+                            case .sinPreguntar:
+                                Text("Activar")
+                            default:
+                                Text("Desactivadas").foregroundStyle(.secondary)
+                            }
+                        }
+                    }
+                } header: {
+                    Text("Notificaciones")
+                } footer: {
+                    Text("Se programan siete días por adelantado. iOS admite 64 notificaciones pendientes por app.")
+                }
+
                 Section("Acerca de") {
                     LabeledContent("App", value: "Pokédex")
                     LabeledContent("Datos", value: "PokeAPI")
                 }
             }
             .navigationTitle("Ajustes")
+        }
+        .task {
+            permiso = await RecordatorioDiario.estadoDelPermiso()
+            pendientes = await RecordatorioDiario.pendientes()
         }
         .task {
             let vm = viewModel ?? SettingsIosKt.settingsViewModel(owner: owner)

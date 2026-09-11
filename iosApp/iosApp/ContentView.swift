@@ -18,6 +18,7 @@ struct ContentView: View {
 
     @StateObject private var owner = IosViewModelStoreOwner()
     @State private var ajustes = Settings(tema: Tema.sistema, favoritosPorNumero: false)
+    @StateObject private var notificaciones = DelegadoDeNotificaciones.compartido
 
     /// La pestaña visible. Hace falta como estado porque un enlace entrante
     /// tiene que poder cambiarla: si llega una ficha estando en Favoritos, hay
@@ -44,18 +45,19 @@ struct ContentView: View {
         // `.onOpenURL` cubre los dos casos, app cerrada y app abierta, sin que
         // haya que distinguirlos. En Android son dos sitios: onCreate y
         // onNewIntent, y olvidar el segundo es el fallo clásico.
+        // El toque en una notificación acaba en el mismo sitio que un enlace
+        // externo: no hay dos caminos a la misma pantalla.
+        .onChange(of: notificaciones.enlacePendiente) { _, url in
+            guard let url else { return }
+            abrir(url)
+            notificaciones.enlacePendiente = nil
+        }
         .onOpenURL { url in
             // `DestinationCompanion.shared` y no `Destination.companion`: una
             // interfaz sellada llega a Swift como **protocolo**, y un protocolo
             // no tiene companion. El objeto acompanante se expone aparte, con
             // el nombre de la interfaz pegado.
-            guard let destino = DestinationCompanion.shared.parse(url: url.absoluteString) else { return }
-            pestana = .lista
-            if let detalle = destino as? DestinationDetalle {
-                caminoLista = [detalle.pokemonId]
-            } else {
-                caminoLista = []
-            }
+            abrir(url)
         }
         .task {
             let vm = SettingsIosKt.settingsViewModel(owner: owner)
@@ -71,6 +73,21 @@ struct ContentView: View {
 
 #Preview {
     ContentView()
+}
+
+private extension ContentView {
+    func abrir(_ url: URL) {
+        // `DestinationCompanion.shared` y no `Destination.companion`: una
+        // interfaz sellada llega a Swift como **protocolo**, y un protocolo no
+        // tiene companion. El objeto acompanante se expone aparte.
+        guard let destino = DestinationCompanion.shared.parse(url: url.absoluteString) else { return }
+        pestana = .lista
+        if let detalle = destino as? DestinationDetalle {
+            caminoLista = [detalle.pokemonId]
+        } else {
+            caminoLista = []
+        }
+    }
 }
 
 private enum Pestana: Hashable {
