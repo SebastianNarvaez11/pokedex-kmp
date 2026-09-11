@@ -25,6 +25,10 @@ dependencies {
     implementation(libs.koin.android)
     implementation(libs.koin.compose.viewmodel)
     implementation(libs.androidx.paging.compose)
+    // Coil 3 no trae fetcher de red: sin coil-network-ktor3 las imagenes no
+    // cargan y no hay ningun error visible.
+    implementation(libs.coil.compose)
+    implementation(libs.coil.network.ktor3)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     // viewmodel-compose trae viewModel(); runtime-compose trae
