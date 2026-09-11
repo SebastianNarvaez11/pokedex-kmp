@@ -28,6 +28,9 @@ kotlin {
     listOf(iosArm64(), iosSimulatorArm64()).forEach { iosTarget ->
         iosTarget.binaries.framework {
             baseName = "Shared"
+            // Sin este export, `ViewModel` llega a Swift como el tipo opaco
+            // `Lifecycle_viewmodelViewModel` y no se puede heredar de el.
+            export(libs.androidx.lifecycle.viewmodel)
             // Estatico: Xcode solo tiene que enlazarlo. Un framework dinamico
             // habria que incrustarlo y firmarlo en cada compilacion.
             isStatic = true
@@ -36,6 +39,9 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
+            // api y no implementation: los ViewModel son parte de la cara
+            // publica del modulo, porque quien los crea es cada interfaz.
+            api(libs.androidx.lifecycle.viewmodel)
             // api y no implementation: el Logger asoma en la cara publica del
             // modulo, asi que Swift tiene que poder verlo desde el framework.
             implementation(libs.kotlinx.coroutines.core)

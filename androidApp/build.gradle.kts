@@ -24,6 +24,11 @@ dependencies {
     implementation(projects.shared)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
+    // viewmodel-compose trae viewModel(); runtime-compose trae
+    // collectAsStateWithLifecycle, que es lo que corta el trabajo del Flow
+    // cuando la pantalla deja de verse.
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.androidx.activity.compose)
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.ui)
