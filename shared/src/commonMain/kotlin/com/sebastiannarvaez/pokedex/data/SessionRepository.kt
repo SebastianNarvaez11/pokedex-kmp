@@ -5,6 +5,7 @@ import com.sebastiannarvaez.pokedex.data.network.SupabaseAuthApi
 import com.sebastiannarvaez.pokedex.data.network.dto.SessionDto
 import com.sebastiannarvaez.pokedex.domain.Session
 import com.sebastiannarvaez.pokedex.feature.auth.AuthState
+import com.sebastiannarvaez.pokedex.feature.auth.EnlaceDeRecuperacion
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -58,6 +59,30 @@ internal class SessionRepository(
         _state.value.session?.let { api.salir(it.accessToken) }
         store.borrar()
         _state.value = AuthState(comprobando = false, session = null)
+    }
+
+    /** Pide el correo con el enlace para poner una contrasena nueva. */
+    suspend fun recuperar(email: String, redirectTo: String) = withContext(dispatchers.io) {
+        api.recuperar(email.trim(), redirectTo)
+    }
+
+    /**
+     * Adopta la sesion que trae el enlace del correo.
+     *
+     * El enlace de recuperacion **ya viene con sesion iniciada**: Supabase da
+     * acceso temporal para que el usuario pueda cambiar la contrasena sin
+     * saberse la vieja. Por eso esto entra por la misma puerta que un login.
+     */
+    suspend fun adoptar(enlace: EnlaceDeRecuperacion): Unit = withContext(dispatchers.io) {
+        val session = com.sebastiannarvaez.pokedex.domain.Session(
+            accessToken = enlace.accessToken,
+            refreshToken = enlace.refreshToken,
+            expiresAtEpochSeconds = ahoraEnSegundos() + enlace.expiresIn,
+            userId = "",
+            email = null,
+        )
+        store.guardar(session)
+        _state.value = AuthState(comprobando = false, session = session)
     }
 
     /**

@@ -32,3 +32,15 @@ val AuthViewModel.authFormForIos: StateFlow<AuthFormState>
  * otro lado. Una funcion basta, y deja la libreria de inyeccion donde estaba.
  */
 fun hayCuentas(): Boolean = KoinPlatform.getKoin().get<AppConfig>().haySupabase
+
+fun accountViewModel(owner: ViewModelStoreOwner): AccountViewModel {
+    val koin = KoinPlatform.getKoin()
+    return ViewModelProvider.create(
+        owner = owner,
+        factory = viewModelFactory { initializer { koin.get<AccountViewModel>() } },
+    )[AccountViewModel::class]
+}
+
+@NativeCoroutinesState
+val AccountViewModel.accountStateForIos: StateFlow<AccountState>
+    get() = state

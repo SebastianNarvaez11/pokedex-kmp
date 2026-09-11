@@ -11,6 +11,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sebastiannarvaez.pokedex.android.auth.RaizConSesion
 import com.sebastiannarvaez.pokedex.android.navigation.PokedexApp
 import com.sebastiannarvaez.pokedex.android.ui.PokedexTheme
+import com.sebastiannarvaez.pokedex.feature.auth.EnlaceDeRecuperacion
 import com.sebastiannarvaez.pokedex.feature.settings.SettingsViewModel
 import com.sebastiannarvaez.pokedex.navigation.Destination
 import org.koin.compose.viewmodel.koinViewModel
@@ -26,10 +27,19 @@ class MainActivity : ComponentActivity() {
      */
     private val destinoEntrante = mutableStateOf<Destination?>(null)
 
+    /**
+     * El enlace del correo de recuperacion.
+     *
+     * Va aparte del destino porque no es una pantalla: trae una sesion y abre
+     * un dialogo encima de la app. Mezclarlos obligaria a que el mapa de
+     * navegacion tuviera un caso que no navega a ningun sitio.
+     */
+    private val recuperacionEntrante = mutableStateOf<EnlaceDeRecuperacion?>(null)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
-        destinoEntrante.value = intent?.dataString?.let(Destination::parse)
+        recibir(intent?.dataString)
 
         setContent {
             // El tema se lee en la raiz y no dentro de la pantalla de ajustes:
@@ -42,7 +52,10 @@ class MainActivity : ComponentActivity() {
                 // aqui dentro. Por eso un enlace que llega sin sesion no se
                 // pierde: espera a que la app se componga, que es despues de
                 // entrar.
-                RaizConSesion {
+                RaizConSesion(
+                    recuperacion = recuperacionEntrante.value,
+                    alConsumirRecuperacion = { recuperacionEntrante.value = null },
+                ) {
                     PokedexApp(
                         destinoEntrante = destinoEntrante.value,
                         alConsumirDestino = { destinoEntrante.value = null },
@@ -57,6 +70,21 @@ class MainActivity : ComponentActivity() {
         // Sin esto, un enlace recibido con la app abierta no hace nada: el
         // sistema la trae al frente y ya. Es el fallo mas comun de los enlaces
         // profundos, porque solo se reproduce con la app en segundo plano.
-        destinoEntrante.value = intent.dataString?.let(Destination::parse)
+        recibir(intent.dataString)
+    }
+
+    /**
+     * Un enlace entrante es una de dos cosas, y el orden importa: el de
+     * recuperacion **tambien** encaja en el esquema de la app, asi que hay que
+     * descartarlo antes de intentar leerlo como pantalla.
+     */
+    private fun recibir(url: String?) {
+        val enlace = url ?: return
+        val recuperacion = EnlaceDeRecuperacion.parse(enlace)
+        if (recuperacion != null) {
+            recuperacionEntrante.value = recuperacion
+        } else {
+            destinoEntrante.value = Destination.parse(enlace)
+        }
     }
 }

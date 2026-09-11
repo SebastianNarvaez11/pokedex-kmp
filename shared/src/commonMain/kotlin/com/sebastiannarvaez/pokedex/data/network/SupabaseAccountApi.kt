@@ -1,6 +1,7 @@
 package com.sebastiannarvaez.pokedex.data.network
 
 import com.sebastiannarvaez.pokedex.core.AppConfig
+import com.sebastiannarvaez.pokedex.data.network.dto.AuthErrorDto
 import com.sebastiannarvaez.pokedex.data.network.dto.UserDto
 import io.ktor.client.HttpClient
 import io.ktor.client.HttpClientConfig
@@ -10,14 +11,61 @@ import io.ktor.client.plugins.auth.Auth
 import io.ktor.client.plugins.auth.providers.BearerTokens
 import io.ktor.client.plugins.auth.providers.bearer
 import io.ktor.client.request.get
+import io.ktor.client.request.post
+import io.ktor.client.request.put
+import io.ktor.client.request.setBody
+import io.ktor.client.statement.HttpResponse
+import io.ktor.http.ContentType
+import io.ktor.http.contentType
+import io.ktor.http.isSuccess
+import kotlinx.serialization.Serializable
 
 /** Lo que se le pide a Supabase **en nombre del usuario**. */
 internal interface SupabaseAccountApi {
     suspend fun perfil(): UserDto
+    suspend fun cambiarPassword(nueva: String)
+    suspend fun borrarCuenta()
 }
 
-internal class KtorSupabaseAccountApi(private val client: HttpClient) : SupabaseAccountApi {
+@Serializable
+private data class PasswordDto(val password: String)
+
+internal class KtorSupabaseAccountApi(
+    private val client: HttpClient,
+    private val config: AppConfig,
+) : SupabaseAccountApi {
+
     override suspend fun perfil(): UserDto = client.get("user").body()
+
+    override suspend fun cambiarPassword(nueva: String) {
+        client.put("user") {
+            contentType(ContentType.Application.Json)
+            setBody(PasswordDto(nueva))
+        }.exigirExito()
+    }
+
+    /**
+     * Borrar la propia cuenta **no tiene endpoint**.
+     *
+     * Supabase no expone «elimina mi usuario» en la API publica: hacerlo seria
+     * dar a cualquier token la capacidad de borrar filas de una tabla del
+     * sistema. La via documentada es una funcion SQL `security definer` que
+     * comprueba quien llama y borra su propio usuario, publicada como
+     * procedimiento remoto.
+     *
+     * La URL es absoluta porque el cliente apunta a `/auth/v1/` y esto vive en
+     * `/rest/v1/`, que es otra API del mismo proyecto.
+     */
+    override suspend fun borrarCuenta() {
+        client.post(config.supabaseUrl.trimEnd('/') + "/rest/v1/rpc/delete_user")
+            .exigirExito()
+    }
+
+    private suspend fun HttpResponse.exigirExito() {
+        if (status.isSuccess()) return
+        val error = runCatching { body<AuthErrorDto>() }.getOrNull()
+        throw AuthException(status.value, error?.mensaje)
+    }
 }
 
 /**

@@ -28,6 +28,9 @@ internal interface SupabaseAuthApi {
     suspend fun entrar(email: String, password: String): SessionDto
     suspend fun refrescar(refreshToken: String): SessionDto
     suspend fun salir(accessToken: String)
+
+    /** Manda el correo con el enlace para poner una contrasena nueva. */
+    suspend fun recuperar(email: String, redirectTo: String)
 }
 
 @Serializable
@@ -35,6 +38,9 @@ private data class CredencialesDto(val email: String, val password: String)
 
 @Serializable
 private data class RefrescoDto(val refresh_token: String)
+
+@Serializable
+private data class EmailDto(val email: String)
 
 /**
  * Error de autenticacion con el mensaje que devolvio el servidor.
@@ -74,6 +80,21 @@ internal class KtorSupabaseAuthApi(private val client: HttpClient) : SupabaseAut
         runCatching {
             client.post("logout") { header("Authorization", "Bearer $accessToken") }
         }.onFailure { Log.w("no se pudo cerrar sesion en el servidor", it) }
+    }
+
+    override suspend fun recuperar(email: String, redirectTo: String) {
+        val respuesta = client.post("recover") {
+            // `redirect_to` decide a donde vuelve el usuario tras pulsar el
+            // enlace. Sin el, Supabase usa el «Site URL» del panel, que por
+            // defecto es localhost y en un movil no abre nada.
+            parameter("redirect_to", redirectTo)
+            contentType(ContentType.Application.Json)
+            setBody(EmailDto(email))
+        }
+        if (!respuesta.status.isSuccess()) {
+            val error = runCatching { respuesta.body<AuthErrorDto>() }.getOrNull()
+            throw AuthException(respuesta.status.value, error?.mensaje)
+        }
     }
 
     private suspend fun HttpResponse.sesionOError(): SessionDto {

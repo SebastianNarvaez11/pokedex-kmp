@@ -67,3 +67,54 @@ segundos; depurarla dentro de un cliente de Ktor, minutos.
 Los proyectos gratuitos **se pausan tras siete días sin actividad**. Quien deje
 el curso dos semanas vuelve a un proyecto pausado y tiene que restaurarlo desde
 el panel. No es un fallo de la app.
+
+## 6. La función para eliminar la cuenta
+
+Supabase **no expone** un endpoint que borre tu propio usuario. Tiene sentido:
+sería dar a cualquier token la capacidad de borrar filas de una tabla del
+sistema. La vía documentada es una función SQL con `security definer`, que se
+ejecuta con los permisos de quien la creó pero comprueba quién la llama.
+
+Se pega en el SQL Editor del panel y se ejecuta una vez:
+
+```sql
+create or replace function public.delete_user()
+returns void
+language plpgsql
+security definer
+-- `set search_path` no es adorno: sin él, una función `security definer` puede
+-- ser engañada para ejecutar código de otro esquema con permisos elevados.
+set search_path = ''
+as $$
+begin
+  if auth.uid() is null then
+    raise exception 'no hay sesión';
+  end if;
+  delete from auth.users where id = auth.uid();
+end;
+$$;
+
+-- Solo quien ha iniciado sesión. `anon` no, o cualquiera con la clave pública
+-- podría llamarla.
+revoke all on function public.delete_user() from public, anon;
+grant execute on function public.delete_user() to authenticated;
+```
+
+La app la llama con `POST /rest/v1/rpc/delete_user` y la cabecera `Authorization`
+del usuario. Es otra API del mismo proyecto —`/rest/v1/`, no `/auth/v1/`—, así
+que la URL va completa.
+
+**Esto no es opcional.** Si la app deja crear una cuenta, tanto App Store como
+Play exigen que deje borrarla desde dentro. Sin esta opción, la revisión la
+rechaza.
+
+## 7. El correo de recuperación
+
+La app manda `POST /auth/v1/recover` con `redirect_to=pokedex://auth/callback`.
+Para que Supabase acepte esa dirección hay que añadirla en **Authentication →
+URL Configuration → Redirect URLs**; las que no estén en la lista se ignoran y
+el usuario acaba en el «Site URL», que por defecto es `localhost`.
+
+El enlace del correo vuelve con los tokens en el **fragmento** (`#`), no en la
+consulta (`?`). Es deliberado: el fragmento no se envía al servidor, así que los
+tokens no quedan en el registro de ningún servidor por el que pase el enlace.

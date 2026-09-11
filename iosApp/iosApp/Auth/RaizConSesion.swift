@@ -14,6 +14,7 @@ struct RaizConSesion<Contenido: View>: View {
     @StateObject private var owner = IosViewModelStoreOwner()
     @State private var viewModel: AuthViewModel?
     @State private var estado = AuthState(comprobando: true, session: nil)
+    @State private var cambiandoPassword = false
 
     /// Se calcula una sola vez: la configuración no cambia mientras la app vive.
     private let hayCuentas = AuthIosKt.hayCuentas()
@@ -38,6 +39,20 @@ struct RaizConSesion<Contenido: View>: View {
             }
         }
         .animation(.default, value: estado.haySesion)
+        // El enlace de recuperación **también** encaja en el esquema de la app,
+        // así que hay que mirarlo antes de que nadie lo lea como pantalla.
+        .onOpenURL { url in
+            // Ojo con la diferencia: `Destination` es una interfaz sellada y
+            // llega a Swift como protocolo, que no puede tener companion, así
+            // que el suyo se expone aparte como `DestinationCompanion`. Esto es
+            // una clase normal y **sí** conserva el suyo anidado.
+            guard let enlace = EnlaceDeRecuperacion.companion.parse(url: url.absoluteString) else { return }
+            viewModel?.abrirRecuperacion(enlace: enlace)
+            cambiandoPassword = true
+        }
+        .sheet(isPresented: $cambiandoPassword) {
+            NuevaPasswordView { cambiandoPassword = false }
+        }
         .task {
             guard hayCuentas else { return }
             let vm = viewModel ?? AuthIosKt.authViewModel(owner: owner)

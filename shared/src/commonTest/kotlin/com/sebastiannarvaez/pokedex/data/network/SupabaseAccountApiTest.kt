@@ -48,6 +48,7 @@ class SupabaseAccountApiTest {
 
         KtorSupabaseAccountApi(
             createSupabaseAccountClient(ConfigDePrueba(), proveedor(repo), motor),
+            ConfigDePrueba(),
         ).perfil()
 
         // Una sola peticion: si `sendWithoutRequest` no filtrara por host,
@@ -79,6 +80,7 @@ class SupabaseAccountApiTest {
 
         val perfil = KtorSupabaseAccountApi(
             createSupabaseAccountClient(ConfigDePrueba(), proveedor(repo), motor),
+            ConfigDePrueba(),
         ).perfil()
 
         assertEquals("ash@pueblo-paleta.test", perfil.email)
@@ -109,6 +111,7 @@ class SupabaseAccountApiTest {
         repo.entrar("ash@pueblo-paleta.test", "pikachu")
         val cuenta = KtorSupabaseAccountApi(
             createSupabaseAccountClient(ConfigDePrueba(), proveedor(repo), motor),
+            ConfigDePrueba(),
         )
 
         val perfiles = List(3) { async { cuenta.perfil() } }.awaitAll()

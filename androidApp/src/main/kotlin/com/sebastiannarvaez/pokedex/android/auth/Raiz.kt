@@ -1,7 +1,12 @@
 package com.sebastiannarvaez.pokedex.android.auth
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import com.sebastiannarvaez.pokedex.feature.auth.EnlaceDeRecuperacion
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sebastiannarvaez.pokedex.core.AppConfig
 import org.koin.compose.koinInject
@@ -23,6 +28,8 @@ import org.koin.compose.viewmodel.koinViewModel
  */
 @Composable
 fun RaizConSesion(
+    recuperacion: EnlaceDeRecuperacion? = null,
+    alConsumirRecuperacion: () -> Unit = {},
     contenido: @Composable () -> Unit,
 ) {
     val config: AppConfig = koinInject()
@@ -36,10 +43,24 @@ fun RaizConSesion(
 
     val viewModel: AuthViewModel = koinViewModel()
     val estado by viewModel.state.collectAsStateWithLifecycle()
+    var cambiandoPassword by remember { mutableStateOf(false) }
+
+    // El enlace del correo trae una sesion temporal: se adopta y el usuario
+    // entra, con el dialogo de contrasena nueva encima.
+    LaunchedEffect(recuperacion) {
+        val enlace = recuperacion ?: return@LaunchedEffect
+        viewModel.abrirRecuperacion(enlace)
+        cambiandoPassword = true
+        alConsumirRecuperacion()
+    }
 
     when {
         estado.comprobando -> ComprobandoSesion()
         estado.haySesion -> contenido()
         else -> AuthScreen(viewModel = viewModel)
+    }
+
+    if (cambiandoPassword && estado.haySesion) {
+        NuevaPasswordDialog(alTerminar = { cambiandoPassword = false })
     }
 }

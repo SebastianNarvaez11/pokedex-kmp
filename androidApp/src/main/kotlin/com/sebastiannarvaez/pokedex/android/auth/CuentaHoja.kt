@@ -16,8 +16,17 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.sebastiannarvaez.pokedex.feature.auth.AccountViewModel
+import org.koin.compose.viewmodel.koinViewModel
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -34,7 +43,15 @@ import com.sebastiannarvaez.pokedex.domain.Session
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CuentaHoja(session: Session, alCerrar: () -> Unit, alSalir: () -> Unit) {
+fun CuentaHoja(
+    session: Session,
+    alCerrar: () -> Unit,
+    alSalir: () -> Unit,
+    cuenta: AccountViewModel = koinViewModel(),
+) {
+    var confirmandoBorrado by remember { mutableStateOf(false) }
+    val estado by cuenta.state.collectAsStateWithLifecycle()
+
     ModalBottomSheet(onDismissRequest = alCerrar, sheetState = rememberModalBottomSheetState()) {
         Column(
             modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp).padding(bottom = 40.dp),
@@ -80,6 +97,43 @@ fun CuentaHoja(session: Session, alCerrar: () -> Unit, alSalir: () -> Unit) {
             OutlinedButton(onClick = alSalir, modifier = Modifier.fillMaxWidth()) {
                 Text("Cerrar sesión")
             }
+
+            // Eliminar la cuenta es obligatorio en las dos tiendas si la app
+            // deja crearla. No es una cortesia: sin esta opcion, la revision la
+            // rechaza.
+            TextButton(
+                onClick = { confirmandoBorrado = true },
+                enabled = !estado.trabajando,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text("Eliminar mi cuenta", color = MaterialTheme.colorScheme.error)
+            }
         }
+    }
+
+    if (confirmandoBorrado) {
+        AlertDialog(
+            onDismissRequest = { confirmandoBorrado = false },
+            title = { Text("¿Eliminar tu cuenta?") },
+            text = {
+                Text(
+                    "Se borra tu usuario en el servidor y no se puede deshacer. " +
+                        "Tus favoritos, que están en este teléfono, no se tocan.",
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        confirmandoBorrado = false
+                        cuenta.borrarCuenta()
+                    },
+                ) {
+                    Text("Eliminar", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { confirmandoBorrado = false }) { Text("Cancelar") }
+            },
+        )
     }
 }

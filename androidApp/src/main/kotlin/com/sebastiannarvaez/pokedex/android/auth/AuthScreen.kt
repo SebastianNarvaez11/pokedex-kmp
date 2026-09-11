@@ -20,6 +20,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -195,8 +196,49 @@ fun AuthScreen(
                 }
             }
 
+            // Recuperar solo tiene sentido al entrar: quien se esta
+            // registrando no tiene contrasena que olvidar.
+            if (!registrando) {
+                TextButton(
+                    onClick = {
+                        teclado?.hide()
+                        viewModel.recuperar()
+                    },
+                    enabled = formulario.emailValido && !formulario.enviando,
+                    modifier = Modifier.padding(top = 8.dp),
+                ) {
+                    Text("¿Olvidaste tu contraseña?")
+                }
+                if (!formulario.emailValido) {
+                    Text(
+                        "Escribe tu correo arriba y te mandamos un enlace.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = TextAlign.Center,
+                    )
+                }
+            }
+
             Spacer(Modifier.height(48.dp))
         }
+    }
+
+    // El aviso no dice si el correo existe. Decirlo le contaria a cualquiera
+    // quien tiene cuenta aqui, y Supabase responde igual en los dos casos.
+    if (formulario.correoEnviado) {
+        AlertDialog(
+            onDismissRequest = viewModel::descartarError,
+            confirmButton = {
+                TextButton(onClick = viewModel::descartarError) { Text("Entendido") }
+            },
+            title = { Text("Revisa tu correo") },
+            text = {
+                Text(
+                    "Si hay una cuenta con ese correo, le hemos mandado un enlace " +
+                        "para poner una contraseña nueva.",
+                )
+            },
+        )
     }
 }
 

@@ -24,7 +24,18 @@ data class AuthFormState(
     val password: String = "",
     val enviando: Boolean = false,
     val error: UiError? = null,
+    val correoEnviado: Boolean = false,
 ) {
+    /**
+     * El constructor vacio, para Swift.
+     *
+     * Los argumentos por defecto de Kotlin **no cruzan** a Objective-C: alli
+     * solo llega el constructor con todos los parametros. Sin esto, cada campo
+     * nuevo rompe la compilacion de Swift con «missing argument for
+     * parameter», que fue exactamente lo que paso al anadir `correoEnviado`.
+     */
+    constructor() : this(email = "")
+
     /**
      * Validacion minima, en el nucleo y no en cada pantalla.
      *

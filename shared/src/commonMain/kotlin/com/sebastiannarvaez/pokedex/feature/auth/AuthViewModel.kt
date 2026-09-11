@@ -52,6 +52,39 @@ class AuthViewModel internal constructor(
         _form.value = _form.value.copy(error = null)
     }
 
+    /**
+     * Pide el correo de recuperacion.
+     *
+     * `correoEnviado` se pone **pase lo que pase con la respuesta**, salvo
+     * error de red. Es deliberado: decir «ese correo no existe» le cuenta a
+     * cualquiera quien tiene cuenta aqui. Supabase tambien responde igual en
+     * los dos casos.
+     */
+    fun recuperar() {
+        val actual = _form.value
+        if (!actual.emailValido || actual.enviando) return
+        _form.value = actual.copy(enviando = true, error = null)
+        viewModelScope.launch {
+            _form.value = try {
+                repository.recuperar(actual.email, REDIRECCION)
+                actual.copy(enviando = false, correoEnviado = true)
+            } catch (e: Throwable) {
+                actual.copy(enviando = false, error = e.aUiErrorDeAuth())
+            }
+        }
+    }
+
+    /** El enlace del correo trae sesion temporal: se adopta y se entra. */
+    fun abrirRecuperacion(enlace: EnlaceDeRecuperacion) {
+        viewModelScope.launch { repository.adoptar(enlace) }
+    }
+
+    private companion object {
+        val REDIRECCION =
+            "${com.sebastiannarvaez.pokedex.navigation.Destination.ESQUEMA}://" +
+                EnlaceDeRecuperacion.RUTA
+    }
+
     private fun enviar(accion: suspend (AuthFormState) -> Unit) {
         val actual = _form.value
         if (!actual.sePuedeEnviar) return

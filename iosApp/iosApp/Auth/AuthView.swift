@@ -14,9 +14,13 @@ struct AuthView: View {
 
     let viewModel: AuthViewModel
 
-    @State private var formulario = AuthFormState(email: "", password: "", enviando: false, error: nil)
+    // `AuthFormState()` y no la lista entera de campos: los argumentos por
+    // defecto de Kotlin no cruzan, así que el núcleo declara un constructor
+    // vacío a propósito. Sin él, cada campo nuevo rompería este fichero.
+    @State private var formulario = AuthFormState()
     @State private var registrando = false
     @State private var mostrandoError = false
+    @State private var mostrandoCorreoEnviado = false
 
     /// Mover el foco de correo a contraseña con la tecla «siguiente» del
     /// teclado. Sin esto hay que tocar el segundo campo con el dedo.
@@ -87,6 +91,17 @@ struct AuthView: View {
             .controlSize(.large)
             .disabled(!formulario.sePuedeEnviar)
 
+            // Recuperar solo tiene sentido al entrar: quien se registra no
+            // tiene contraseña que olvidar.
+            if !registrando {
+                Button("¿Olvidaste tu contraseña?") {
+                    campo = nil
+                    viewModel.recuperar()
+                }
+                .font(.footnote)
+                .disabled(!formulario.emailValido || formulario.enviando)
+            }
+
             Spacer()
             Spacer()
         }
@@ -103,8 +118,18 @@ struct AuthView: View {
         } message: { error in
             Text(error.detalle)
         }
+        // El aviso no dice si el correo existe. Decirlo le contaría a cualquiera
+        // quién tiene cuenta aquí, y Supabase responde igual en los dos casos.
+        .alert("Revisa tu correo", isPresented: $mostrandoCorreoEnviado) {
+            Button("Entendido", role: .cancel) { }
+        } message: {
+            Text("Si hay una cuenta con ese correo, le hemos mandado un enlace para poner una contraseña nueva.")
+        }
         .onChange(of: formulario.error) { _, nuevo in
             mostrandoError = nuevo != nil
+        }
+        .onChange(of: formulario.correoEnviado) { _, enviado in
+            mostrandoCorreoEnviado = enviado
         }
         .task {
             formulario = viewModel.authFormForIos

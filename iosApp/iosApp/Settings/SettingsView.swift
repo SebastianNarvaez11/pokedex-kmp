@@ -18,6 +18,8 @@ struct SettingsView: View {
     @State private var auth: AuthViewModel?
     @State private var sesion: Session?
     @State private var confirmandoSalida = false
+    @State private var confirmandoBorrado = false
+    @State private var cuenta: AccountViewModel?
 
     var body: some View {
         NavigationStack {
@@ -82,6 +84,12 @@ struct SettingsView: View {
                         Button("Cerrar sesión", role: .destructive) {
                             confirmandoSalida = true
                         }
+                        // Eliminar la cuenta es obligatorio en las dos tiendas
+                        // si la app deja crearla. Sin esta opción, la revisión
+                        // la rechaza.
+                        Button("Eliminar mi cuenta", role: .destructive) {
+                            confirmandoBorrado = true
+                        }
                     } header: {
                         Text("Cuenta")
                     } footer: {
@@ -108,11 +116,22 @@ struct SettingsView: View {
             } message: {
                 Text("Tendrás que volver a entrar para usar la app.")
             }
+            .confirmationDialog(
+                "¿Eliminar tu cuenta?",
+                isPresented: $confirmandoBorrado,
+                titleVisibility: .visible
+            ) {
+                Button("Eliminar", role: .destructive) { cuenta?.borrarCuenta() }
+                Button("Cancelar", role: .cancel) { }
+            } message: {
+                Text("Se borra tu usuario en el servidor y no se puede deshacer. Tus favoritos, que están en este iPhone, no se tocan.")
+            }
         }
         .task {
             guard AuthIosKt.hayCuentas() else { return }
             let vm = auth ?? AuthIosKt.authViewModel(owner: owner)
             auth = vm
+            cuenta = cuenta ?? AuthIosKt.accountViewModel(owner: owner)
             sesion = vm.authStateForIos.session
             do {
                 for try await nuevo in asyncSequence(for: vm.authStateForIosFlow) {

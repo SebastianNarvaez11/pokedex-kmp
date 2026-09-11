@@ -3,6 +3,7 @@ package com.sebastiannarvaez.pokedex.di
 import com.sebastiannarvaez.pokedex.Pokedex
 import com.sebastiannarvaez.pokedex.core.AppConfig
 import com.sebastiannarvaez.pokedex.core.AppDispatchers
+import com.sebastiannarvaez.pokedex.data.AccountRepository
 import com.sebastiannarvaez.pokedex.data.FavoritesRepository
 import com.sebastiannarvaez.pokedex.data.SessionRepository
 import com.sebastiannarvaez.pokedex.data.SecureStorageTokenStore
@@ -23,6 +24,7 @@ import com.sebastiannarvaez.pokedex.data.network.createHttpClient
 import com.sebastiannarvaez.pokedex.data.network.createSupabaseClient
 import com.sebastiannarvaez.pokedex.core.PlatformAppDispatchers
 import com.sebastiannarvaez.pokedex.currentPlatform
+import com.sebastiannarvaez.pokedex.feature.auth.AccountViewModel
 import com.sebastiannarvaez.pokedex.feature.auth.AuthViewModel
 import com.sebastiannarvaez.pokedex.feature.detail.PokemonDetailViewModel
 import com.sebastiannarvaez.pokedex.feature.favorites.FavoritesViewModel
@@ -84,7 +86,8 @@ val pokedexModule: Module = module {
             },
         )
     }
-    single<SupabaseAccountApi> { KtorSupabaseAccountApi(get(SUPABASE_CUENTA)) }
+    single<SupabaseAccountApi> { KtorSupabaseAccountApi(get(SUPABASE_CUENTA), get()) }
+    single { AccountRepository(get(), get(), get()) }
 
     // viewModelOf y no factory: Koin registra el ViewModel con el ciclo de
     // vida que espera cada plataforma, y en Android lo entrega viewModel().
@@ -94,6 +97,7 @@ val pokedexModule: Module = module {
     viewModelOf(::FavoritesViewModel)
     viewModelOf(::SettingsViewModel)
     viewModelOf(::AuthViewModel)
+    viewModelOf(::AccountViewModel)
 
     // Con parametro: el identificador no lo sabe el grafo, lo trae la
     // navegacion. `viewModel { }` y no `viewModelOf`, que solo sirve cuando

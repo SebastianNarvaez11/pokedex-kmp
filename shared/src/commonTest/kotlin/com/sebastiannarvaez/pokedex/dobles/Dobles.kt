@@ -137,6 +137,16 @@ internal class FakeAuthApi(
         cierresEnElServidor++
     }
 
+    var recuperaciones = 0
+        private set
+    var ultimaRedireccion: String? = null
+        private set
+
+    override suspend fun recuperar(email: String, redirectTo: String) {
+        recuperaciones++
+        ultimaRedireccion = redirectTo
+    }
+
     private fun sesion(marca: String, expiresIn: Long) = SessionDto(
         accessToken = "access-$marca",
         refreshToken = "refresh-$marca",
