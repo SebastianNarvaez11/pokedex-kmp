@@ -2,6 +2,11 @@ package com.sebastiannarvaez.pokedex
 
 import com.sebastiannarvaez.pokedex.core.AppDispatchers
 import com.sebastiannarvaez.pokedex.core.PlatformAppDispatchers
+import kotlin.time.Duration.Companion.seconds
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
 
 /**
  * La puerta de entrada del modulo compartido.
@@ -30,4 +35,22 @@ class Pokedex internal constructor(
     private val platform: Platform = currentPlatform()
 
     fun greeting(): String = Greeting(platform).greet()
+
+    /**
+     * Latido: un contador que emite cada segundo mientras alguien escuche.
+     *
+     * No hace nada util, y por eso esta: comprueba que un `Flow` de Kotlin
+     * llega entero a las dos interfaces antes de que haya datos de verdad que
+     * transportar. Desaparece cuando llegue la lista de Pokemon.
+     *
+     * Es un flujo **frio**: no cuenta nada hasta que alguien se suscribe, y se
+     * para solo cuando el ultimo suscriptor se va.
+     */
+    fun heartbeat(): Flow<Int> = flow {
+        var latido = 0
+        while (true) {
+            emit(latido++)
+            delay(1.seconds)
+        }
+    }.flowOn(dispatchers.default)
 }

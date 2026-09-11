@@ -1,6 +1,9 @@
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidKmpLibrary)
+    // Plugin de compilador, no de KSP: convierte los Flow anotados en algo que
+    // Swift pueda recorrer con `for await`.
+    alias(libs.plugins.nativeCoroutines)
 }
 
 kotlin {
@@ -37,6 +40,12 @@ kotlin {
             // modulo, asi que Swift tiene que poder verlo desde el framework.
             implementation(libs.kotlinx.coroutines.core)
             api(libs.kermit)
+        }
+        // Solo iOS: la anotacion que hace recorrible un Flow desde Swift no
+        // pinta nada en Android ni en la JVM.
+        iosMain.dependencies {
+            implementation(libs.kmp.nativecoroutines.annotations)
+            implementation(libs.kmp.nativecoroutines.core)
         }
         commonTest.dependencies {
             implementation(kotlin("test"))
