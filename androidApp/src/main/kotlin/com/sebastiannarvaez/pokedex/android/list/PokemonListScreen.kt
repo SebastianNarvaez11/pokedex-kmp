@@ -46,6 +46,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sebastiannarvaez.pokedex.android.search.PokemonSearchBar
+import com.sebastiannarvaez.pokedex.feature.favorites.FavoritesViewModel
 import com.sebastiannarvaez.pokedex.feature.search.PokemonSearchViewModel
 import com.sebastiannarvaez.pokedex.feature.search.SearchUiState
 import org.koin.compose.viewmodel.koinViewModel
@@ -56,11 +57,13 @@ fun PokemonListScreen(
     modifier: Modifier = Modifier,
     viewModel: PokemonListViewModel = koinViewModel(),
     buscador: PokemonSearchViewModel = koinViewModel(),
+    favoritos: FavoritesViewModel = koinViewModel(),
 ) {
     // collectAsLazyPagingItems es el puente que Android ya trae hecho. En iOS
     // hubo que escribirlo a mano: es la misma pieza, aqui regalada.
     val pokemon = viewModel.pokemon.collectAsLazyPagingItems()
     val busqueda by buscador.uiState.collectAsStateWithLifecycle()
+    val idsFavoritos by favoritos.favoriteIds.collectAsStateWithLifecycle()
     var expandida by rememberSaveable { mutableStateOf(false) }
 
     PokemonListContent(
@@ -71,6 +74,8 @@ fun PokemonListScreen(
         alEscribir = buscador::escribir,
         alLimpiar = buscador::limpiar,
         alPulsar = alPulsar,
+        idsFavoritos = idsFavoritos,
+        alMarcar = { p -> favoritos.toggle(p.id, p.name) },
         modifier = modifier,
     )
 }
@@ -85,6 +90,8 @@ private fun PokemonListContent(
     alEscribir: (String) -> Unit,
     alLimpiar: () -> Unit,
     alPulsar: (Int) -> Unit,
+    idsFavoritos: Set<Int>,
+    alMarcar: (Pokemon) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     // La barra grande se encoge al hacer scroll: es un gesto de Android, no
@@ -141,14 +148,19 @@ private fun PokemonListContent(
                     }
                 }
 
-                else -> Rejilla(pokemon, alPulsar)
+                else -> Rejilla(pokemon, alPulsar, idsFavoritos, alMarcar)
             }
         }
     }
 }
 
 @Composable
-private fun Rejilla(pokemon: LazyPagingItems<Pokemon>, alPulsar: (Int) -> Unit) {
+private fun Rejilla(
+    pokemon: LazyPagingItems<Pokemon>,
+    alPulsar: (Int) -> Unit,
+    idsFavoritos: Set<Int>,
+    alMarcar: (Pokemon) -> Unit,
+) {
     LazyVerticalGrid(
         columns = GridCells.Adaptive(minSize = 164.dp),
         contentPadding = PaddingValues(16.dp),
@@ -167,7 +179,14 @@ private fun Rejilla(pokemon: LazyPagingItems<Pokemon>, alPulsar: (Int) -> Unit) 
             key = pokemon.itemKey { it.id },
             contentType = pokemon.itemContentType { "pokemon" },
         ) { indice ->
-            pokemon[indice]?.let { p -> PokemonCard(p, alPulsar = { alPulsar(p.id) }) }
+            pokemon[indice]?.let { p ->
+                PokemonCard(
+                    pokemon = p,
+                    esFavorito = p.id in idsFavoritos,
+                    alPulsar = { alPulsar(p.id) },
+                    alMarcar = { alMarcar(p) },
+                )
+            }
         }
 
         // El pie: cargando mas, o el error de ampliar con su reintento.

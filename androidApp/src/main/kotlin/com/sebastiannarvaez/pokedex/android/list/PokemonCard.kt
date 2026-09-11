@@ -11,8 +11,15 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Card
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -44,7 +51,9 @@ import com.sebastiannarvaez.pokedex.domain.Pokemon
 @Composable
 fun PokemonCard(
     pokemon: Pokemon,
+    esFavorito: Boolean,
     alPulsar: () -> Unit,
+    alMarcar: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val tono = pokemon.types.firstOrNull()?.color ?: MaterialTheme.colorScheme.primary
@@ -86,6 +95,20 @@ fun PokemonCard(
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.55f),
                     modifier = Modifier.align(Alignment.TopStart).padding(12.dp),
                 )
+                // El corazon va sobre la imagen y con su propia zona tactil:
+                // marcar no debe abrir la ficha.
+                IconButton(
+                    onClick = alMarcar,
+                    modifier = Modifier.align(Alignment.TopEnd).size(36.dp),
+                ) {
+                    Icon(
+                        imageVector = if (esFavorito) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
+                        contentDescription = if (esFavorito) "Quitar de favoritos" else "Añadir a favoritos",
+                        tint = if (esFavorito) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(20.dp),
+                    )
+                }
+
                 AsyncImage(
                     model = pokemon.artworkUrl,
                     // null: la tarjeta entera ya tiene descripcion, y repetirla
