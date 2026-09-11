@@ -1,0 +1,130 @@
+# Verificación del núcleo compartido y de las dos apps.
+#
+# El trabajo se reparte a propósito entre dos sistemas operativos: los targets
+# de Apple solo compilan en macOS, y el minuto de macOS cuesta unas diez veces
+# lo que el de Linux. Todo lo que puede correr en Linux, corre en Linux.
+name: Verificación
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# Un push nuevo cancela la verificación anterior de la misma rama: no tiene
+# sentido pagar minutos por comprobar un commit que ya quedó atrás.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  nucleo:
+    name: Núcleo y Android (Linux)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+
+      - uses: actions/setup-java@v6.0.1
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: gradle/actions/setup-gradle@v6.3.0
+
+      # compileSdk 37 es reciente y no viene en la imagen del runner.
+      #
+      # El nombre del paquete lleva versión menor: desde API 36, Android publica
+      # las plataformas como android-36.1, android-37.0... Pedir
+      # "platforms;android-37" a secas falla con "Failed to find package".
+      - name: Instalar el SDK de Android que pide el proyecto
+        run: |
+          set -euo pipefail
+          SDKMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          yes 2>/dev/null | "$SDKMANAGER" --licenses > /dev/null || true
+          "$SDKMANAGER" "platforms;android-37.0" "build-tools;37.0.0"
+
+      - name: Tests del núcleo en la JVM
+        run: ./gradlew :shared:jvmTest --stacktrace
+
+      - name: Tests del núcleo en Android
+        run: ./gradlew :shared:testAndroidHostTest --stacktrace
+
+      - name: Compilar la app de Android
+        run: ./gradlew :androidApp:assembleDebug --stacktrace
+
+      # La compilación de release se verifica desde el primer día, aunque
+      # todavía no haya firma ni ofuscación. Lo que rompe R8 —reglas de Room, de
+      # serialización, de Ktor— no aparece en debug, y descubrirlo el día que se
+      # publica es descubrirlo tarde.
+      - name: Compilar la app de Android en release
+        run: ./gradlew :androidApp:assembleRelease --stacktrace
+
+      - name: Guardar los informes si algo falla
+        if: failure()
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: informes-linux
+          path: shared/build/reports/tests/
+
+  apple:
+    name: Núcleo e iOS (macOS)
+    runs-on: macos-latest
+    # El job caro no arranca si el barato ya falló. Un error de compilación en
+    # commonMain o un test común roto se detecta en Linux y el Mac ni se
+    # enciende: es la línea que más dinero ahorra de todo el archivo.
+    needs: nucleo
+    steps:
+      - uses: actions/checkout@v7.0.1
+
+      - uses: actions/setup-java@v6.0.1
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: gradle/actions/setup-gradle@v6.3.0
+
+      # ~/.konan guarda el compilador de Kotlin/Native entero (alrededor de
+      # 1,6 GB). Sin esta caché, cada ejecución se lo vuelve a descargar, y es
+      # justo en macOS donde el minuto cuesta caro.
+      #
+      # La clave cuelga del catálogo de versiones: al cambiar la versión de
+      # Kotlin cambia el compilador, y la caché tiene que invalidarse sola.
+      - name: Caché de Kotlin/Native
+        uses: actions/cache@v6.1.0
+        with:
+          path: ~/.konan
+          key: konan-${{ runner.os }}-${{ hashFiles('gradle/libs.versions.toml') }}
+          restore-keys: konan-${{ runner.os }}-
+
+      - name: Tests del núcleo en el simulador de iOS
+        run: ./gradlew :shared:iosSimulatorArm64Test --stacktrace
+
+      # Se enlaza aparte aunque el paso siguiente lo repita: si falla aquí, el
+      # problema es de Kotlin; si falla abajo, de Swift. Separarlo cuesta
+      # segundos —Gradle lo tiene incremental— y ahorra leer un log entero.
+      - name: Enlazar el framework de iOS
+        run: ./gradlew :shared:linkDebugFrameworkIosSimulatorArm64 --stacktrace
+
+      # Compilar el Swift de verdad. Sin este paso, romper PokemonListView
+      # pasaría la verificación en verde: enlazar el framework no mira el Swift.
+      #
+      # Es posible gracias al esquema compartido de xcshareddata. Sin él, este
+      # paso falla con "scheme not found", porque el que genera Xcode vive en
+      # xcuserdata y no se versiona.
+      #
+      # El destino es genérico y no un iPhone con nombre y apellido, que
+      # dependería de qué simuladores tenga el runner.
+      - name: Compilar la app de iOS
+        run: |
+          xcodebuild -project iosApp/iosApp.xcodeproj \
+            -scheme Pokedex \
+            -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath build/dd \
+            build
+
+      - name: Guardar los informes si algo falla
+        if: failure()
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: informes-macos
+          path: shared/build/reports/tests/

@@ -1,0 +1,24 @@
+# Avisa de versiones nuevas en vez de descubrirlas seis meses tarde.
+#
+# En un proyecto KMP esto importa más de lo normal: el plugin de Kotlin, AGP y
+# el compilador de Compose van acoplados, y quedarse atrás en uno bloquea a los
+# otros.
+version: 2
+updates:
+  - package-ecosystem: gradle
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+
+  # El paquete de Swift que hace recorribles los Flow tiene que ir en la misma
+  # versión que su plugin de Gradle, así que conviene enterarse a la vez.
+  - package-ecosystem: swift
+    directory: /iosApp
+    schedule:
+      interval: weekly
