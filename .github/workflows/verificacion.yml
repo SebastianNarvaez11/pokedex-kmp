@@ -28,7 +28,7 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - uses: gradle/actions/setup-gradle@v6.3.0
+      - uses: gradle/actions/setup-gradle@v6.4.0
 
       # compileSdk 37 es reciente y no viene en la imagen del runner.
       #
@@ -88,7 +88,7 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - uses: gradle/actions/setup-gradle@v6.3.0
+      - uses: gradle/actions/setup-gradle@v6.4.0
 
       # ~/.konan guarda el compilador de Kotlin/Native entero (alrededor de
       # 1,6 GB). Sin esta caché, cada ejecución se lo vuelve a descargar, y es
