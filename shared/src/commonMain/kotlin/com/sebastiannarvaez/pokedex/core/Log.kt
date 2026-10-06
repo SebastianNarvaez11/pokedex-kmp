@@ -20,8 +20,8 @@ object Log {
     private val logger: Logger = Logger(
         config = loggerConfigInit(
             platformLogWriter(),
-            // En una compilacion de release este umbral sube, para no dejar en
-            // el registro del dispositivo nada que no deba estar ahi.
+            // El umbral es Debug en todas las compilaciones. En una app publicada
+            // convendria subirlo, para no dejar en el registro nada que no deba.
             minSeverity = Severity.Debug,
         ),
         tag = "Pokedex",
