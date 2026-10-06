@@ -14,7 +14,7 @@ import kotlinx.coroutines.flow.stateIn
  * `androidx.lifecycle.ViewModel` dejo de ser solo de Android: desde la 2.8.0
  * es multiplataforma, y `viewModelScope` se cancela igual en las dos. Lo que
  * cambia es quien decide cuando muere: en Android lo hace el sistema, y en iOS
- * hay que escribir el duenno a mano.
+ * hay que escribir el dueno a mano.
  */
 class HomeViewModel(pokedex: Pokedex) : ViewModel() {
 
