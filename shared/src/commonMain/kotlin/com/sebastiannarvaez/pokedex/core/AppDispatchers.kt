@@ -29,8 +29,9 @@ internal class PlatformAppDispatchers : AppDispatchers {
 }
 
 /**
- * `Dispatchers.IO` no se puede usar desde `commonMain`: existe, pero es
- * `internal` en la libreria. En Kotlin/Native tampoco esta disponible, asi que
- * iOS usa `Default`, que ahi tambien esta respaldado por un pool de hilos.
+ * `Dispatchers.IO` escrito tal cual no compila en `commonMain`: dentro de
+ * `Dispatchers` es un miembro `internal`. Hace falta importar la propiedad de
+ * extension (`import kotlinx.coroutines.IO`). Aqui se aisla en una funcion
+ * `expect` para que iOS pueda usar `Default`.
  */
 internal expect fun ioDispatcher(): CoroutineDispatcher
