@@ -8,8 +8,8 @@ import Shared
 /// el `viewModelScope`.
 ///
 /// Es `ObservableObject` para poder usarla como `@StateObject` en la vista, que
-/// es lo único que garantiza que SwiftUI la cree una sola vez y no en cada
-/// recomposición.
+/// es lo único que garantiza que SwiftUI la cree una sola vez y no cada vez
+/// que vuelve a construir la vista.
 final class IosViewModelStoreOwner: ObservableObject, ViewModelStoreOwner {
 
     let viewModelStore = ViewModelStore()

@@ -53,6 +53,7 @@ val SUPABASE = org.koin.core.qualifier.named("supabase")
 val SUPABASE_CUENTA = org.koin.core.qualifier.named("supabase-cuenta")
 
 val pokedexModule: Module = module {
+    // <AppDispatchers>: se registra por el tipo de la interfaz, que es el que piden los demas.
     single<AppDispatchers> { PlatformAppDispatchers() }
     single { currentPlatform() }
     single { Pokedex(get()) }
