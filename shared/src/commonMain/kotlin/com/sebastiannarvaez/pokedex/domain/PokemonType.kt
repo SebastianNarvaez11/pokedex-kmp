@@ -6,7 +6,7 @@ package com.sebastiannarvaez.pokedex.domain
  * Es un `enum` y no un `String` porque la interfaz pinta un color por tipo, y
  * un color por cadena de texto es un `when` con rama `else` que nadie revisa.
  * El precio se paga en Swift, donde un `enum` de Kotlin pierde la
- * exhaustividad: eso se cuenta en la leccion de tipos que cruzan.
+ * exhaustividad: se ve al leer el header que Kotlin genera para Swift.
  */
 enum class PokemonType {
     NORMAL, FIGHTING, FLYING, POISON, GROUND, ROCK, BUG, GHOST, STEEL,
