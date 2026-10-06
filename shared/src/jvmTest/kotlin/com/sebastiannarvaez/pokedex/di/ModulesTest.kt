@@ -20,8 +20,9 @@ class ModulesTest {
      *
      * No llama a `startKoin`: arrancar el grafo en un test deja estado global
      * entre tests, y el siguiente falla por razones que no tienen que ver con
-     * lo que probaba. `verify` recorre las definiciones y avisa de cualquier
-     * dependencia que nadie sepa construir.
+     * lo que probaba. `verify` recorre las definiciones y avisa de las dependencias
+     * del constructor que nadie sepa construir (no ve los `get()` escritos
+     * dentro de una lambda).
      */
     @OptIn(KoinExperimentalAPI::class)
     @Test
