@@ -35,6 +35,7 @@ import org.koin.dsl.module
  * veces y desincronizandose a la primera de cambio.
  */
 val pokedexModule: Module = module {
+    // <AppDispatchers>: se registra por el tipo de la interfaz, que es el que piden los demas.
     single<AppDispatchers> { PlatformAppDispatchers() }
     single { currentPlatform() }
     single { Pokedex(get()) }

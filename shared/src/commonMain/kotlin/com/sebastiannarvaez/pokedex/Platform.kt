@@ -13,7 +13,7 @@ interface Platform {
 }
 
 /**
- * La unica frontera declarada dos veces en todo el modulo.
+ * Una de las fronteras `expect` del modulo (la otra es `ioDispatcher()`).
  *
  * No se llama desde el codigo de dominio: la llama quien arranca la app, una
  * sola vez, y a partir de ahi la `Platform` viaja como parametro. Cuantas menos
