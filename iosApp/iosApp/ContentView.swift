@@ -5,7 +5,7 @@ import KMPNativeCoroutinesAsync
 struct ContentView: View {
 
     /// @StateObject y no @ObservedObject: con @ObservedObject SwiftUI crearía
-    /// un dueño nuevo en cada recomposición, el ViewModel se recrearía y el
+    /// un dueño nuevo cada vez que se vuelve a construir la vista, el ViewModel se recrearía y el
     /// estado se perdería sin que nada avisara.
     @StateObject private var owner = IosViewModelStoreOwner()
 
@@ -30,7 +30,8 @@ struct ContentView: View {
                     estado = nuevo
                 }
             } catch {
-                // Cancelar no es fallar: la vista desapareció.
+                // Aquí solo llegan los errores del flujo: si la vista desaparece, la tarea
+                // se cancela y el bucle termina sin pasar por este catch.
             }
         }
     }

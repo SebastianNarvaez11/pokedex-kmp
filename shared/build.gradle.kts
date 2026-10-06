@@ -28,8 +28,8 @@ kotlin {
     listOf(iosArm64(), iosSimulatorArm64()).forEach { iosTarget ->
         iosTarget.binaries.framework {
             baseName = "Shared"
-            // Sin este export, `ViewModel` llega a Swift como el tipo opaco
-            // `Lifecycle_viewmodelViewModel` y no se puede heredar de el.
+            // Sin este export, `ViewModel` llega a Swift con un nombre ilegible
+            // (`Lifecycle_viewmodelViewModel`) en vez de `ViewModel`.
             export(libs.androidx.lifecycle.viewmodel)
             // Estatico: Xcode solo tiene que enlazarlo. Un framework dinamico
             // habria que incrustarlo y firmarlo en cada compilacion.
@@ -46,9 +46,11 @@ kotlin {
             // porque quien arranca la app es cada interfaz nativa, no esto.
             api(libs.koin.core)
             implementation(libs.koin.core.viewmodel)
-            // api y no implementation: el Logger asoma en la cara publica del
-            // modulo, asi que Swift tiene que poder verlo desde el framework.
+            // implementation: las apps reciben las corrutinas por otro camino (Compose),
+            // asi que no hace falta exponerlas desde aqui.
             implementation(libs.kotlinx.coroutines.core)
+            // api y no implementation: un tipo de Kermit (`Logger`) aparece en la
+            // API publica de este modulo; sin api, androidApp no compila.
             api(libs.kermit)
         }
         androidMain.dependencies {
