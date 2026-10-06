@@ -25,9 +25,9 @@ fun homeViewModel(owner: ViewModelStoreOwner): HomeViewModel =
 /**
  * El estado, como algo que Swift puede recorrer.
  *
- * `@NativeCoroutinesState` y no `@NativeCoroutines`: ademas de la secuencia
- * asincrona, genera la propiedad con el valor actual, que es lo que evita que
- * la pantalla parpadee vacia en el primer fotograma.
+ * `@NativeCoroutinesState` y no `@NativeCoroutines`: con esta el nombre limpio
+ * (`uiStateForIos`) es el del valor actual, que se lee antes del bucle para que
+ * la pantalla no parpadee vacia, y la secuencia lleva el sufijo `Flow`.
  *
  * Y es una **propiedad de extension**, no una funcion: la anotacion solo se
  * puede aplicar a propiedades, y el compilador lo dice sin rodeos.
