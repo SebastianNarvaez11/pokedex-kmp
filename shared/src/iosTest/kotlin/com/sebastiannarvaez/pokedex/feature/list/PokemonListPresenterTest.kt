@@ -1,10 +1,11 @@
 package com.sebastiannarvaez.pokedex.feature.list
 
 import app.cash.turbine.test
-import com.sebastiannarvaez.pokedex.core.AppDispatchers
 import com.sebastiannarvaez.pokedex.data.PokemonRepository
 import com.sebastiannarvaez.pokedex.dobles.FakePokeApi
 import com.sebastiannarvaez.pokedex.dobles.TestDispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.TestCoroutineScheduler
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
@@ -16,9 +17,10 @@ import kotlin.test.assertTrue
  * Vive en `iosTest` porque el presentador solo existe en iOS: es el sustituto
  * de lo que en Android hace `paging-compose`.
  */
+@OptIn(ExperimentalCoroutinesApi::class) // UnconfinedTestDispatcher es experimental
 class PokemonListPresenterTest {
 
-    private fun presentador(total: Int, falla: Boolean, scheduler: kotlinx.coroutines.test.TestCoroutineScheduler): PokemonListPresenter {
+    private fun presentador(total: Int, falla: Boolean, scheduler: TestCoroutineScheduler): PokemonListPresenter {
         // Unconfined y no Standard: el presentador de Paging encadena varias
         // corrutinas antes de publicar el primer estado, y con el dispatcher
         // estandar hay que adelantar el reloj a mano en cada eslabon. Con el
@@ -61,7 +63,9 @@ class PokemonListPresenterTest {
             while (estado.error == null) estado = awaitItem()
 
             assertTrue(estado.items.isEmpty())
-            assertTrue(estado.error!!.sePuedeReintentar, "el error deberia ofrecer reintento")
+            // El `while` de arriba solo termina cuando `error` ya no es `null`,
+            // y Kotlin lo sabe: por eso aqui se lee sin `!!` ni `?`.
+            assertTrue(estado.error.sePuedeReintentar, "el error deberia ofrecer reintento")
             cancelAndIgnoreRemainingEvents()
         }
         p.close()
