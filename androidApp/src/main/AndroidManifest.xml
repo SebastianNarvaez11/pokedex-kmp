@@ -1,8 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- Sin esto, en Android toda peticion falla con UnknownHostException y en
-         iOS funciona: el fallo solo aparece en una de las dos plataformas. -->
+    <!--
+        Hoy OkHttp 5 ya trae este permiso en su propio manifiesto, y Android
+        junta todos los manifiestos al compilar (pestana Merged Manifest), asi
+        que la app tendria red aunque faltara esta linea. Se declara igual para
+        no depender de lo que traiga una libreria: con un motor que no lo
+        trajera, la red fallaria solo en Android y en iOS funcionaria.
+    -->
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
