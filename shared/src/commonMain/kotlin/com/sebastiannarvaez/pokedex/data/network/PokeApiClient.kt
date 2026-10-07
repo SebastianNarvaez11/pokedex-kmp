@@ -34,6 +34,13 @@ internal fun createHttpClient(
     engine: HttpClientEngine? = null,
 ): HttpClient {
     val configuracion: HttpClientConfig<*>.() -> Unit = {
+        // Sin esto, un 404 o un 503 NO lanzan nada: Ktor entrega la respuesta
+        // como si fuera buena y el fallo salta despues, al leer el cuerpo, con
+        // un error de «formato» que no dice nada del servidor. Con esto, un 4xx
+        // o un 5xx llega como `ResponseException`, y el mapeo lo traduce a
+        // `AppError.Servidor`.
+        expectSuccess = true
+
         install(ContentNegotiation) {
             json(
                 Json {
