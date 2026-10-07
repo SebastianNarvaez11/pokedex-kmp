@@ -1,6 +1,5 @@
 package com.sebastiannarvaez.pokedex.data.network.dto
 
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
