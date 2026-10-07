@@ -4,7 +4,8 @@ import androidx.paging.PagingSource
 import androidx.paging.testing.asSnapshot
 import androidx.paging.PagingConfig
 import androidx.paging.Pager
-import com.sebastiannarvaez.pokedex.core.AppDispatchers
+import com.sebastiannarvaez.pokedex.core.aAppError
+import com.sebastiannarvaez.pokedex.core.esReintentable
 import com.sebastiannarvaez.pokedex.data.PokemonRepository
 import com.sebastiannarvaez.pokedex.dobles.FakePokeApi
 import com.sebastiannarvaez.pokedex.dobles.TestDispatchers
@@ -33,14 +34,17 @@ class PokemonPagingSourceTest {
             pagingSourceFactory = { fuente(total = 100, scheduler = testScheduler) },
         )
 
-        // asSnapshot recorre el flujo como lo haria la interfaz: pide la
-        // primera pagina y luego las siguientes segun se van "viendo".
-        val items = pager.flow.asSnapshot { scrollTo(index = 25) }
+        // asSnapshot recorre el flujo como lo haria la interfaz; dentro del
+        // bloque se "mira" hasta el elemento 59, el ultimo de la carga inicial
+        // (que no es una pagina sino tres: `initialLoadSize` vale por defecto
+        // tres veces `pageSize`, 60 elementos).
+        val items = pager.flow.asSnapshot { scrollTo(index = 59) }
 
         assertEquals("pokemon-1", items.first().name)
-        // Al llegar al 25 ya se pidio la pagina siguiente, y como faltan menos
-        // de `prefetchDistance` para el final de lo cargado, tambien la otra.
-        assertTrue(items.size >= 40, "se esperaban al menos dos paginas, hubo ${items.size}")
+        // Al acercarse al final de lo cargado (a menos de `prefetchDistance`),
+        // Paging ha pedido otra pagina: hay mas de los 60 iniciales. No se
+        // afirma un numero exacto, que depende del reparto entre corrutinas.
+        assertTrue(items.size > 60, "no se pidio otra pagina: hay ${items.size}")
         assertEquals(items.size, items.map { it.id }.distinct().size, "hay elementos repetidos")
     }
 
@@ -48,8 +52,10 @@ class PokemonPagingSourceTest {
     fun laListaSeAcabaCuandoLaPaginaVieneCorta() = runTest {
         val fuente = fuente(total = 25, scheduler = testScheduler)
 
-        val primera = fuente.load(PagingSource.LoadParams.Refresh(null, 20, false))
-        val segunda = fuente.load(PagingSource.LoadParams.Append(20, 20, false))
+        // Se piden las paginas a mano: la primera (`Refresh`, sin clave) y la
+        // siguiente (`Append`, desde el 20).
+        val primera = fuente.load(PagingSource.LoadParams.Refresh(key = null, loadSize = 20, placeholdersEnabled = false))
+        val segunda = fuente.load(PagingSource.LoadParams.Append(key = 20, loadSize = 20, placeholdersEnabled = false))
 
         assertEquals(20, (primera as PagingSource.LoadResult.Page).data.size)
         val ultima = segunda as PagingSource.LoadResult.Page
@@ -62,10 +68,16 @@ class PokemonPagingSourceTest {
     fun unFalloDeRedLlegaComoErrorYNoComoExcepcion() = runTest {
         val fuente = fuente(total = 60, falla = true, scheduler = testScheduler)
 
-        val resultado = fuente.load(PagingSource.LoadParams.Refresh(null, 20, false))
+        val resultado = fuente.load(PagingSource.LoadParams.Refresh(key = null, loadSize = 20, placeholdersEnabled = false))
 
         // La pantalla necesita un estado de error con boton de reintentar, no
         // una excepcion que tumbe la corrutina.
         assertTrue(resultado is PagingSource.LoadResult.Error)
+        // Y ese fallo de red tiene que poder reintentarse. `assertTrue(... is ...)`
+        // ya le dijo a Kotlin que `resultado` es un `Error`, asi que se puede
+        // leer su `throwable` sin convertirlo. Si el doble lanzara algo que no
+        // es lo que lanza una red caida, esto fallaria.
+        val error = resultado.throwable.aAppError()
+        assertTrue(error.esReintentable, "no se puede reintentar: $error")
     }
 }
