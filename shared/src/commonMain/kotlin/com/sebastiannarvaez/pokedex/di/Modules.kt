@@ -5,6 +5,7 @@ import com.sebastiannarvaez.pokedex.core.AppConfig
 import com.sebastiannarvaez.pokedex.core.AppDispatchers
 import com.sebastiannarvaez.pokedex.data.AccountRepository
 import com.sebastiannarvaez.pokedex.data.FavoritesRepository
+import com.sebastiannarvaez.pokedex.data.PokemonListRepository
 import com.sebastiannarvaez.pokedex.data.SessionRepository
 import com.sebastiannarvaez.pokedex.data.SecureStorageTokenStore
 import com.sebastiannarvaez.pokedex.data.TokenStore
@@ -65,6 +66,8 @@ val pokedexModule: Module = module {
     single { createDatabase(get()) }
     single { get<PokedexDatabase>().favoriteDao() }
     single { FavoritesRepository(get(), get()) }
+    // La lista con sus dos fuentes: la red (PokemonRepository) y la base.
+    single { PokemonListRepository(get(), get()) }
     single { SettingsRepository(get()) }
 
     // El cliente de Supabase lleva `named`: hay dos HttpClient en el grafo y,
