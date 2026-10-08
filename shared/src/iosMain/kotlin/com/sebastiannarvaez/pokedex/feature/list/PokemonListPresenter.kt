@@ -89,6 +89,7 @@ class PokemonListPresenter internal constructor(
             cargandoMas = append is LoadState.Loading,
             error = (refresh as? LoadState.Error)?.error?.aAppError()?.aUiError(),
             errorAlAmpliar = (append as? LoadState.Error)?.error?.aAppError()?.aUiError(),
+            sinConexion = estados?.mostrandoLoGuardado(hayFilas = items.isNotEmpty()) ?: false,
         )
     }
 }

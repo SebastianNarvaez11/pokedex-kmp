@@ -20,6 +20,8 @@ data class PagedListState(
     val error: UiError? = null,
     /** El error al pedir la pagina siguiente. La lista sigue ahi. */
     val errorAlAmpliar: UiError? = null,
+    /** La red ha fallado y la lista ensena lo guardado: se avisa sin taparla. */
+    val sinConexion: Boolean = false,
 ) {
     val vacia: Boolean get() = items.isEmpty() && !cargando && error == null
 }
