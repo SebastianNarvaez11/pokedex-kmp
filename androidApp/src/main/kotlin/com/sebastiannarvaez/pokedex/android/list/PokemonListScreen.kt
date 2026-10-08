@@ -282,7 +282,7 @@ private fun AvisoSinConexion(reintentar: () -> Unit, modifier: Modifier = Modifi
         ) {
             Icon(Icons.Default.Warning, contentDescription = null)
             Text(
-                "Sin conexión, mostrando lo guardado",
+                stringResource(R.string.lista_sin_conexion),
                 style = MaterialTheme.typography.bodyMedium,
                 modifier = Modifier.weight(1f),
             )
@@ -291,7 +291,7 @@ private fun AvisoSinConexion(reintentar: () -> Unit, modifier: Modifier = Modifi
             TextButton(
                 onClick = reintentar,
                 colors = ButtonDefaults.textButtonColors(contentColor = LocalContentColor.current),
-            ) { Text("Reintentar", fontWeight = FontWeight.Bold) }
+            ) { Text(stringResource(R.string.reintentar), fontWeight = FontWeight.Bold) }
         }
     }
 }

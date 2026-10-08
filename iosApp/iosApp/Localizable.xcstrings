@@ -1225,6 +1225,23 @@
         }
       }
     },
+    "Sin conexión, mostrando lo guardado": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Offline, showing saved Pokémon"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sin conexión, mostrando lo guardado"
+          }
+        }
+      }
+    },
     "Siniestro": {
       "extractionState": "manual",
       "localizations": {

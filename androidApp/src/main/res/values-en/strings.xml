@@ -21,6 +21,7 @@
     <string name="busqueda_sin_resultados">No Pokémon is called that</string>
     <string name="lista_vacia_titulo">Nothing to show</string>
     <string name="lista_vacia_detalle">PokeAPI returned no Pokémon.</string>
+    <string name="lista_sin_conexion">Offline, showing saved Pokémon</string>
     <string name="numero_pokemon">No. %04d</string>
 
     <string name="anadir_a_favoritos">Add to favourites</string>
