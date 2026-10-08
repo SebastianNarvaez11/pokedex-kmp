@@ -23,6 +23,7 @@ import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 
@@ -109,6 +110,7 @@ class PokemonListPresenterTest {
             // repetidos.
             assertEquals("pokemon-1", estado.items.first().name)
             assertEquals(estado.items.size, estado.items.map { it.id }.distinct().size, "hay repetidos")
+            assertFalse(estado.sinConexion)
             cancelAndIgnoreRemainingEvents()
         }
         apagar()
@@ -126,6 +128,29 @@ class PokemonListPresenterTest {
             // El `while` de arriba solo termina cuando `error` ya no es `null`,
             // y Kotlin lo sabe: por eso aqui se lee sin `!!` ni `?`.
             assertTrue(estado.error.sePuedeReintentar, "el error deberia ofrecer reintento")
+            cancelAndIgnoreRemainingEvents()
+        }
+        apagar()
+    }
+
+    @Test
+    fun sinRedPeroConLoGuardadoSeVeLaListaYElAviso() = runTest {
+        // Primero con red: la base se llena.
+        val conRed = presentador(total = 60, falla = false, scheduler = testScheduler)
+        conRed.state.test {
+            while (awaitItem().items.isEmpty()) Unit
+            cancelAndIgnoreRemainingEvents()
+        }
+        conRed.close()
+
+        // Despues, sin red y con la copia caducada: el refresco falla.
+        reloj += 24 * 60 * 60 * 1000L
+        val sinRed = presentador(total = 60, falla = true, scheduler = testScheduler)
+        sinRed.state.test {
+            var estado = awaitItem()
+            while (!estado.sinConexion) estado = awaitItem()
+
+            assertEquals("pokemon-1", estado.items.first().name)
             cancelAndIgnoreRemainingEvents()
         }
         apagar()
