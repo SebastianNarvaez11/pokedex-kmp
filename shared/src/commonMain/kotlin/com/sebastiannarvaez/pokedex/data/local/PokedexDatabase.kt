@@ -7,17 +7,24 @@ import androidx.room3.RoomDatabase
 import androidx.room3.RoomDatabaseConstructor
 
 @Database(
-    entities = [FavoriteEntity::class],
-    version = 2,
+    entities = [FavoriteEntity::class, PokemonEntity::class, RemoteKeysEntity::class],
+    version = 3,
     exportSchema = true,
     // La migracion automatica: Room compara los dos esquemas exportados y
     // escribe el ALTER TABLE. Solo puede hacerlo porque `schemas/1.json` esta
     // versionado; si se hubiera borrado, habria que escribirla a mano.
-    autoMigrations = [AutoMigration(from = 1, to = 2)],
+    autoMigrations = [
+        AutoMigration(from = 1, to = 2),
+        // La 3 solo anade dos tablas nuevas: Room escribe los CREATE TABLE y
+        // no toca la de favoritos.
+        AutoMigration(from = 2, to = 3),
+    ],
 )
 @ConstructedBy(PokedexDatabaseConstructor::class)
 abstract class PokedexDatabase : RoomDatabase() {
     abstract fun favoriteDao(): FavoriteDao
+    abstract fun pokemonDao(): PokemonDao
+    abstract fun remoteKeysDao(): RemoteKeysDao
 }
 
 /**
