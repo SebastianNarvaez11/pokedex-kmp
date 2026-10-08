@@ -28,6 +28,7 @@
     <string name="busqueda_sin_resultados">Ningún Pokémon se llama así</string>
     <string name="lista_vacia_titulo">No hay nada que enseñar</string>
     <string name="lista_vacia_detalle">PokeAPI no devolvió ningún Pokémon.</string>
+    <string name="lista_sin_conexion">Sin conexión, mostrando lo guardado</string>
     <string name="numero_pokemon">N.º %04d</string>
 
     <!-- Favoritos -->
