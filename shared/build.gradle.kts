@@ -61,6 +61,9 @@ kotlin {
             // Bundled y no el SQLite del sistema: la misma version del motor en
             // Android, iOS y JVM, y en iOS ahorra enlazar -lsqlite3 a mano.
             implementation(libs.androidx.sqlite.bundled)
+            // Lo que deja a un DAO devolver un PagingSource: la lista lee las
+            // paginas directamente de la base.
+            implementation(libs.androidx.room.paging)
             api(libs.androidx.paging.common)
             api(libs.koin.core)
             implementation(libs.koin.core.viewmodel)
