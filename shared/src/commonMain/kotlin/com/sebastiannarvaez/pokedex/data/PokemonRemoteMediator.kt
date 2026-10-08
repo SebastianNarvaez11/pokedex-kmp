@@ -10,6 +10,8 @@ import com.sebastiannarvaez.pokedex.data.local.PokedexDatabase
 import com.sebastiannarvaez.pokedex.data.local.PokemonEntity
 import com.sebastiannarvaez.pokedex.data.local.RemoteKeysEntity
 import com.sebastiannarvaez.pokedex.data.local.aEntidad
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.hours
 import kotlinx.coroutines.CancellationException
 
 /**
@@ -30,10 +32,31 @@ internal class PokemonRemoteMediator(
     private val db: PokedexDatabase,
     /** El reloj, inyectado como en los favoritos: los tests fijan la hora. */
     private val ahora: () -> Long,
+    /** Cuanto vale una copia guardada antes de pedirla de nuevo al abrir. */
+    private val caducidad: Duration = CADUCIDAD,
 ) : RemoteMediator<Int, PokemonEntity>() {
 
     private val pokemonDao = db.pokemonDao()
     private val clavesDao = db.remoteKeysDao()
+
+    /**
+     * Se llama una vez, al abrir la lista: ¿se pide la primera pagina a la red
+     * o basta con lo guardado?
+     *
+     * Con una copia reciente, se salta (`SKIP_INITIAL_REFRESH`): la lista sale
+     * al instante, con o sin red. Con una copia vieja o sin copia, se refresca
+     * (`LAUNCH_INITIAL_REFRESH`); si entonces no hay red, lo guardado se sigue
+     * viendo y la pantalla avisa.
+     */
+    override suspend fun initialize(): InitializeAction {
+        val claves = clavesDao.get(LISTA_POKEMON) ?: return InitializeAction.LAUNCH_INITIAL_REFRESH
+        val edad = ahora() - claves.actualizadoEn
+        return if (edad < caducidad.inWholeMilliseconds) {
+            InitializeAction.SKIP_INITIAL_REFRESH
+        } else {
+            InitializeAction.LAUNCH_INITIAL_REFRESH
+        }
+    }
 
     override suspend fun load(loadType: LoadType, state: PagingState<Int, PokemonEntity>): MediatorResult {
         val claves = clavesDao.get(LISTA_POKEMON)
@@ -89,4 +112,8 @@ internal class PokemonRemoteMediator(
         }
     }
 
+    companion object {
+        /** Medio dia: la lista de Pokemon casi nunca cambia. */
+        val CADUCIDAD: Duration = 12.hours
+    }
 }
