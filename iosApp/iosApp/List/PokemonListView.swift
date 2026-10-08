@@ -11,7 +11,7 @@ struct PokemonListView: View {
 
     @StateObject private var owner = IosViewModelStoreOwner()
     @State private var estado = PagedListState(
-        items: [], cargando: true, cargandoMas: false, error: nil, errorAlAmpliar: nil
+        items: [], cargando: true, cargandoMas: false, error: nil, errorAlAmpliar: nil, sinConexion: false
     )
     @State private var presenter: PokemonListPresenter?
 
@@ -131,7 +131,36 @@ struct PokemonListView: View {
             // El gesto nativo de tirar para refrescar. En Android hay que
             // envolver la lista en un componente; aquí es un modificador.
             .refreshable { presenter?.refresh() }
+            // Lo guardado se sigue viendo; el aviso solo cuenta por qué no
+            // está al día. Va fuera del ScrollView, pegado arriba: dentro se
+            // iría con el scroll y al llegar al final ya no se vería.
+            // `safeAreaInset` además aparta la lista para que no lo tape.
+            .safeAreaInset(edge: .top) {
+                if estado.sinConexion {
+                    AvisoSinConexion { presenter?.retry() }
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 8)
+                }
+            }
         }
+    }
+}
+
+/// Una franja discreta, con un SF Symbol y el botón de reintentar al lado.
+private struct AvisoSinConexion: View {
+    let reintentar: () -> Void
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Label("Sin conexión, mostrando lo guardado", systemImage: "wifi.slash")
+                .font(.subheadline)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            Button("Reintentar", action: reintentar)
+                .font(.subheadline.weight(.semibold))
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 10)
+        .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
     }
 }
 
