@@ -4,6 +4,7 @@ import androidx.paging.ExperimentalPagingApi
 import androidx.paging.LoadType
 import androidx.paging.PagingConfig
 import androidx.paging.PagingState
+import androidx.paging.RemoteMediator.InitializeAction
 import androidx.paging.RemoteMediator.MediatorResult
 import com.sebastiannarvaez.pokedex.data.local.LISTA_POKEMON
 import com.sebastiannarvaez.pokedex.data.local.PokemonEntity
@@ -17,6 +18,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
 import kotlin.test.assertNull
+import kotlin.time.Duration.Companion.hours
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
@@ -49,7 +51,7 @@ class PokemonRemoteMediatorTest {
     private val estado = PagingState<Int, PokemonEntity>(
         pages = emptyList(),
         anchorPosition = null,
-        config = PagingConfig(pageSize = 20), // las paginas de veinte de la lista
+        config = PagingConfig(pageSize = PokemonListRepository.PAGE_SIZE),
         leadingPlaceholderCount = 0,
     )
 
@@ -129,5 +131,26 @@ class PokemonRemoteMediatorTest {
 
         assertEquals((1..20).toList(), idsGuardados())
         assertEquals(20, db.remoteKeysDao().get(LISTA_POKEMON)?.nextOffset)
+    }
+
+    @Test
+    fun alAbrirSinCopiaSePideLaRed() = runTest {
+        assertEquals(InitializeAction.LAUNCH_INITIAL_REFRESH, mediador().initialize())
+    }
+
+    @Test
+    fun alAbrirConCopiaRecienteNoSePideLaRed() = runTest {
+        mediador().load(LoadType.REFRESH, estado)
+        reloj += 1.hours.inWholeMilliseconds
+
+        assertEquals(InitializeAction.SKIP_INITIAL_REFRESH, mediador().initialize())
+    }
+
+    @Test
+    fun alAbrirConCopiaCaducadaSeRefresca() = runTest {
+        mediador().load(LoadType.REFRESH, estado)
+        reloj += PokemonRemoteMediator.CADUCIDAD.inWholeMilliseconds + 1
+
+        assertEquals(InitializeAction.LAUNCH_INITIAL_REFRESH, mediador().initialize())
     }
 }
