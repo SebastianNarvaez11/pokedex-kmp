@@ -55,4 +55,33 @@ class MigrationTest {
             }
         }
     }
+
+    @Test
+    fun losFavoritosSobrevivenALaVersionTres() = runTest {
+        // Version 2: favoritos con su tipo, y todavia sin la lista guardada.
+        helper.createDatabase(version = 2).use { conexion ->
+            conexion.execSQL(
+                "INSERT INTO favorite (pokemonId, name, addedAt, primaryType) VALUES (25, 'pikachu', 1000, 'ELECTRIC')",
+            )
+        }
+
+        helper.runMigrationsAndValidate(version = 3).use { conexion ->
+            // El favorito sigue ahi, entero: la migracion no toca su tabla.
+            conexion.prepare("SELECT pokemonId, primaryType FROM favorite").use { fila ->
+                check(fila.step()) { "la fila desaparecio en la migracion" }
+                assertEquals(25, fila.getInt(0))
+                assertEquals("ELECTRIC", fila.getText(1))
+            }
+            // Y las dos tablas nuevas existen, vacias: la copia de la lista se
+            // llena desde la red la primera vez que se abre la pantalla.
+            conexion.prepare("SELECT COUNT(*) FROM pokemon").use { fila ->
+                check(fila.step())
+                assertEquals(0, fila.getInt(0))
+            }
+            conexion.prepare("SELECT COUNT(*) FROM remote_keys").use { fila ->
+                check(fila.step())
+                assertEquals(0, fila.getInt(0))
+            }
+        }
+    }
 }
