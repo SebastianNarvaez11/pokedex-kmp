@@ -11,9 +11,19 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.layout.Row
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Surface
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.LargeTopAppBar
@@ -41,6 +51,7 @@ import com.sebastiannarvaez.pokedex.core.aAppError
 import com.sebastiannarvaez.pokedex.core.aUiError
 import com.sebastiannarvaez.pokedex.domain.Pokemon
 import com.sebastiannarvaez.pokedex.feature.list.PokemonListViewModel
+import com.sebastiannarvaez.pokedex.feature.list.mostrandoLoGuardado
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -97,6 +108,9 @@ private fun PokemonListContent(
     // La barra grande se encoge al hacer scroll: es un gesto de Android, no
     // una imitacion de iOS.
     val comportamiento = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
+    // El estado de scroll vive aqui, que siempre esta, y no dentro de Rejilla,
+    // que solo aparece cuando ya hay paginas.
+    val estadoRejilla = rememberLazyGridState()
     val refrescando = pokemon.loadState.refresh is LoadState.Loading && pokemon.itemCount > 0
 
     Scaffold(
@@ -148,7 +162,15 @@ private fun PokemonListContent(
                     }
                 }
 
-                else -> Rejilla(pokemon, alPulsar, idsFavoritos, alMarcar)
+                else -> Rejilla(
+                    pokemon = pokemon,
+                    alPulsar = alPulsar,
+                    idsFavoritos = idsFavoritos,
+                    alMarcar = alMarcar,
+                    estado = estadoRejilla,
+                    // La regla es comun: la misma que usa iOS.
+                    sinConexion = pokemon.loadState.mostrandoLoGuardado(hayFilas = pokemon.itemCount > 0),
+                )
             }
         }
     }
@@ -160,51 +182,95 @@ private fun Rejilla(
     alPulsar: (Int) -> Unit,
     idsFavoritos: Set<Int>,
     alMarcar: (Pokemon) -> Unit,
+    estado: LazyGridState,
+    sinConexion: Boolean,
 ) {
-    LazyVerticalGrid(
-        columns = GridCells.Adaptive(minSize = 164.dp),
-        contentPadding = PaddingValues(16.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-        modifier = Modifier.fillMaxSize(),
-    ) {
-        items(
-            count = pokemon.itemCount,
-            // `itemKey` y no una lambda propia. Escrita a mano, la tentacion es
-            // `pokemon.peek(i)?.id ?: i`, y ahi esta la trampa: el identificador
-            // 25 y el indice 25 son la misma clave. Con claves repetidas la
-            // rejilla deja huecos en blanco, y parece que faltan datos cuando lo
-            // que falta es una clave unica. `itemKey` resuelve el caso nulo sin
-            // invadir el espacio de los identificadores.
-            key = pokemon.itemKey { it.id },
-            contentType = pokemon.itemContentType { "pokemon" },
-        ) { indice ->
-            pokemon[indice]?.let { p ->
-                PokemonCard(
-                    pokemon = p,
-                    esFavorito = p.id in idsFavoritos,
-                    alPulsar = { alPulsar(p.id) },
-                    alMarcar = { alMarcar(p) },
-                )
+    Column(modifier = Modifier.fillMaxSize()) {
+        // El aviso va encima de la rejilla y fuera de ella. Dentro, como primer
+        // elemento, aparece por arriba de lo que se esta mirando y la rejilla
+        // conserva la posicion: queda fuera de la pantalla y no se ve.
+        AnimatedVisibility(visible = sinConexion) {
+            AvisoSinConexion(
+                reintentar = { pokemon.retry() },
+                modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 8.dp),
+            )
+        }
+        LazyVerticalGrid(
+            state = estado,
+            columns = GridCells.Adaptive(minSize = 164.dp),
+            contentPadding = PaddingValues(16.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            modifier = Modifier.fillMaxWidth().weight(1f),
+        ) {
+            items(
+                count = pokemon.itemCount,
+                // `itemKey` y no una lambda propia. Escrita a mano, la tentacion es
+                // `pokemon.peek(i)?.id ?: i`, y ahi esta la trampa: el identificador
+                // 25 y el indice 25 son la misma clave. Con claves repetidas la
+                // rejilla deja huecos en blanco, y parece que faltan datos cuando lo
+                // que falta es una clave unica. `itemKey` resuelve el caso nulo sin
+                // invadir el espacio de los identificadores.
+                key = pokemon.itemKey { it.id },
+                contentType = pokemon.itemContentType { "pokemon" },
+            ) { indice ->
+                pokemon[indice]?.let { p ->
+                    PokemonCard(
+                        pokemon = p,
+                        esFavorito = p.id in idsFavoritos,
+                        alPulsar = { alPulsar(p.id) },
+                        alMarcar = { alMarcar(p) },
+                    )
+                }
+            }
+
+            // El pie: cargando mas, o el error de ampliar con su reintento.
+            when (val pie = pokemon.loadState.append) {
+                is LoadState.Loading -> item(span = { GridItemSpan(maxLineSpan) }) {
+                    Centrado(alto = 72.dp) { CircularProgressIndicator(modifier = Modifier.size(28.dp)) }
+                }
+
+                is LoadState.Error -> item(span = { GridItemSpan(maxLineSpan) }) {
+                    val error = pie.error.aAppError().aUiError()
+                    EstadoDeError(
+                        titulo = error.titulo,
+                        detalle = error.detalle,
+                        reintentar = if (error.sePuedeReintentar) ({ pokemon.retry() }) else null,
+                    )
+                }
+
+                else -> Unit
             }
         }
+    }
+}
 
-        // El pie: cargando mas, o el error de ampliar con su reintento.
-        when (val estado = pokemon.loadState.append) {
-            is LoadState.Loading -> item(span = { GridItemSpan(maxLineSpan) }) {
-                Centrado(alto = 72.dp) { CircularProgressIndicator(modifier = Modifier.size(28.dp)) }
-            }
-
-            is LoadState.Error -> item(span = { GridItemSpan(maxLineSpan) }) {
-                val error = estado.error.aAppError().aUiError()
-                EstadoDeError(
-                    titulo = error.titulo,
-                    detalle = error.detalle,
-                    reintentar = if (error.sePuedeReintentar) ({ pokemon.retry() }) else null,
-                )
-            }
-
-            else -> Unit
+/** Una franja tonal, como un banner de Material 3: dice lo que pasa y ofrece reintentar. */
+@Composable
+private fun AvisoSinConexion(reintentar: () -> Unit, modifier: Modifier = Modifier) {
+    Surface(
+        modifier = modifier,
+        color = MaterialTheme.colorScheme.secondaryContainer,
+        contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+        shape = MaterialTheme.shapes.medium,
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 8.dp, top = 4.dp, bottom = 4.dp),
+        ) {
+            Icon(Icons.Default.Warning, contentDescription = null)
+            Text(
+                "Sin conexión, mostrando lo guardado",
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.weight(1f),
+            )
+            // El color del texto de la franja, no el primario del tema: sobre
+            // el fondo tonal, el primario se lee mal.
+            TextButton(
+                onClick = reintentar,
+                colors = ButtonDefaults.textButtonColors(contentColor = LocalContentColor.current),
+            ) { Text("Reintentar", fontWeight = FontWeight.Bold) }
         }
     }
 }
