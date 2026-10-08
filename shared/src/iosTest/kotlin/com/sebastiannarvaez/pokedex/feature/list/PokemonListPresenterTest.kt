@@ -1,13 +1,19 @@
 package com.sebastiannarvaez.pokedex.feature.list
 
+import androidx.room3.Room
 import app.cash.turbine.test
+import com.sebastiannarvaez.pokedex.data.PokemonListRepository
 import com.sebastiannarvaez.pokedex.data.PokemonRepository
+import com.sebastiannarvaez.pokedex.data.local.PokedexDatabase
+import com.sebastiannarvaez.pokedex.data.local.PokedexDatabaseConstructor
+import com.sebastiannarvaez.pokedex.data.local.createDatabase
 import com.sebastiannarvaez.pokedex.dobles.FakePokeApi
 import com.sebastiannarvaez.pokedex.dobles.TestDispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestCoroutineScheduler
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
+import kotlin.test.AfterTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -20,14 +26,23 @@ import kotlin.test.assertTrue
 @OptIn(ExperimentalCoroutinesApi::class) // UnconfinedTestDispatcher es experimental
 class PokemonListPresenterTest {
 
+    // Una base en memoria, tambien en iOS: la lista ya no sale de la red sino
+    // de aqui. Sin nombre de fichero no hace falta ninguna ruta.
+    private val db: PokedexDatabase = createDatabase(
+        Room.inMemoryDatabaseBuilder<PokedexDatabase>(factory = PokedexDatabaseConstructor::initialize),
+    )
+
+    @AfterTest
+    fun cerrar() = db.close()
+
     private fun presentador(total: Int, falla: Boolean, scheduler: TestCoroutineScheduler): PokemonListPresenter {
         // Unconfined y no Standard: el presentador de Paging encadena varias
         // corrutinas antes de publicar el primer estado, y con el dispatcher
         // estandar hay que adelantar el reloj a mano en cada eslabon. Con el
         // no confinado, cada paso corre en cuanto puede.
         val d = TestDispatchers(UnconfinedTestDispatcher(scheduler))
-        val repo = PokemonRepository(FakePokeApi(total, falla), d)
-        return PokemonListPresenter(PokemonListViewModel(repo), d)
+        val red = PokemonRepository(FakePokeApi(total, falla), d)
+        return PokemonListPresenter(PokemonListViewModel(PokemonListRepository(red, db)), d)
     }
 
     @Test

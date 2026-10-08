@@ -5,6 +5,7 @@ import com.sebastiannarvaez.pokedex.core.AppConfig
 import com.sebastiannarvaez.pokedex.core.AppDispatchers
 import com.sebastiannarvaez.pokedex.core.DefaultAppConfig
 import com.sebastiannarvaez.pokedex.data.FavoritesRepository
+import com.sebastiannarvaez.pokedex.data.PokemonListRepository
 import com.sebastiannarvaez.pokedex.data.PokemonRepository
 import com.sebastiannarvaez.pokedex.data.local.PokedexDatabase
 import com.sebastiannarvaez.pokedex.data.local.createDatabase
@@ -46,6 +47,8 @@ val pokedexModule: Module = module {
     single { createDatabase(get()) }
     single { get<PokedexDatabase>().favoriteDao() }
     single { FavoritesRepository(get(), get()) }
+    // La lista con sus dos fuentes: la red (PokemonRepository) y la base.
+    single { PokemonListRepository(get(), get()) }
 
     // viewModelOf y no factory: Koin registra el ViewModel con el ciclo de
     // vida que espera cada plataforma, y en Android lo entrega viewModel().
