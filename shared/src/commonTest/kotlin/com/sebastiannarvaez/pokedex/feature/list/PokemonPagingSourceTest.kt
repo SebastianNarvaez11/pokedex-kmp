@@ -46,6 +46,14 @@ class PokemonPagingSourceTest {
         // afirma un numero exacto, que depende del reparto entre corrutinas.
         assertTrue(items.size > 60, "no se pidio otra pagina: hay ${items.size}")
         assertEquals(items.size, items.map { it.id }.distinct().size, "hay elementos repetidos")
+
+        // Refrescar a mitad de la lista vuelve a empezar desde el primero, y la
+        // lista que queda es continua: del 1 al ultimo, sin huecos ni repetidos.
+        val tras = pager.flow.asSnapshot {
+            scrollTo(index = 59)
+            refresh()
+        }
+        assertEquals((1..tras.size).toList(), tras.map { it.id }, "tras refrescar faltan o sobran Pokemon")
     }
 
     @Test
