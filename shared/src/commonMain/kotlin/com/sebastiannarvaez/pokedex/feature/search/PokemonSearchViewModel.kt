@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.sebastiannarvaez.pokedex.core.aAppError
 import com.sebastiannarvaez.pokedex.core.aUiError
 import com.sebastiannarvaez.pokedex.data.PokemonRepository
+import com.sebastiannarvaez.pokedex.domain.PokemonRef
 import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -35,17 +36,17 @@ class PokemonSearchViewModel internal constructor(
     }
 
     /**
-     * El canal clasico de una busqueda, en cuatro operadores.
+     * La cadena clasica de una busqueda, en cuatro operadores.
      *
      * - `debounce` espera a que el usuario deje de teclear. Sin el, escribir
      *   «pikachu» lanza siete busquedas y las seis primeras sobran.
-     * - `distinctUntilChanged` ignora el texto que no cambia, como al mover el
-     *   cursor o pegar lo mismo.
+     * - `distinctUntilChanged` ignora lo que, sin los espacios de los extremos,
+     *   es igual a lo anterior: «pika» y «pika » son la misma busqueda.
      * - `flatMapLatest` **cancela la busqueda anterior** al llegar una nueva.
      *   Con `flatMapMerge`, una respuesta lenta podria pisar a una posterior y
      *   la pantalla acabaria mostrando resultados de una consulta vieja.
-     * - `stateIn` lo deja en un estado que la interfaz puede leer sin
-     *   suscribirse a mano.
+     * - `stateIn` lo convierte en un `StateFlow`, que siempre tiene un valor
+     *   actual. Este es privado: lo lee el `combine` de abajo.
      */
     private val resultados: StateFlow<SearchUiState> = consulta
         .debounce { if (it.isBlank()) 0.milliseconds else ESPERA }
@@ -54,7 +55,10 @@ class PokemonSearchViewModel internal constructor(
         .flatMapLatest { texto -> buscar(texto) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), SearchUiState())
 
-    /** El texto se publica al instante; los resultados van a su ritmo. */
+    /**
+     * El texto se publica al instante; los resultados van a su ritmo.
+     * Este `stateIn` es el publico: el `uiState` que lee la pantalla.
+     */
     val uiState: StateFlow<SearchUiState> = combine(consulta, resultados) { texto, estado ->
         estado.copy(consulta = texto, buscando = estado.buscando || texto.trim() != estado.consulta.trim())
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), SearchUiState())
@@ -71,8 +75,8 @@ class PokemonSearchViewModel internal constructor(
             val encontrados = indice
                 .filter { it.name.contains(normalizado) }
                 // Lo que empieza por lo escrito, primero: buscar «char» debe
-                // dar Charmander antes que Ampharos.
-                .sortedWith(compareByDescending<com.sebastiannarvaez.pokedex.domain.PokemonRef> {
+                // dar Charmander antes que Chimchar.
+                .sortedWith(compareByDescending<PokemonRef> {
                     it.name.startsWith(normalizado)
                 }.thenBy { it.id })
                 .take(MAXIMO_RESULTADOS)
