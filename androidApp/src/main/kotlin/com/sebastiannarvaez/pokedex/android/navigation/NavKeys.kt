@@ -9,7 +9,7 @@ import kotlinx.serialization.Serializable
  *
  * El mapa de pantallas vive en el modulo compartido; esto es solo su forma
  * local. Se traduce en la frontera y no antes: meter `NavKey` en `commonMain`
- * ataria el nucleo a una libreria de interfaz que iOS no usa.
+ * haria depender al nucleo de una libreria de AndroidX que iOS no usa.
  *
  * Son `@Serializable` porque Navigation 3 guarda la pila para sobrevivir a que
  * el sistema mate el proceso: sin eso, volver a la app tras un rato en segundo
@@ -30,6 +30,7 @@ data class DetalleKey(val pokemonId: Int) : NavKey
 /** Las pestañas de primer nivel, que nunca se apilan entre si. */
 val PESTANAS: List<NavKey> = listOf(ListaKey, FavoritosKey, AjustesKey)
 
+/** Traduce el mapa compartido a la clave que entiende Navigation 3. */
 fun Destination.aNavKey(): NavKey = when (this) {
     Destination.Lista -> ListaKey
     is Destination.Detalle -> DetalleKey(pokemonId)
