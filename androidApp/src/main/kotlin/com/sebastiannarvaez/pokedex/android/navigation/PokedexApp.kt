@@ -5,6 +5,7 @@ import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDe
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
+import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import com.sebastiannarvaez.pokedex.android.detail.PokemonDetailScreen
 import com.sebastiannarvaez.pokedex.android.list.PokemonListScreen
@@ -18,22 +19,28 @@ import com.sebastiannarvaez.pokedex.android.list.PokemonListScreen
  */
 @Composable
 fun PokedexApp(inicio: NavKey = ListaKey) {
+    // La pila es una lista de claves que sobrevive a rotar y a que maten el proceso.
     val pila = rememberNavBackStack(inicio)
 
     NavDisplay(
         backStack = pila,
+        // «Atrás» quita la última clave, pero solo si queda otra debajo.
         onBack = { if (pila.size > 1) pila.removeAt(pila.lastIndex) },
-        // Cada entrada de la pila con su propio almacen de ViewModel. Sin este
-        // decorador todas comparten uno, y al abrir un Pokemon se ve la ficha
-        // del anterior durante un instante.
-        entryDecorators = listOf(rememberViewModelStoreNavEntryDecorator()),
+        entryDecorators = listOf(
+            // Primero el de rememberSaveable: la lista conserva el scroll al volver.
+            rememberSaveableStateHolderNavEntryDecorator(),
+            // Y el de ViewModel: cada ficha tiene el suyo y se limpia al salir.
+            rememberViewModelStoreNavEntryDecorator(),
+        ),
         entryProvider = entryProvider {
             entry<ListaKey> {
+                // La lista no sabe adónde lleva un toque: avisa, y aquí se decide.
                 PokemonListScreen(
                     alPulsar = { pokemon -> pila.add(DetalleKey(pokemon.id)) },
                 )
             }
             entry<DetalleKey> { clave ->
+                // clave es la DetalleKey de arriba de la pila, con su pokemonId tipado.
                 PokemonDetailScreen(
                     pokemonId = clave.pokemonId,
                     alVolver = { if (pila.size > 1) pila.removeAt(pila.lastIndex) },
