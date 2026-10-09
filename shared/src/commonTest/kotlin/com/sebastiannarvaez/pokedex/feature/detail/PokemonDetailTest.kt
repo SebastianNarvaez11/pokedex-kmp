@@ -20,9 +20,11 @@ class PokemonDetailTest {
 
     /**
      * `viewModelScope` cuelga de `Dispatchers.Main`, no del planificador del
-     * test. Sin instalarlo, `advanceUntilIdle()` no ejecuta nada de lo que el
-     * ViewModel lanza, y el estado se queda en «cargando» para siempre: el test
-     * falla sin decir por que.
+     * test. En la JVM no hay hilo principal: sin instalarlo, el ViewModel lanza
+     * su corrutina en un hilo de verdad, fuera del reloj del test, y
+     * `advanceUntilIdle()` vuelve antes de que llegue la ficha. La asercion mira
+     * el estado demasiado pronto y el test falla sin decir por que. (En iOS si
+     * hay hilo principal, y estos tests pasan aun sin esta linea.)
      */
     @BeforeTest
     fun instalarElHiloPrincipal() {
