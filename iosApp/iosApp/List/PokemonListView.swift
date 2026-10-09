@@ -32,7 +32,7 @@ struct PokemonListView: View {
         NavigationStack(path: $camino) {
             Group {
                 // `.searchable` es un modificador: el campo lo pone el sistema
-                // en la barra de navegación y se recoge solo al hacer scroll.
+                // (arriba hasta iOS 18; abajo, flotando, en iOS 26).
                 // En Android la barra de búsqueda es un componente que hay que
                 // colocar, y hay que decidir qué pasa con el título grande.
                 if texto.isEmpty {
