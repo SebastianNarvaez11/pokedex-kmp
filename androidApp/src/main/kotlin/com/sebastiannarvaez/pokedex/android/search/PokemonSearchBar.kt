@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -90,7 +91,9 @@ fun PokemonSearchBar(
 
             estado.sinResultados -> Aviso(stringResource(R.string.busqueda_sin_resultados))
 
-            else -> LazyColumn {
+            // imePadding: la lista termina encima del teclado, y los ultimos
+            // resultados se alcanzan desplazando sin tener que cerrarlo.
+            else -> LazyColumn(Modifier.imePadding()) {
                 items(estado.resultados, key = { it.id }) { ref ->
                     FilaDeResultado(ref, alPulsar = { alElegir(ref) })
                 }
