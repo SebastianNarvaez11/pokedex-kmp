@@ -4,9 +4,9 @@ import Shared
 /// Los resultados de la búsqueda, como lista.
 ///
 /// En Android la barra de Material se expande a pantalla completa y lleva los
-/// resultados dentro. Aquí no hace falta: `.searchable` deja el campo en la
-/// barra de navegación y la vista decide qué pintar debajo, que es más simple
-/// y más de iOS.
+/// resultados dentro. Aquí no hace falta: con `.searchable` el campo lo pone
+/// el sistema (arriba hasta iOS 18; abajo, flotando, en iOS 26) y la vista
+/// decide qué pintar debajo, que es más simple y más de iOS.
 struct SearchResultsView: View {
 
     let estado: SearchUiState
