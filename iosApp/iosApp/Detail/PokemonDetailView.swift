@@ -62,7 +62,10 @@ private struct Ficha: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 18) {
-                ZStack(alignment: .topTrailing) {
+                // El numero va abajo, no arriba: la cabecera ignora el area
+                // segura para que la imagen suba bajo la barra, y arriba el
+                // numero quedaria debajo de la hora, el wifi y la bateria.
+                ZStack(alignment: .bottomTrailing) {
                     LinearGradient(
                         colors: [tinte.opacity(0.45), .clear],
                         startPoint: .top,
