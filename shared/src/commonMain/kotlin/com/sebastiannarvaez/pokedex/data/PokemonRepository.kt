@@ -82,9 +82,8 @@ internal class PokemonRepository(
      * acierta con el nombre exacto. La unica forma es traerse la lista entera
      * de nombres —son unos mil trescientos, apenas 100 KB— y filtrar aqui.
      *
-     * El `Mutex` evita que dos busquedas simultaneas pidan el indice dos veces
-     * al arrancar. Sin el, la primera letra que escribe el usuario dispara dos
-     * descargas identicas.
+     * El `Mutex` evita que dos llamadas simultaneas pidan el indice dos veces:
+     * el repositorio es uno para toda la app.
      */
     suspend fun searchIndex(): List<PokemonRef> = withContext(dispatchers.io) {
         indice ?: candado.withLock {
