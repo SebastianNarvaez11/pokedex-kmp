@@ -3,6 +3,8 @@ package com.sebastiannarvaez.pokedex.android.navigation
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
@@ -39,6 +41,9 @@ fun PokedexApp(inicio: NavKey = ListaKey) {
     val actual = pila.lastOrNull()
 
     Scaffold(
+        // Sin margenes propios: cada pantalla de dentro tiene su Scaffold y
+        // pone los suyos (la barra de estado arriba, la del sistema abajo).
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         bottomBar = {
             // La barra solo aparece en las pantallas de primer nivel. En un
             // detalle estorba: ocupa sitio y ofrece saltar a otra seccion
@@ -72,7 +77,10 @@ fun PokedexApp(inicio: NavKey = ListaKey) {
         },
     ) { relleno ->
     NavDisplay(
-        modifier = Modifier.padding(relleno),
+        // padding deja sitio a la barra de abajo, y consumeWindowInsets avisa
+        // a las pantallas de dentro de que ese hueco ya esta puesto: si no,
+        // lo vuelven a sumar y queda una franja vacia.
+        modifier = Modifier.padding(relleno).consumeWindowInsets(relleno),
         backStack = pila,
         onBack = { if (pila.size > 1) pila.removeAt(pila.lastIndex) },
         entryDecorators = listOf(
