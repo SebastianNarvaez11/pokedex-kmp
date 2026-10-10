@@ -6,6 +6,7 @@ import com.sebastiannarvaez.pokedex.data.local.createDatabase
 import com.sebastiannarvaez.pokedex.data.local.getDatabaseBuilder
 import com.sebastiannarvaez.pokedex.dobles.TestDispatchers
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
@@ -17,6 +18,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class FavoritesTest {
 
     private val db = createDatabase(getDatabaseBuilder())
