@@ -111,6 +111,10 @@ struct PokemonCardView: View {
                 ? pokemon.name.capitalized
                 : "\(pokemon.name.capitalized), tipo \(pokemon.types.map(\.etiqueta).joined(separator: " y "))"
         )
+        // Al ignorar a los hijos, el corazón deja de ser un elemento propio:
+        // VoiceOver no lo encontraría. Vuelve como acción de la tarjeta, que
+        // VoiceOver ofrece al deslizar hacia arriba o hacia abajo.
+        .accessibilityAction(named: Text(esFavorito ? "Quitar de favoritos" : "Añadir a favoritos")) { alMarcar() }
     }
 }
 
