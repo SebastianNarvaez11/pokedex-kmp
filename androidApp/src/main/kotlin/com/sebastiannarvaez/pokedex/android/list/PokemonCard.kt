@@ -13,16 +13,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -106,8 +104,19 @@ fun PokemonCard(
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.55f),
                     modifier = Modifier.align(Alignment.TopStart).padding(12.dp),
                 )
-                // El corazon va sobre la imagen y con su propia zona tactil:
-                // marcar no debe abrir la ficha.
+                AsyncImage(
+                    model = pokemon.artworkUrl,
+                    // null: la tarjeta entera ya tiene descripcion, y repetirla
+                    // haria que el lector de pantalla la dijera dos veces.
+                    contentDescription = null,
+                    contentScale = ContentScale.Fit,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 18.dp, vertical = 14.dp),
+                )
+                // El corazon va despues de la imagen porque en un Box lo ultimo
+                // se dibuja encima: asi la ilustracion nunca lo tapa. Lleva su
+                // propia zona tactil: marcar no debe abrir la ficha.
                 IconButton(
                     onClick = alMarcar,
                     modifier = Modifier.align(Alignment.TopEnd).size(36.dp),
@@ -119,17 +128,6 @@ fun PokemonCard(
                         modifier = Modifier.size(20.dp),
                     )
                 }
-
-                AsyncImage(
-                    model = pokemon.artworkUrl,
-                    // null: la tarjeta entera ya tiene descripcion, y repetirla
-                    // haria que el lector de pantalla la dijera dos veces.
-                    contentDescription = null,
-                    contentScale = ContentScale.Fit,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = 18.dp, vertical = 14.dp),
-                )
             }
 
             Column(
