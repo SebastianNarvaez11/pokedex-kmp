@@ -1,5 +1,6 @@
 package com.sebastiannarvaez.pokedex.feature.favorites
 
+import app.cash.turbine.ReceiveTurbine
 import app.cash.turbine.test
 import com.sebastiannarvaez.pokedex.data.FavoritesRepository
 import com.sebastiannarvaez.pokedex.data.local.createDatabase
@@ -16,6 +17,7 @@ import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -85,5 +87,59 @@ class FavoritesTest {
             assertTrue(favorito.artworkUrl.endsWith("/25.png"))
             cancelAndIgnoreRemainingEvents()
         }
+    }
+
+    /** Room avisa cuando le da tiempo: se esperan estados hasta el que se busca. */
+    private suspend fun ReceiveTurbine<FavoritesUiState>.hasta(condicion: (FavoritesUiState) -> Boolean): FavoritesUiState {
+        var estado = awaitItem()
+        while (!condicion(estado)) estado = awaitItem()
+        return estado
+    }
+
+    @Test
+    fun quitarDejaElMensajeYDeshacerLoDevuelveASuSitio() = runTest {
+        val repo = repo(testScheduler)
+        reloj = 1_000; repo.toggle(1, "bulbasaur")
+        reloj = 2_000; repo.toggle(4, "charmander")
+        reloj = 3_000; repo.toggle(25, "pikachu")
+        val vm = FavoritesViewModel(repo)
+
+        vm.uiState.test {
+            val charmander = hasta { !it.cargando }.favoritos[1]
+            reloj = 9_000 // si deshacer usara la hora de ahora, charmander subiria arriba
+
+            vm.quitar(charmander)
+            // Room avisa de la fila borrada un instante despues: se espera a las dos cosas.
+            val conMensaje = hasta { it.quitado != null && it.favoritos.size == 2 }
+            assertEquals(charmander, conMensaje.quitado)
+            assertEquals(listOf("pikachu", "bulbasaur"), conMensaje.favoritos.map { it.name })
+
+            vm.deshacer()
+            val deshecho = hasta { it.quitado == null && it.favoritos.size == 3 }
+            assertEquals(listOf("pikachu", "charmander", "bulbasaur"), deshecho.favoritos.map { it.name })
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun mensajeMostradoLoConsumeYElFavoritoSigueQuitado() = runTest {
+        val repo = repo(testScheduler)
+        repo.toggle(25, "pikachu")
+        val vm = FavoritesViewModel(repo)
+
+        vm.uiState.test {
+            val pikachu = hasta { !it.cargando }.favoritos.single()
+            vm.quitar(pikachu)
+            hasta { it.quitado != null && it.vacia }
+
+            vm.mensajeMostrado()
+            val consumido = hasta { it.quitado == null }
+            assertTrue(consumido.vacia)
+            // Ya no hay nada que deshacer: el gesto llega tarde y no hace nada.
+            vm.deshacer()
+            expectNoEvents()
+            cancelAndIgnoreRemainingEvents()
+        }
+        assertNull(repo.quitar(25))
     }
 }
