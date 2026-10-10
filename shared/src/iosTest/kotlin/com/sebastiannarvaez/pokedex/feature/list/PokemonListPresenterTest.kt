@@ -138,7 +138,9 @@ class PokemonListPresenterTest {
         // Primero con red: la base se llena.
         val conRed = presentador(total = 60, falla = false, scheduler = testScheduler)
         conRed.state.test {
-            while (awaitItem().items.isEmpty()) Unit
+            // Espera al primer estado con la lista llena, como los otros dos tests.
+            var estado = awaitItem()
+            while (estado.items.isEmpty()) estado = awaitItem()
             cancelAndIgnoreRemainingEvents()
         }
         conRed.close()
