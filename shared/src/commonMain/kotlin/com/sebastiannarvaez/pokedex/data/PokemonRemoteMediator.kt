@@ -97,7 +97,8 @@ internal class PokemonRemoteMediator(
                         nextOffset = if (fin) null else offset + limit,
                         // La edad de la copia es la de su primera pagina: al
                         // ampliar se conserva la fecha del ultimo refresco.
-                        actualizadoEn = if (loadType == LoadType.REFRESH) ahora() else claves?.actualizadoEn ?: ahora(),
+                        actualizadoEn = if (loadType == LoadType.REFRESH) ahora()
+                        else claves?.actualizadoEn ?: ahora(),
                     ),
                 )
             }
