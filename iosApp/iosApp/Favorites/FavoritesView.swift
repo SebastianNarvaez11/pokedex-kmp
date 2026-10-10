@@ -11,7 +11,7 @@ import KMPNativeCoroutinesAsync
 struct FavoritesView: View {
 
     @StateObject private var owner = IosViewModelStoreOwner()
-    @State private var estado = FavoritesUiState(favoritos: [], cargando: true)
+    @State private var estado = FavoritesUiState(favoritos: [], cargando: true, quitado: nil)
     @State private var viewModel: FavoritesViewModel?
     @State private var confirmandoVaciar = false
     @Binding var camino: [Int32]
@@ -106,6 +106,9 @@ struct FavoritesView: View {
                     // Android el equivalente pinta un fondo y hay que dibujarlo.
                     .swipeActions(edge: .trailing) {
                         Button("Quitar", systemImage: "heart.slash", role: .destructive) {
+                            // toggle y no quitar: el aviso con «Deshacer» es de
+                            // Android (un Snackbar de Material) y aquí nadie lo
+                            // consumiría.
                             viewModel?.toggle(id: favorito.id, name: favorito.name, primaryType: favorito.primaryType)
                         }
                     }

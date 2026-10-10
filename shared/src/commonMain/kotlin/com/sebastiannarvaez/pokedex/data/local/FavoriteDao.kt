@@ -29,6 +29,10 @@ interface FavoriteDao {
     @Query("DELETE FROM favorite WHERE pokemonId = :pokemonId")
     suspend fun remove(pokemonId: Int)
 
+    /** La fila entera, o null si no esta. La usa «deshacer» para devolverla tal cual. */
+    @Query("SELECT * FROM favorite WHERE pokemonId = :pokemonId")
+    suspend fun find(pokemonId: Int): FavoriteEntity?
+
     @Query("SELECT EXISTS(SELECT 1 FROM favorite WHERE pokemonId = :pokemonId)")
     suspend fun isFavorite(pokemonId: Int): Boolean
 
