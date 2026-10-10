@@ -11,8 +11,8 @@ import androidx.room3.RoomDatabaseConstructor
     version = 3,
     exportSchema = true,
     // La migracion automatica: Room compara los dos esquemas exportados y
-    // escribe el ALTER TABLE. Solo puede hacerlo porque `schemas/1.json` esta
-    // versionado; si se hubiera borrado, habria que escribirla a mano.
+    // escribe el ALTER TABLE. Solo puede hacerlo porque `schemas/1.json` se
+    // guarda con el proyecto y no se borra; si faltara, habria que escribirla a mano.
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
         // La 3 solo anade dos tablas nuevas: Room escribe los CREATE TABLE y
