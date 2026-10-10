@@ -6,7 +6,6 @@ import com.sebastiannarvaez.pokedex.data.local.FavoriteEntity
 import com.sebastiannarvaez.pokedex.domain.FavoritePokemon
 import com.sebastiannarvaez.pokedex.domain.PokemonType
 import kotlin.time.Clock
-import kotlin.time.ExperimentalTime
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
@@ -17,7 +16,6 @@ import kotlinx.coroutines.withContext
  * El reloj se inyecta en vez de llamar a `Clock.System` por dentro: asi un test
  * puede fijar la hora y comprobar el orden sin dormir.
  */
-@OptIn(ExperimentalTime::class)
 internal class FavoritesRepository(
     private val dao: FavoriteDao,
     private val dispatchers: AppDispatchers,
