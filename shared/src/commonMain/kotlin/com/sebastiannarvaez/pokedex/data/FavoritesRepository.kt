@@ -54,5 +54,16 @@ internal class FavoritesRepository(
         }
     }
 
+    /**
+     * Quita un favorito y devuelve su fila tal como estaba, con su fecha, para
+     * poder ponerla igual si el usuario se arrepiente. null si no estaba.
+     */
+    suspend fun quitar(id: Int): FavoriteEntity? = withContext(dispatchers.io) {
+        dao.find(id)?.also { dao.remove(id) }
+    }
+
+    /** Vuelve a poner una fila quitada. Con su fecha de antes, recupera su sitio en la lista. */
+    suspend fun restaurar(fila: FavoriteEntity) = withContext(dispatchers.io) { dao.add(fila) }
+
     suspend fun clear() = withContext(dispatchers.io) { dao.clear() }
 }
