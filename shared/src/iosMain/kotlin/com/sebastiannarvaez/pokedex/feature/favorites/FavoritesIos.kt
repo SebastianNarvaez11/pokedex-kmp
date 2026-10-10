@@ -21,9 +21,9 @@ val FavoritesViewModel.uiStateForIos: StateFlow<FavoritesUiState>
     get() = uiState
 
 /**
- * Un `Set<Int>` cruza a Swift como `NSSet` de `KotlinInt`, que es incomodo de
- * consultar. Se expone como lista y Swift la convierte a `Set<Int32>` una vez.
+ * Los identificadores de los favoritos. Swift los recibe como `Set<KotlinInt>`
+ * y los convierte a `Set<Int32>` una vez por cambio.
  */
 @NativeCoroutinesState
-val FavoritesViewModel.favoriteIdsForIos: StateFlow<List<Int>>
-    get() = favoriteIdsList
+val FavoritesViewModel.favoriteIdsForIos: StateFlow<Set<Int>>
+    get() = favoriteIds
