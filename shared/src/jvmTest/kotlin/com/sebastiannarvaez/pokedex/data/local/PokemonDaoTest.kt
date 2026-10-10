@@ -31,13 +31,14 @@ class PokemonDaoTest {
 
     @Test
     fun lasPaginasSalenEnElOrdenDeLaLista() = runTest {
-        // Se insertan desordenadas a proposito: manda la columna `position`.
-        dao.insertAll(listOf(fila(3, 2), fila(1, 0), fila(2, 1)))
+        // El orden de la lista no es el de los numeros: el 3 va primero.
+        // Sin `ORDER BY position`, SQLite las devolveria por numero (1, 2, 3).
+        dao.insertAll(listOf(fila(1, 2), fila(2, 1), fila(3, 0)))
 
         val pager = TestPager(PagingConfig(pageSize = 2, enablePlaceholders = false), dao.pagingSource())
         val pagina = pager.refresh() as PagingSource.LoadResult.Page
 
-        assertEquals(listOf(1, 2, 3), pagina.data.map { it.id })
+        assertEquals(listOf(3, 2, 1), pagina.data.map { it.id })
     }
 
     @Test
