@@ -144,4 +144,7 @@
     <string name="tarjeta_descripcion">%1$s, tipo %2$s</string>
     <string name="separador_tipos"> y </string>
     <string name="favoritos_vacio_detalle">Toca el corazón de cualquier Pokémon para guardarlo aquí.</string>
+    <!-- El aviso al deslizar un favorito: el nombre va en el hueco. -->
+    <string name="favorito_quitado">%1$s quitado de favoritos</string>
+    <string name="deshacer">Deshacer</string>
 </resources>
