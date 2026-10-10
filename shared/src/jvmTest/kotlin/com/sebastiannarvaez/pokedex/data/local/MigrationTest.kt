@@ -10,11 +10,10 @@ import kotlin.test.assertEquals
 import kotlinx.coroutines.test.runTest
 
 /**
- * El unico test que simula al usuario que ya tenia la app instalada.
- *
- * Abre una base de datos en la version 1 con una fila dentro, aplica la
- * migracion y comprueba que la fila sigue ahi. Es lo que separa una migracion
- * que compila de una que no borra los favoritos de nadie.
+ * Los tests que simulan al usuario que ya tenia la app instalada: cada uno
+ * abre una base de una version vieja con una fila dentro, aplica la migracion
+ * y comprueba que la fila sigue ahi. Es lo que separa una migracion que compila
+ * de una que no borra los favoritos de nadie.
  *
  * Vive en `jvmTest` porque `MigrationTestHelper` necesita rutas de fichero y en
  * el simulador de iOS eso se complica. La migracion es la misma en las tres
@@ -26,7 +25,7 @@ class MigrationTest {
 
     private val helper = MigrationTestHelper(
         // El directorio donde estan los esquemas exportados. Si no se
-        // versionaran, este test no podria existir.
+        // guardaran con el proyecto, este test no podria existir.
         schemaDirectoryPath = Path("schemas"),
         databasePath = temporal.resolve("migracion.db"),
         driver = BundledSQLiteDriver(),

@@ -55,8 +55,9 @@ kotlin {
             // api: el grafo de Koin es parte de la cara publica del modulo,
             // porque quien arranca la app es cada interfaz nativa, no esto.
             // api: PagingData asoma en la cara publica del ViewModel.
-            // api: la base de datos asoma en el constructor del repositorio,
-            // asi que sus supertipos tienen que viajar con el modulo.
+            // api y no implementation: `PokedexDatabase` y `createDatabase` son
+            // publicas y sus firmas nombran tipos de Room (`RoomDatabase`), asi
+            // que esos tipos tienen que viajar con el modulo.
             api(libs.androidx.room.runtime)
             // Bundled y no el SQLite del sistema: la misma version del motor en
             // Android, iOS y JVM, y en iOS ahorra enlazar -lsqlite3 a mano.
@@ -125,7 +126,7 @@ room3 {
 
 // Room genera el codigo con KSP, y KSP no tiene noticia de los source sets
 // comunes: hay que pedirle el procesador target por target. Si falta uno, ese
-// target compila sin DAOs y falla en ejecucion, no al compilar.
+// target no compila: el `expect object` se queda sin `actual`.
 dependencies {
     add("kspAndroid", libs.androidx.room.compiler)
     add("kspIosArm64", libs.androidx.room.compiler)
