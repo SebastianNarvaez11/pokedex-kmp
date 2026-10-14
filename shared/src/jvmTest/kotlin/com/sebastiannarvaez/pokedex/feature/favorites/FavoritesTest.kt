@@ -150,4 +150,26 @@ class FavoritesTest {
         }
         assertNull(repo.quitar(25))
     }
+
+    @Test
+    fun elAjusteDeOrdenLosPoneDelPrimeroAlUltimo() = runTest {
+        val repo = repo(testScheduler)
+        val ajustes = ajustes()
+        reloj = 1_000; repo.toggle(4, "charmander")
+        reloj = 2_000; repo.toggle(1, "bulbasaur")
+        reloj = 3_000; repo.toggle(2, "ivysaur")
+        val vm = FavoritesViewModel(repo, ajustes)
+
+        vm.uiState.test {
+            // Sin tocar el ajuste: lo mas reciente primero.
+            val porFecha = hasta { !it.cargando && it.favoritos.size == 3 }
+            assertEquals(listOf(2, 1, 4), porFecha.favoritos.map { it.id })
+
+            // Con el ajuste, se reordena en memoria sin volver a consultar la base.
+            ajustes.cambiarOrden(porNumero = true)
+            val porNumero = hasta { it.favoritos.first().id == 1 }
+            assertEquals(listOf(1, 2, 4), porNumero.favoritos.map { it.id })
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
 }

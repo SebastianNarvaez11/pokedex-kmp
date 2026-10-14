@@ -1,5 +1,6 @@
 package com.sebastiannarvaez.pokedex.di
 
+import androidx.datastore.core.DataStore
 import io.ktor.client.engine.HttpClientEngine
 import kotlin.test.Test
 import org.koin.core.annotation.KoinExperimentalAPI
@@ -40,9 +41,9 @@ class ModulesTest {
         pokedexModule.verify(
             extraTypes = listOf(
                 HttpClientEngine::class,
-                // Lo aporta el modulo de plataforma, no este.
-                androidx.datastore.core.DataStore::class,
-                androidx.room3.RoomDatabase.Builder::class,
+                // El almacen lo registra `platformModule` (uno por plataforma),
+                // y `verify` solo mira `pokedexModule`.
+                DataStore::class,
                 // La aporta cada app al arrancar, con sus propias claves.
                 com.sebastiannarvaez.pokedex.core.AppConfig::class,
             ),
