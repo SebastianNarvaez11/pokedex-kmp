@@ -11,6 +11,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -31,6 +33,10 @@ import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import com.sebastiannarvaez.pokedex.android.detail.PokemonDetailScreen
 import com.sebastiannarvaez.pokedex.android.list.PokemonListScreen
+import androidx.compose.runtime.getValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.sebastiannarvaez.pokedex.feature.favorites.FavoritesViewModel
+import org.koin.compose.viewmodel.koinViewModel
 
 /**
  * La pila de pantallas.
@@ -46,6 +52,10 @@ fun PokedexApp(
 ) {
     val pila = rememberNavBackStack(ListaKey)
     val actual = pila.lastOrNull()
+    // La insignia de Favoritos. Este ViewModel es de la Activity (esta fuera del
+    // NavDisplay), no de una pestaña, y lee el mismo repositorio que la pantalla.
+    val favoritos: FavoritesViewModel = koinViewModel()
+    val insignia by favoritos.insignia.collectAsStateWithLifecycle()
 
     // Un enlace entrante deja la lista debajo y el destino encima: asi volver
     // desde una ficha abierta por enlace lleva a la app, no fuera de ella.
@@ -81,7 +91,12 @@ fun PokedexApp(
                     NavigationBarItem(
                         selected = actual == FavoritosKey,
                         onClick = { irAPestana(pila, FavoritosKey) },
-                        icon = { Icon(Icons.Default.Favorite, contentDescription = null) },
+                        icon = {
+                            // Con null no se dibuja el circulo: sin favoritos, sin insignia.
+                            BadgedBox(badge = { insignia?.let { Badge { Text(it) } } }) {
+                                Icon(Icons.Default.Favorite, contentDescription = null)
+                            }
+                        },
                         label = { Text(stringResource(R.string.pestana_favoritos)) },
                     )
                     NavigationBarItem(
