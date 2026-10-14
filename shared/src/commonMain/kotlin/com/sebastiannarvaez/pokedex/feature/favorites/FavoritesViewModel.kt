@@ -11,8 +11,20 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+
+/**
+ * El texto de la insignia de la pestaña Favoritos: nada con 0 (sin insignia),
+ * el numero hasta 99 y «99+» a partir de ahi, para que quepa en el circulo.
+ * Vive aqui, en comun, para que Android e iOS cuenten igual.
+ */
+fun textoInsignia(cuantos: Int): String? = when {
+    cuantos <= 0 -> null
+    cuantos > 99 -> "99+"
+    else -> cuantos.toString()
+}
 
 data class FavoritesUiState(
     val favoritos: List<FavoritePokemon> = emptyList(),
@@ -53,6 +65,14 @@ class FavoritesViewModel internal constructor(
                 quitado = q,
             )
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), FavoritesUiState())
+
+    /**
+     * La insignia de la pestaña Favoritos: sale del mismo conjunto de ids que
+     * los corazones, sin otra consulta. null: sin insignia.
+     */
+    val insignia: StateFlow<String?> = repository.observeFavoriteIds()
+        .map { textoInsignia(it.size) }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
     /** Los identificadores, para que la lista pinte el corazon sin recargarse. */
     val favoriteIds: StateFlow<Set<Int>> = repository.observeFavoriteIds()
