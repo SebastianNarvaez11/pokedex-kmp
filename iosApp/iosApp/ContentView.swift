@@ -2,7 +2,7 @@ import SwiftUI
 import Shared
 import KMPNativeCoroutinesAsync
 
-/// Las dos secciones de la app.
+/// Las tres secciones de la app.
 ///
 /// `TabView` es el contenedor de iOS: la barra la pinta el sistema. En Android
 /// hay que colocar la barra, decidir cuándo se ve y gestionar la pila a mano.
