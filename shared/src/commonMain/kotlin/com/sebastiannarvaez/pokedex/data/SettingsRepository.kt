@@ -1,9 +1,11 @@
 package com.sebastiannarvaez.pokedex.data
 
 import androidx.datastore.core.DataStore
+import androidx.datastore.core.IOException
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.sebastiannarvaez.pokedex.core.Log
 import com.sebastiannarvaez.pokedex.feature.settings.Settings
@@ -23,10 +25,15 @@ internal class SettingsRepository(private val store: DataStore<Preferences>) {
 
     val settings: Flow<Settings> = store.data
         .catch { causa ->
+            // Solo se atrapa el error de disco (`IOException`: fichero ilegible
+            // o corrupto). Cualquier otro es un fallo de programacion y se
+            // vuelve a lanzar para que se oiga: dos almacenes sobre el mismo
+            // fichero, por ejemplo, lanzan `IllegalStateException`.
+            if (causa !is IOException) throw causa
             // Un fichero corrupto no debe impedir abrir la app: se registra y
             // se sigue con los valores por defecto.
-            Log.w("no se pudieron leer las preferencias", causa as? Throwable)
-            emit(androidx.datastore.preferences.core.emptyPreferences())
+            Log.w("no se pudieron leer las preferencias", causa)
+            emit(emptyPreferences())
         }
         .map { prefs ->
             Settings(
