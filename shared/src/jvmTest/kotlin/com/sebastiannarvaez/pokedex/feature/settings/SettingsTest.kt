@@ -8,6 +8,7 @@ import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertIs
 import kotlin.test.assertTrue
 
 class SettingsTest {
@@ -18,7 +19,7 @@ class SettingsTest {
     }
 
     @Test
-    fun sinNadaGuardadoManadaElSistema() = runTest {
+    fun sinNadaGuardadoMandaElSistema() = runTest {
         repo().settings.test {
             val inicial = awaitItem()
             // El valor por defecto es «lo que diga el sistema», no «claro».
@@ -59,31 +60,6 @@ class SettingsTest {
     }
 
     @Test
-    fun dosAlmacenesSobreElMismoFicheroNoVenLoMismo() = runTest {
-        val ruta = createTempDirectory("prefs").resolve("pokedex.preferences_pb").toString()
-        val primero = createSettingsStore(ruta)
-        SettingsRepository(primero).cambiarOrden(porNumero = true)
-
-        val segundo = createSettingsStore(ruta)
-
-        // Este test documenta un comportamiento incomodo, no lo aprueba.
-        //
-        // Crear un segundo `DataStore` sobre el mismo fichero **no lanza
-        // excepcion**: devuelve los valores por defecto, como si no hubiera
-        // nada guardado. Un fallo silencioso es peor que uno ruidoso, porque se
-        // manifiesta como «los ajustes no se guardan» en un sitio y bien en
-        // otro.
-        //
-        // Por eso el almacen se registra como `single` en Koin y no se crea en
-        // ninguna pantalla. Si alguien rompe esa regla, este test explica que
-        // va a ver.
-        SettingsRepository(segundo).settings.test {
-            assertFalse(awaitItem().favoritosPorNumero, "si esto pasa a ser true, la libreria cambio")
-            cancelAndIgnoreRemainingEvents()
-        }
-    }
-
-    @Test
     fun elTemaGuardadoSeRecuperaPorSuNombre() = runTest {
         val repo = repo()
         repo.cambiarTema(Tema.CLARO)
@@ -93,6 +69,25 @@ class SettingsTest {
             // constantes no debe cambiar el tema de nadie.
             assertEquals(Tema.CLARO, awaitItem().tema)
             cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun dosAlmacenesSobreElMismoFicheroSeOyen() = runTest {
+        val ruta = createTempDirectory("prefs").resolve("pokedex.preferences_pb").toString()
+        val primero = createSettingsStore(ruta)
+        SettingsRepository(primero).cambiarOrden(porNumero = true)
+
+        val segundo = createSettingsStore(ruta)   // un SEGUNDO almacen sobre el mismo fichero
+
+        // Por eso el almacen se registra como `single` en Koin y no se crea en
+        // ninguna pantalla. DataStore protesta con una `IllegalStateException`
+        // al leer del segundo almacen; como el `catch` del repositorio es
+        // estrecho (solo `IOException`), el error llega y no se convierte en
+        // unos valores por defecto silenciosos.
+        SettingsRepository(segundo).settings.test {
+            val error = awaitError()
+            assertIs<IllegalStateException>(error)
         }
     }
 }

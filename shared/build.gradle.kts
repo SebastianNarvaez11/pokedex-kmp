@@ -65,10 +65,11 @@ kotlin {
             // Lo que deja a un DAO devolver un PagingSource: la lista lee las
             // paginas directamente de la base.
             implementation(libs.androidx.room.paging)
-            // DataStore de preferencias, sin la parte de Android. `okio` va
-            // explicito porque `Path` asoma en la firma de createWithPath.
+            // DataStore de preferencias, sin la parte de Android. api y no
+            // implementation: `createSettingsStore` es publica y su firma nombra
+            // `DataStore<Preferences>`. Okio (el `toPath()` de la ruta) llega con
+            // DataStore: no se declara aparte.
             api(libs.androidx.datastore.preferences.core)
-            implementation(libs.okio)
             // api y no implementation: `LocalDate` asoma en la firma publica de
             // `PokemonOfTheDay`, asi que las dos apps tienen que poder verlo.
             //
