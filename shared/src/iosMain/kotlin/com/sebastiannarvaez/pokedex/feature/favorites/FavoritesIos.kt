@@ -27,3 +27,8 @@ val FavoritesViewModel.uiStateForIos: StateFlow<FavoritesUiState>
 @NativeCoroutinesState
 val FavoritesViewModel.favoriteIdsForIos: StateFlow<Set<Int>>
     get() = favoriteIds
+
+/** La insignia de la pestaña Favoritos: `String?` en Swift (nil, "7" o "99+"). */
+@NativeCoroutinesState
+val FavoritesViewModel.insigniaForIos: StateFlow<String?>
+    get() = insignia
