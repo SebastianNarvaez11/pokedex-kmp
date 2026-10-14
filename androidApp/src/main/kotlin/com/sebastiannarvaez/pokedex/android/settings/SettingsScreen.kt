@@ -33,6 +33,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -138,7 +139,7 @@ fun SettingsScreen(
                 titulo = stringResource(R.string.ajustes_acerca_de),
                 detalle = stringResource(R.string.ajustes_acerca_de_detalle),
                 icono = { Icon(Icons.Default.Info, contentDescription = null) },
-                alPulsar = {},
+                // sin `alPulsar`: es una fila informativa, sin onda ni rol de boton
             )
         }
     }
@@ -177,10 +178,12 @@ fun SettingsScreen(
                     Icon(
                         Icons.Default.Check,
                         contentDescription = null,
+                        // La marca se ve solo en el tema elegido: en los demas es
+                        // transparente, para que el texto no se mueva.
                         tint = if (opcion == ajustes.tema) {
                             MaterialTheme.colorScheme.primary
                         } else {
-                            MaterialTheme.colorScheme.surface
+                            Color.Transparent
                         },
                         modifier = Modifier.size(20.dp),
                     )
@@ -198,11 +201,17 @@ fun SettingsScreen(
 }
 
 @Composable
-private fun Fila(titulo: String, detalle: String, icono: @Composable () -> Unit, alPulsar: () -> Unit) {
+private fun Fila(
+    titulo: String,
+    detalle: String,
+    icono: @Composable () -> Unit,
+    alPulsar: (() -> Unit)? = null,
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = alPulsar)
+            // Pulsable solo si hay algo que hacer al pulsar; si no, un `Modifier` vacio.
+            .then(if (alPulsar != null) Modifier.clickable(onClick = alPulsar) else Modifier)
             .padding(horizontal = 24.dp, vertical = 16.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(20.dp),

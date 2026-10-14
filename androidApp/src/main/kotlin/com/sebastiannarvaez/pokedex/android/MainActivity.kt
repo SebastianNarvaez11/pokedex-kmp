@@ -48,8 +48,8 @@ class MainActivity : ComponentActivity() {
         setContent {
             // El tema se lee en la raiz y no dentro de la pantalla de ajustes:
             // si no, cambiarlo solo repintaria esa pantalla.
-            val ajustes: SettingsViewModel = koinViewModel()
-            val preferencias by ajustes.settings.collectAsStateWithLifecycle()
+            val settingsVm: SettingsViewModel = koinViewModel()
+            val preferencias by settingsVm.settings.collectAsStateWithLifecycle()
 
             PokedexTheme(tema = preferencias.tema) {
                 // El enlace entrante se guarda en el estado de la actividad, no
