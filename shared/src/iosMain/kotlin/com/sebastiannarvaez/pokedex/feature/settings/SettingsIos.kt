@@ -19,13 +19,3 @@ fun settingsViewModel(owner: ViewModelStoreOwner): SettingsViewModel {
 @NativeCoroutinesState
 val SettingsViewModel.settingsForIos: StateFlow<Settings>
     get() = settings
-
-/**
- * El tema como texto.
- *
- * Un `enum` de Kotlin llega a Swift como clase, y comparar instancias desde
- * SwiftUI es incomodo. Con un `String` de por medio, el `Picker` funciona con
- * `String` a secas y la conversion vive en un solo sitio.
- */
-fun temaDesdeNombre(nombre: String): Tema =
-    Tema.entries.firstOrNull { it.name == nombre } ?: Tema.SISTEMA
