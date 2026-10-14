@@ -25,12 +25,15 @@ struct SettingsView: View {
         NavigationStack {
             Form {
                 Section {
+                    // Lee del estado y escribe en el ViewModel. Las constantes de
+                    // un enumerado de Kotlin son objetos unicos que se comparan y
+                    // sirven de identificador: el `Picker` usa `Tema` tal cual.
                     Picker("Tema", selection: Binding(
-                        get: { ajustes.tema.name },
-                        set: { viewModel?.cambiarTema(tema: SettingsIosKt.temaDesdeNombre(nombre: $0)) }
+                        get: { ajustes.tema },
+                        set: { viewModel?.cambiarTema(tema: $0) }
                     )) {
-                        ForEach(Tema.entries, id: \.name) { tema in
-                            Text(tema.etiqueta).tag(tema.name)
+                        ForEach(Tema.entries, id: \.self) { tema in
+                            Text(tema.etiqueta).tag(tema)
                         }
                     }
                 } header: {
