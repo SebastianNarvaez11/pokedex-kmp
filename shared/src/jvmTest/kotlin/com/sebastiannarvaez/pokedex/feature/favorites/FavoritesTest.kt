@@ -172,4 +172,29 @@ class FavoritesTest {
             cancelAndIgnoreRemainingEvents()
         }
     }
+
+    @Test
+    fun laInsigniaNoSaleConCeroYSeCortaEn99() {
+        assertNull(textoInsignia(0), "sin favoritos, sin insignia")
+        assertEquals("1", textoInsignia(1))
+        assertEquals("99", textoInsignia(99))
+        assertEquals("99+", textoInsignia(100), "a partir de 100 no cabe: 99+")
+    }
+
+    @Test
+    fun laInsigniaSigueALosFavoritos() = runTest {
+        val repo = repo(testScheduler)
+        val vm = FavoritesViewModel(repo, ajustes())
+
+        vm.insignia.test {
+            assertNull(awaitItem(), "al empezar no hay favoritos")
+            repo.toggle(25, "pikachu")
+            assertEquals("1", awaitItem())
+            repo.toggle(4, "charmander")
+            assertEquals("2", awaitItem())
+            repo.toggle(25, "pikachu")      // desmarcar tambien cuenta
+            assertEquals("1", awaitItem())
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
 }
