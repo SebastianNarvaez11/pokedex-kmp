@@ -4,15 +4,16 @@ import app.cash.turbine.test
 import com.sebastiannarvaez.pokedex.data.SettingsRepository
 import com.sebastiannarvaez.pokedex.data.local.createSettingsStore
 import kotlin.io.path.createTempDirectory
-import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertIs
 import kotlin.test.assertTrue
+import kotlinx.coroutines.test.runTest
 
 class SettingsTest {
 
+    // Un repositorio nuevo sobre un fichero temporal nuevo: cada test parte de cero.
     private fun repo(): SettingsRepository {
         val ruta = createTempDirectory("prefs").resolve("pokedex.preferences_pb").toString()
         return SettingsRepository(createSettingsStore(ruta))
@@ -21,11 +22,10 @@ class SettingsTest {
     @Test
     fun sinNadaGuardadoMandaElSistema() = runTest {
         repo().settings.test {
-            val inicial = awaitItem()
-            // El valor por defecto es «lo que diga el sistema», no «claro».
-            // Elegir por el usuario sin que lo haya pedido es una decision.
-            assertEquals(Tema.SISTEMA, inicial.tema)
-            assertFalse(inicial.favoritosPorNumero)
+            val inicial = awaitItem()                 // la primera emisión del flujo
+            // El último argumento de cada aserción es el mensaje que sale si falla.
+            assertEquals(Tema.SISTEMA, inicial.tema, "sin nada guardado, el tema es el del sistema")
+            assertFalse(inicial.favoritosPorNumero, "sin nada guardado, lo más reciente va primero")
             cancelAndIgnoreRemainingEvents()
         }
     }
@@ -35,11 +35,9 @@ class SettingsTest {
         val repo = repo()
 
         repo.settings.test {
-            assertEquals(Tema.SISTEMA, awaitItem().tema)
-            repo.cambiarTema(Tema.OSCURO)
-            // DataStore no tiene lectura sincrona: el cambio se recibe, no se
-            // consulta. La pantalla observa su configuracion.
-            assertEquals(Tema.OSCURO, awaitItem().tema)
+            assertEquals(Tema.SISTEMA, awaitItem().tema)   // 1.ª emisión: el valor por defecto
+            repo.cambiarTema(Tema.OSCURO)                   // se escribe...
+            assertEquals(Tema.OSCURO, awaitItem().tema, "tras escribir llega una emisión nueva")
             cancelAndIgnoreRemainingEvents()
         }
     }
@@ -47,14 +45,13 @@ class SettingsTest {
     @Test
     fun loGuardadoSeLeeDesdeElMismoAlmacen() = runTest {
         val ruta = createTempDirectory("prefs").resolve("pokedex.preferences_pb").toString()
-        val almacen = createSettingsStore(ruta)
+        val almacen = createSettingsStore(ruta)          // UN almacén...
 
         SettingsRepository(almacen).cambiarOrden(porNumero = true)
 
-        // Repositorio nuevo, **mismo almacen**: es lo normal, porque el almacen
-        // lo crea la inyeccion una sola vez y vive lo que vive el proceso.
+        // ...y un repositorio distinto sobre ese mismo almacén: ve lo guardado.
         SettingsRepository(almacen).settings.test {
-            assertTrue(awaitItem().favoritosPorNumero)
+            assertTrue(awaitItem().favoritosPorNumero, "otro repositorio sobre el mismo almacén ve lo guardado")
             cancelAndIgnoreRemainingEvents()
         }
     }
@@ -65,9 +62,7 @@ class SettingsTest {
         repo.cambiarTema(Tema.CLARO)
 
         repo.settings.test {
-            // Se guarda el nombre del enum, no su posicion: reordenar las
-            // constantes no debe cambiar el tema de nadie.
-            assertEquals(Tema.CLARO, awaitItem().tema)
+            assertEquals(Tema.CLARO, awaitItem().tema, "el tema guardado se recupera por su nombre")
             cancelAndIgnoreRemainingEvents()
         }
     }
@@ -78,14 +73,11 @@ class SettingsTest {
         val primero = createSettingsStore(ruta)
         SettingsRepository(primero).cambiarOrden(porNumero = true)
 
-        val segundo = createSettingsStore(ruta)   // un SEGUNDO almacen sobre el mismo fichero
+        val segundo = createSettingsStore(ruta)   // un SEGUNDO almacén sobre el mismo fichero
 
-        // Por eso el almacen se registra como `single` en Koin y no se crea en
-        // ninguna pantalla. DataStore protesta con una `IllegalStateException`
-        // al leer del segundo almacen; como el `catch` del repositorio es
-        // estrecho (solo `IOException`), el error llega y no se convierte en
-        // unos valores por defecto silenciosos.
         SettingsRepository(segundo).settings.test {
+            // DataStore protesta con una `IllegalStateException` al leer del segundo
+            // almacén. Como el `catch` del repositorio es estrecho, el error llega.
             val error = awaitError()
             assertIs<IllegalStateException>(error)
         }
