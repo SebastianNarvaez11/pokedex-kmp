@@ -17,6 +17,7 @@ struct ContentView: View {
 
     @StateObject private var owner = IosViewModelStoreOwner()
     @State private var ajustes = Settings(tema: Tema.sistema, favoritosPorNumero: false)
+    @State private var insignia: String? = nil        // nil: sin insignia en Favoritos
     @StateObject private var notificaciones = DelegadoDeNotificaciones.compartido
 
     /// La pestaña visible. Hace falta como estado porque un enlace entrante
@@ -33,6 +34,7 @@ struct ContentView: View {
             FavoritesView(camino: $caminoFavoritos)
                 .tabItem { Label("Favoritos", systemImage: "heart.fill") }
                 .tag(Pestana.favoritos)
+                .badge(insignia)   // con nil SwiftUI no pinta nada
 
             SettingsView()
                 .tabItem { Label("Ajustes", systemImage: "gearshape") }
@@ -64,6 +66,16 @@ struct ContentView: View {
             do {
                 for try await nuevo in asyncSequence(for: vm.settingsForIosFlow) {
                     ajustes = nuevo
+                }
+            } catch { }
+        }
+        // La insignia de Favoritos: otro lector del mismo repositorio de favoritos.
+        .task {
+            let favoritos = FavoritesIosKt.favoritesViewModel(owner: owner)
+            insignia = favoritos.insigniaForIos
+            do {
+                for try await nuevo in asyncSequence(for: favoritos.insigniaForIosFlow) {
+                    insignia = nuevo
                 }
             } catch { }
         }
