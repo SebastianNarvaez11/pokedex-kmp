@@ -13,8 +13,9 @@ struct SettingsView: View {
     @StateObject private var owner = IosViewModelStoreOwner()
     @State private var ajustes = Settings(tema: Tema.sistema, favoritosPorNumero: false)
     @State private var viewModel: SettingsViewModel?
-    @State private var permiso: EstadoDelPermiso = .sinPreguntar
-    @State private var pendientes = 0
+    @State private var permiso: EstadoDelPermiso = .sinPreguntar   // lo que sabe el sistema
+    @State private var pendientes = 0                              // avisos programados
+    @Environment(\.openURL) private var openURL                    // para abrir los Ajustes de iOS
     @State private var auth: AuthViewModel?
     @State private var sesion: Session?
     @State private var confirmandoSalida = false
@@ -58,16 +59,18 @@ struct SettingsView: View {
                 Section {
                     Button {
                         Task {
-                            if permiso == .concedido {
-                                await RecordatorioDiario.programar()
-                                pendientes = await RecordatorioDiario.pendientes()
-                            } else {
+                            switch permiso {
+                            case .concedido:
+                                await RecordatorioDiario.programar()      // reprogramar
+                            case .sinPreguntar:
+                                // Pide el permiso y, si lo dan, programa.
                                 permiso = await RecordatorioDiario.pedirPermiso()
-                                if permiso == .concedido {
-                                    await RecordatorioDiario.programar()
-                                    pendientes = await RecordatorioDiario.pendientes()
-                                }
+                                if permiso == .concedido { await RecordatorioDiario.programar() }
+                            default:
+                                // Denegado: iOS no vuelve a preguntar. Se lleva al usuario a los ajustes.
+                                if let url = URL(string: UIApplication.openSettingsURLString) { openURL(url) }
                             }
+                            pendientes = await RecordatorioDiario.pendientes()
                         }
                     } label: {
                         LabeledContent("Pokémon del día") {
