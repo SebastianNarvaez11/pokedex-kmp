@@ -119,18 +119,18 @@ internal fun createSupabaseAccountClient(
                 loadTokens {
                     proveedor.vigentes()?.let { (acceso, refresco) -> BearerTokens(acceso, refresco) }
                 }
-                // Solo cuando el servidor ya ha dicho 401. Y aqui hay que
-                // **forzar** el refresco: si se volviera a preguntar «segun el
-                // reloj, sigue valiendo?», la respuesta seria que si, se
-                // devolveria el mismo token rechazado y la peticion fallaria
-                // otra vez.
+                // Solo cuando el servidor ya ha dicho 401 (el 403 de Supabase
+                // lo trata el interceptor de abajo). Y aqui hay que **forzar**
+                // el refresco: si se volviera a preguntar «segun el reloj,
+                // sigue valiendo?», la respuesta seria que si, se devolveria el
+                // mismo token rechazado y la peticion fallaria otra vez.
                 refreshTokens {
                     proveedor.refrescar()?.let { (acceso, refresco) -> BearerTokens(acceso, refresco) }
                 }
-                // Sin esto, Ktor manda la peticion sin cabecera, espera el 401 y
-                // la repite: dos viajes por cada llamada. El filtro por host
-                // ademas garantiza que el token no salga hacia PokeAPI ni hacia
-                // ningun otro sitio.
+                // Decide a que peticiones se les pone la cabecera ya al salir.
+                // Por defecto Ktor la pone en todas las de este cliente; el
+                // filtro la limita al host de Supabase, para que el token no
+                // salga hacia PokeAPI ni hacia ningun otro sitio.
                 sendWithoutRequest { peticion ->
                     peticion.url.host == config.supabaseUrl.substringAfter("://").trimEnd('/')
                 }
