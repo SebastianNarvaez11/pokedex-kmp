@@ -7,6 +7,7 @@ import com.sebastiannarvaez.pokedex.core.aAppError
 import com.sebastiannarvaez.pokedex.core.aUiError
 import com.sebastiannarvaez.pokedex.data.SessionRepository
 import com.sebastiannarvaez.pokedex.data.network.AuthException
+import com.sebastiannarvaez.pokedex.navigation.Destination
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -85,7 +86,7 @@ class AuthViewModel internal constructor(
 
     private companion object {
         val REDIRECCION =
-            "${com.sebastiannarvaez.pokedex.navigation.Destination.ESQUEMA}://" +
+            "${Destination.ESQUEMA}://" +
                 EnlaceDeRecuperacion.RUTA
     }
 

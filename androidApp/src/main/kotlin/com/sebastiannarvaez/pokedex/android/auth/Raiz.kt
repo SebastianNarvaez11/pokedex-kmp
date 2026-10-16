@@ -34,8 +34,8 @@ fun RaizConSesion(
 ) {
     val config: AppConfig = koinInject()
 
-    // Sin Supabase configurado no hay puerta que guardar. Es lo que permite
-    // clonar el repositorio y ejecutar la app sin crear ninguna cuenta.
+    // Sin Supabase configurado no hay puerta que guardar: la app va directa.
+    // `return` sale de la función composable y no se dibuja nada más.
     if (!config.haySupabase) {
         contenido()
         return
