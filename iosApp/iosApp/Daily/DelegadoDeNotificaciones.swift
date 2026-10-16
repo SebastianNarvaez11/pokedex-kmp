@@ -5,6 +5,10 @@ import UserNotifications
 ///
 /// No navega: publica el enlace y la vista lo observa, para que el camino sea el
 /// mismo que el de un enlace externo. Una sola forma de llegar a una pantalla.
+///
+/// `@MainActor`: la clase entera corre en el hilo principal. Sin esto, tocar el aviso
+/// con la app en segundo plano o cerrada la cierra (ver la explicación de la lección).
+@MainActor
 final class DelegadoDeNotificaciones: NSObject, ObservableObject, UNUserNotificationCenterDelegate {
 
     /// Una sola instancia, para que la app y la vista hablen con la misma.
@@ -22,11 +26,11 @@ final class DelegadoDeNotificaciones: NSObject, ObservableObject, UNUserNotifica
             let texto = response.notification.request.content.userInfo["enlace"] as? String,
             let url = URL(string: texto)
         else { return }
-        await MainActor.run { enlacePendiente = url }   // publicar desde el hilo principal
+        enlacePendiente = url   // la clase es del hilo principal: se publica sin más
     }
 
-    /// Sin esto, una notificación que llega con la app abierta no se ve
-    /// (es el mismo `willPresent` de Marcador).
+    /// Sin esto, una notificación que llega con la app abierta no se ve.
+    /// Es el `willPresent` de Marcador, sin el `nonisolated` (ver la explicación de abajo).
     func userNotificationCenter(
         _ center: UNUserNotificationCenter,
         willPresent notification: UNNotification
