@@ -53,7 +53,7 @@ struct AuthView: View {
             .pickerStyle(.segmented)
             .accessibilityIdentifier("auth-modo")
 
-            VStack(spacing: 12) {
+            VStack(alignment: .leading, spacing: 12) {
                 TextField("Correo", text: Binding(
                     get: { formulario.email },
                     set: { viewModel.escribirEmail(valor: $0) }
@@ -67,6 +67,14 @@ struct AuthView: View {
                 .onSubmit { campo = .password }
                 .accessibilityIdentifier("auth-correo")
 
+                // El error, debajo del campo y solo si ya está tocado: lo decide
+                // el núcleo (`errorEmail` es nil hasta que se escribe algo).
+                if let error = formulario.errorEmail {
+                    Text(texto(de: error))
+                        .font(.caption)
+                        .foregroundStyle(.red)
+                }
+
                 SecureField("Contraseña", text: Binding(
                     get: { formulario.password },
                     set: { viewModel.escribirPassword(valor: $0) }
@@ -79,6 +87,12 @@ struct AuthView: View {
                 .submitLabel(.go)
                 .onSubmit(enviar)
                 .accessibilityIdentifier("auth-password")
+
+                if let error = formulario.errorPassword {
+                    Text(texto(de: error))
+                        .font(.caption)
+                        .foregroundStyle(.red)
+                }
             }
             .textFieldStyle(.roundedBorder)
 
@@ -152,6 +166,24 @@ struct AuthView: View {
             viewModel.registrar()
         } else {
             viewModel.entrar()
+        }
+    }
+
+    // El enum de Kotlin se traduce a texto aquí, en la vista. En Swift llega
+    // como una clase y no como un enum de Swift: el `switch` necesita `default`.
+    // `String(localized:)` busca el texto en Localizable.xcstrings: un `String`
+    // que no se escribe directamente dentro de `Text` no se traduce solo.
+    private func texto(de error: ErrorEmail) -> String {
+        switch error {
+        case .vacio: String(localized: "Escribe tu correo")
+        default: String(localized: "Escribe un correo completo, como nombre@correo.com")
+        }
+    }
+
+    private func texto(de error: ErrorPassword) -> String {
+        switch error {
+        case .vacia: String(localized: "Escribe tu contraseña")
+        default: String(localized: "Al menos \(Int(AuthFormState.companion.MINIMO_PASSWORD)) caracteres")
         }
     }
 
