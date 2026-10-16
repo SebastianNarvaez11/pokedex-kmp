@@ -122,13 +122,16 @@ fun AuthContent(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                // `imePadding` sube el contenido con el teclado. Sin el, el
-                // boton queda debajo del teclado y no hay forma de pulsarlo en
-                // pantallas pequenas.
+                // Los modificadores se aplican en orden, y el relleno tiene que
+                // ir ANTES que el desplazamiento: asi encoge la zona que se
+                // desplaza, que termina encima del teclado (y de las barras del
+                // sistema), y se puede llegar a todo lo de abajo. Despues de
+                // `verticalScroll` solo alargaria el contenido, y con el teclado
+                // abierto el boton quedaria tapado.
                 .imePadding()
                 .statusBarsPadding()
                 .navigationBarsPadding()
+                .verticalScroll(rememberScrollState())
                 .padding(horizontal = 32.dp),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally,
