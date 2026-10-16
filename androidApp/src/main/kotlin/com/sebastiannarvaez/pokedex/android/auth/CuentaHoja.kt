@@ -54,7 +54,15 @@ fun CuentaHoja(
     var confirmandoBorrado by remember { mutableStateOf(false) }
     val estado by cuenta.state.collectAsStateWithLifecycle()
 
-    ModalBottomSheet(onDismissRequest = alCerrar, sheetState = rememberModalBottomSheetState()) {
+    // Al cerrar la hoja se olvida el error: el ViewModel vive lo que la
+    // actividad, y si no, reapareceria al volver a abrirla.
+    ModalBottomSheet(
+        onDismissRequest = {
+            cuenta.descartarError()
+            alCerrar()
+        },
+        sheetState = rememberModalBottomSheetState(),
+    ) {
         Column(
             modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp).padding(bottom = 40.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -108,6 +116,15 @@ fun CuentaHoja(
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 Text(stringResource(R.string.auth_eliminar_cuenta), color = MaterialTheme.colorScheme.error)
+            }
+
+            // Si el borrado falla, la hoja lo dice y la sesión sigue abierta.
+            estado.error?.let {
+                Text(
+                    it.detalle,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error,
+                )
             }
         }
     }
