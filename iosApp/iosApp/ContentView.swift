@@ -47,7 +47,9 @@ struct ContentView: View {
         // pintaría esa pestaña.
         .preferredColorScheme(ajustes.tema.esquema)
         // El toque en una notificación acaba en el mismo sitio que un enlace externo.
-        .onChange(of: notificaciones.enlacePendiente) { _, url in
+        // `initial: true`: si el toque llegó antes de entrar (sin sesión esta vista
+        // aún no existía), el delegado lo guardó y se atiende al aparecer.
+        .onChange(of: notificaciones.enlacePendiente, initial: true) { _, url in
             guard let url else { return }
             abrir(url)
             notificaciones.enlacePendiente = nil   // ya se atendió
