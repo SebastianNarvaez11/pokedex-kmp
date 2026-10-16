@@ -21,6 +21,7 @@ struct FavoritesView: View {
             contenido
                 .navigationDestination(for: Int32.self) { id in
                     PokemonDetailView(pokemonId: id)
+                        .id(id)
                 }
                 .navigationTitle("Favoritos")
                 .toolbar {
