@@ -7,15 +7,21 @@ import io.ktor.client.HttpClient
 import io.ktor.client.HttpClientConfig
 import io.ktor.client.call.body
 import io.ktor.client.engine.HttpClientEngine
+import io.ktor.client.plugins.HttpSend
 import io.ktor.client.plugins.auth.Auth
+import io.ktor.client.plugins.auth.authProvider
+import io.ktor.client.plugins.auth.providers.BearerAuthProvider
 import io.ktor.client.plugins.auth.providers.BearerTokens
 import io.ktor.client.plugins.auth.providers.bearer
+import io.ktor.client.plugins.plugin
 import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.request.put
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.HttpResponse
 import io.ktor.http.ContentType
+import io.ktor.http.HttpHeaders
+import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import io.ktor.http.isSuccess
 import kotlinx.serialization.Serializable
@@ -113,23 +119,47 @@ internal fun createSupabaseAccountClient(
                 loadTokens {
                     proveedor.vigentes()?.let { (acceso, refresco) -> BearerTokens(acceso, refresco) }
                 }
-                // Solo cuando el servidor ya ha dicho 401. Y aqui hay que
-                // **forzar** el refresco: si se volviera a preguntar «segun el
-                // reloj, sigue valiendo?», la respuesta seria que si, se
-                // devolveria el mismo token rechazado y la peticion fallaria
-                // otra vez.
+                // Solo cuando el servidor ya ha dicho 401 (el 403 de Supabase
+                // lo trata el interceptor de abajo). Y aqui hay que **forzar**
+                // el refresco: si se volviera a preguntar «segun el reloj,
+                // sigue valiendo?», la respuesta seria que si, se devolveria el
+                // mismo token rechazado y la peticion fallaria otra vez.
                 refreshTokens {
                     proveedor.refrescar()?.let { (acceso, refresco) -> BearerTokens(acceso, refresco) }
                 }
-                // Sin esto, Ktor manda la peticion sin cabecera, espera el 401 y
-                // la repite: dos viajes por cada llamada. El filtro por host
-                // ademas garantiza que el token no salga hacia PokeAPI ni hacia
-                // ningun otro sitio.
+                // Decide a que peticiones se les pone la cabecera ya al salir.
+                // Por defecto Ktor la pone en todas las de este cliente; el
+                // filtro la limita al host de Supabase, para que el token no
+                // salga hacia PokeAPI ni hacia ningun otro sitio.
                 sendWithoutRequest { peticion ->
                     peticion.url.host == config.supabaseUrl.substringAfter("://").trimEnd('/')
                 }
             }
         }
     }
-    return createSupabaseClient(config, engine, extra)
+    val cliente = createSupabaseClient(config, engine, extra)
+
+    // El servidor de autenticacion de Supabase (/auth/v1/) contesta 403 con
+    // `bad_jwt` cuando el token ya no sirve, y Ktor solo refresca ante un 401.
+    // Esto se ejecuta en cada peticion de este cliente, alrededor del envio, y
+    // trata ese 403 como un 401: refresca de forma forzada y repite una vez.
+    cliente.plugin(HttpSend).intercept { peticion ->
+        val llamada = execute(peticion)                                     // la peticion normal
+        if (llamada.response.status != HttpStatusCode.Forbidden) return@intercept llamada
+        // Solo en /auth/v1/: en /rest/v1/ un 403 significa que una regla de
+        // seguridad de filas dijo que no, y refrescar ahi gastaria un token
+        // por cada negativa legitima.
+        if (!peticion.url.buildString().contains("/auth/v1/")) return@intercept llamada
+
+        val nuevos = proveedor.refrescar() ?: return@intercept llamada      // refresco forzado
+
+        // Ktor guarda los tokens que devolvio loadTokens; sin olvidarlos, las
+        // siguientes peticiones seguirian firmando con el rechazado.
+        cliente.authProvider<BearerAuthProvider>()?.clearToken()
+
+        peticion.headers[HttpHeaders.Authorization] = "Bearer ${nuevos.first}"
+        execute(peticion)                                                   // la repeticion, una sola
+    }
+
+    return cliente
 }

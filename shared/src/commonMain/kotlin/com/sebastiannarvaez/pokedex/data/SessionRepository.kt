@@ -33,12 +33,14 @@ internal class SessionRepository(
     val state: StateFlow<AuthState> = _state.asStateFlow()
 
     /**
-     * El candado del refresco.
+     * El candado del refresco: un solo refresco a la vez en toda la app.
      *
-     * El token de refresco de Supabase **es de un solo uso**: si dos peticiones
-     * caducadas lo usan a la vez, la segunda recibe un 401 y la sesion se
-     * invalida entera. El mutex serializa el refresco, y quien llega segundo se
-     * encuentra el token ya renovado.
+     * Supabase deja reutilizar un token de refresco durante 10 segundos (su
+     * ventana de reutilizacion), asi que dos refrescos a la vez no tumban la
+     * sesion. Lo que evita el candado es gastar cinco viajes de red para el
+     * mismo resultado y la carrera al escribir el estado, que puede dejar
+     * guardada la sesion perdedora. Quien llega segundo se encuentra el token
+     * ya renovado.
      */
     private val candado = Mutex()
 
@@ -111,7 +113,8 @@ internal class SessionRepository(
     /**
      * Refresca aunque el reloj diga que aun vale.
      *
-     * Lo llama el cliente cuando el servidor ya ha respondido 401. Ahi no sirve
+     * Lo llama el cliente cuando el servidor ya ha respondido 401 (o el 403 de
+     * `/auth/v1/`). Ahi no sirve
      * mirar la hora: el servidor ha dicho que no, y las razones sobran —el
      * reloj del movil va adelantado, la sesion se cerro desde otro
      * dispositivo, un administrador la revoco—.
@@ -125,10 +128,11 @@ internal class SessionRepository(
     /**
      * El refresco, con candado.
      *
-     * El token de refresco de Supabase **es de un solo uso**: si dos peticiones
-     * lo gastan a la vez, la segunda recibe un 401 y la sesion se invalida
-     * entera. El mutex los serializa, y quien llega segundo se encuentra el
-     * trabajo hecho.
+     * El mutex pone los refrescos en fila, y quien llega segundo se encuentra
+     * el trabajo hecho. Fuera de la ventana de reutilizacion de 10 s, gastar
+     * otra vez un token de refresco ya usado haria que Supabase diera la sesion
+     * por terminada: por eso cada refresco guarda tambien el token de refresco
+     * nuevo (`publicar` guarda la sesion entera).
      *
      * `gastado` es la clave de esa segunda parte: es el token con el que el que
      * llama venia. Si dentro del candado ya no es el vigente, alguien refresco
