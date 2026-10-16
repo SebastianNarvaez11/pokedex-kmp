@@ -1,8 +1,8 @@
 package com.sebastiannarvaez.pokedex.data.network
 
 import com.sebastiannarvaez.pokedex.core.AppError
-import com.sebastiannarvaez.pokedex.core.BaseAppConfig
 import com.sebastiannarvaez.pokedex.core.aAppError
+import com.sebastiannarvaez.pokedex.dobles.ConfigDePrueba
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.respond
 import io.ktor.http.ContentType
@@ -14,13 +14,6 @@ import kotlinx.io.IOException
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
-
-// Una configuracion de mentira: la URL de PokeAPI la hereda de
-// `BaseAppConfig`, y Supabase no hace falta para estos tests.
-private class ConfigDePrueba : BaseAppConfig() {
-    override val supabaseUrl = ""
-    override val supabaseKey = ""
-}
 
 class ReintentosTest {
 

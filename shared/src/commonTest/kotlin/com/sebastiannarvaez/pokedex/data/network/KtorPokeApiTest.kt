@@ -1,6 +1,6 @@
 package com.sebastiannarvaez.pokedex.data.network
 
-import com.sebastiannarvaez.pokedex.core.BaseAppConfig
+import com.sebastiannarvaez.pokedex.dobles.ConfigDePrueba
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.respond
 import io.ktor.http.HttpStatusCode
@@ -11,13 +11,6 @@ import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
-
-private class FakeConfig : BaseAppConfig() {
-    // Sin Supabase: el test de PokeAPI no lo necesita, y `haySupabase` lo
-    // resuelve solo a partir de estos dos.
-    override val supabaseUrl = ""
-    override val supabaseKey = ""
-}
 
 /**
  * Recorte de una respuesta real de PokeAPI.
@@ -66,7 +59,7 @@ class KtorPokeApiTest {
         }
         // MockEngine sustituye al motor de la plataforma sin tocar nada mas:
         // la configuracion que se prueba es exactamente la de produccion.
-        return KtorPokeApi(createHttpClient(FakeConfig(), engine = engine))
+        return KtorPokeApi(createHttpClient(ConfigDePrueba(), engine = engine))
     }
 
     @Test
