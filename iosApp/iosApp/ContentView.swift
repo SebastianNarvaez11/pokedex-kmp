@@ -17,13 +17,16 @@ struct ContentView: View {
     @StateObject private var owner = IosViewModelStoreOwner()
     @State private var ajustes = Settings(tema: Tema.sistema, favoritosPorNumero: false)
     @State private var insignia: String? = nil   // nil: sin insignia en Favoritos
-    @StateObject private var notificaciones = DelegadoDeNotificaciones.compartido
-    @Environment(\.scenePhase) private var scenePhase
 
     // La pestaña visible. Tiene que ser estado porque un enlace
     // entrante la cambia: si llega una ficha estando en Favoritos, hay que
     // saltar a la Pokédex antes de apilar nada.
     @State private var pestana = Pestana.lista
+
+    // La vista observa al delegado; cuando publica un enlace, se entera.
+    @StateObject private var notificaciones = DelegadoDeNotificaciones.compartido
+    // Si la app está activa, en segundo plano o inactiva.
+    @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
         TabView(selection: $pestana) {   // `selection` ata el TabView al estado
@@ -43,13 +46,16 @@ struct ContentView: View {
         // El tema se aplica en la raíz: dentro de la pantalla de ajustes solo
         // pintaría esa pestaña.
         .preferredColorScheme(ajustes.tema.esquema)
-        // Reponer los avisos cada vez que la app pasa a primer plano: siete días
-        // se acaban, y sin esto la app dejaría de avisar a la semana.
-        // `initial: true` también lo ejecuta al arrancar, no solo al volver.
+        // El toque en una notificación acaba en el mismo sitio que un enlace externo.
+        .onChange(of: notificaciones.enlacePendiente) { _, url in
+            guard let url else { return }
+            abrir(url)
+            notificaciones.enlacePendiente = nil   // ya se atendió
+        }
+        // Reponer los avisos cada vez que la app pasa a primer plano.
         .onChange(of: scenePhase, initial: true) { _, fase in
             guard fase == .active else { return }
             Task {
-                // Solo si el usuario ya dijo que sí: reprogramar sin permiso no hace nada.
                 if await RecordatorioDiario.estadoDelPermiso() == .concedido {
                     await RecordatorioDiario.programar()
                 }
@@ -58,18 +64,7 @@ struct ContentView: View {
         // `.onOpenURL` cubre los dos casos, app cerrada y app abierta,
         // sin distinguirlos. En Android son dos sitios (`onCreate` y
         // `onNewIntent`), y olvidar el segundo hace que el enlace falle si la app ya estaba abierta.
-        // El toque en una notificación acaba en el mismo sitio que un enlace
-        // externo: no hay dos caminos a la misma pantalla.
-        .onChange(of: notificaciones.enlacePendiente) { _, url in
-            guard let url else { return }
-            abrir(url)
-            notificaciones.enlacePendiente = nil
-        }
         .onOpenURL { url in
-            // `DestinationCompanion.shared` y no `Destination.companion`: una
-            // interfaz sellada llega a Swift como **protocolo**, y un protocolo
-            // no tiene companion. El objeto acompanante se expone aparte, con
-            // el nombre de la interfaz pegado.
             abrir(url)
         }
         .task {
@@ -94,21 +89,23 @@ struct ContentView: View {
     }
 }
 
-#Preview {
-    ContentView()
-}
-
+// Lo que hacen los dos caminos (`.onOpenURL` y el toque), en un solo sitio.
 private extension ContentView {
     func abrir(_ url: URL) {
-        // `DestinationCompanion.shared` y no `Destination.companion`: una
-        // interfaz sellada llega a Swift como **protocolo**, y un protocolo no
-        // tiene companion. El objeto acompanante se expone aparte.
+        // La traducción vive en Kotlin; aquí solo se llama. Devuelve nil si
+        // no entiende el enlace, y entonces no se hace nada.
+        // `DestinationCompanion.shared` y no `Destination.companion`: una interfaz
+        // sellada llega a Swift como protocolo, y un protocolo no tiene companion.
         guard let destino = DestinationCompanion.shared.parse(url: url.absoluteString) else { return }
-        pestana = .lista
-        if let detalle = destino as? DestinationDetalle {
-            caminoLista = [detalle.pokemonId]
+        pestana = .lista   // antes de apilar, la pestaña de la Pokédex
+        if let detalle = destino as? DestinationDetalle {   // ¿es una ficha? (`DestinationDetalle` es `Destination.Detalle` de Kotlin)
+            caminoLista = [detalle.pokemonId]   // una ficha: el camino es solo ella
         } else {
-            caminoLista = []
+            caminoLista = []                     // la lista: sin nada apilado
         }
     }
+}
+
+#Preview {
+    ContentView()
 }
