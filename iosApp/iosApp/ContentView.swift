@@ -2,34 +2,33 @@ import SwiftUI
 import Shared
 import KMPNativeCoroutinesAsync
 
-/// Las tres secciones de la app.
-///
-/// `TabView` es el contenedor de iOS: la barra la pinta el sistema. En Android
-/// hay que colocar la barra, decidir cuándo se ve y gestionar la pila a mano.
-///
-/// Cada pestaña lleva **su propio camino** (un array de identificadores que
-/// guarda este `ContentView`), que es el comportamiento que el usuario de iOS
-/// espera: volver a Favoritos te devuelve donde estabas.
+/// Las tres secciones de la app, como valores que `TabView` puede seleccionar.
+// `Hashable` (visto en Marcador): SwiftUI puede comparar estos valores.
+private enum Pestana: Hashable {
+    case lista, favoritos, ajustes
+}
+
 struct ContentView: View {
 
-    @State private var caminoLista: [Int32] = []      // fichas abiertas en la pestaña Pokédex
-    @State private var caminoFavoritos: [Int32] = []  // fichas abiertas en la pestaña Favoritos
+    // Un camino de fichas abiertas por pestaña: cada pestaña lleva su pila.
+    @State private var caminoLista: [Int32] = []
+    @State private var caminoFavoritos: [Int32] = []
 
     @StateObject private var owner = IosViewModelStoreOwner()
     @State private var ajustes = Settings(tema: Tema.sistema, favoritosPorNumero: false)
-    @State private var insignia: String? = nil        // nil: sin insignia en Favoritos
+    @State private var insignia: String? = nil   // nil: sin insignia en Favoritos
     @StateObject private var notificaciones = DelegadoDeNotificaciones.compartido
 
-    /// La pestaña visible. Hace falta como estado porque un enlace entrante
-    /// tiene que poder cambiarla: si llega una ficha estando en Favoritos, hay
-    /// que saltar a la Pokédex antes de apilar nada.
+    // La pestaña visible. Tiene que ser estado porque un enlace
+    // entrante la cambia: si llega una ficha estando en Favoritos, hay que
+    // saltar a la Pokédex antes de apilar nada.
     @State private var pestana = Pestana.lista
 
     var body: some View {
-        TabView(selection: $pestana) {
+        TabView(selection: $pestana) {   // `selection` ata el TabView al estado
             PokemonListView(camino: $caminoLista)
                 .tabItem { Label("Pokédex", systemImage: "square.grid.2x2") }
-                .tag(Pestana.lista)
+                .tag(Pestana.lista)       // el valor que representa esta pestaña
 
             FavoritesView(camino: $caminoFavoritos)
                 .tabItem { Label("Favoritos", systemImage: "heart.fill") }
@@ -40,12 +39,12 @@ struct ContentView: View {
                 .tabItem { Label("Ajustes", systemImage: "gearshape") }
                 .tag(Pestana.ajustes)
         }
-        // El tema se aplica en la raíz: un `.preferredColorScheme` dentro de la
-        // pantalla de ajustes solo pintaría esa pestaña.
+        // El tema se aplica en la raíz: dentro de la pantalla de ajustes solo
+        // pintaría esa pestaña.
         .preferredColorScheme(ajustes.tema.esquema)
-        // `.onOpenURL` cubre los dos casos, app cerrada y app abierta, sin que
-        // haya que distinguirlos. En Android son dos sitios: onCreate y
-        // onNewIntent, y olvidar el segundo es el fallo clásico.
+        // `.onOpenURL` cubre los dos casos, app cerrada y app abierta,
+        // sin distinguirlos. En Android son dos sitios (`onCreate` y
+        // `onNewIntent`), y olvidar el segundo hace que el enlace falle si la app ya estaba abierta.
         // El toque en una notificación acaba en el mismo sitio que un enlace
         // externo: no hay dos caminos a la misma pantalla.
         .onChange(of: notificaciones.enlacePendiente) { _, url in
@@ -99,8 +98,4 @@ private extension ContentView {
             caminoLista = []
         }
     }
-}
-
-private enum Pestana: Hashable {
-    case lista, favoritos, ajustes
 }
