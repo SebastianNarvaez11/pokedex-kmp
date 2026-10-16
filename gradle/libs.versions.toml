@@ -10,7 +10,7 @@
 appVersionName = "1.0.0"
 appVersionCode = "1"
 splashscreen = "1.2.0"
-kotlin = "2.4.20"
+kotlin = "2.4.21"
 agp = "9.4.0"
 androidCompileSdk = "37"
 androidMinSdk = "24"
