@@ -62,12 +62,28 @@ compilación, Gradle descarga la distribución de Kotlin/Native (alrededor de
 ## Cuenta de Supabase
 
 La parte de sesión necesita un proyecto de Supabase, que es gratuito. Los pasos
-están en [docs/supabase.md](docs/supabase.md). Con `secrets.properties` vacío la
-app compila y funciona: solo se queda sin la pantalla de cuenta.
+están en [docs/supabase.md](docs/supabase.md).
 
-```bash
-cp secrets.properties.example secrets.properties   # y rellenar los dos valores
+**Android** lee las dos claves de `local.properties`, en la carpeta raíz del
+proyecto. Es el fichero de ajustes de cada máquina: Android Studio lo crea solo
+(guarda ahí `sdk.dir`, la ruta del SDK), está en `.gitignore` y no se comparte
+con nadie. Debajo de `sdk.dir` van dos líneas, sin comillas ni espacios
+alrededor del `=`:
+
+```properties
+SUPABASE_URL=https://abcdefgh.supabase.co
+SUPABASE_KEY=sb_publishable_xxxxxxxx
 ```
+
+El `Project URL` y la clave **publicable** salen del panel (Project Settings →
+API Keys); la de servicio (`sb_secret_…`) no va nunca en una app. Gradle las
+convierte en `BuildConfig.SUPABASE_URL` y `BuildConfig.SUPABASE_KEY`
+(`androidApp/build.gradle.kts`). Si faltan o están vacías, la app compila y
+funciona igual: solo se queda sin la parte de cuenta.
+
+**iOS** las lee de `iosApp/Configuration/Config.local.xcconfig`, una copia de
+`Config.local.xcconfig.example` que está en `.gitignore`: `Config.xcconfig`
+la incluye al final y el `Info.plist` las recoge.
 
 ## Stack
 

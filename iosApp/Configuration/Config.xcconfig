@@ -29,7 +29,7 @@ SUPABASE_KEY=
 // Va **al final** a propósito: en un xcconfig gana la última asignación, así
 // que lo local pisa a lo de arriba. Si estuviera antes, ganarían los vacíos.
 //
-// Este es el equivalente de `secrets.properties` en Android. Antes no existía
+// Este es el equivalente de `local.properties` en Android. Antes no existía
 // y había que editar este mismo fichero, que git marcaba como modificado para
 // siempre y acababa commiteado sin querer.
 #include? "Config.local.xcconfig"

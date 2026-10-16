@@ -11,7 +11,8 @@ captures
 .externalNativeBuild
 .cxx
 
-# Rutas de esta maquina: las escribe el IDE y no valen en otra
+# Ajustes de esta maquina: la ruta del SDK (la escribe el IDE) y las dos
+# claves de Supabase de Android. No valen en otra ni se comparten.
 local.properties
 
 # Xcode: se versiona el proyecto y los esquemas compartidos, nada mas
@@ -23,7 +24,8 @@ xcuserdata
 !*.xcworkspace/contents.xcworkspacedata
 **/xcshareddata/WorkspaceSettings.xcsettings
 
-# Secretos: se versiona el ejemplo, nunca el fichero real
+# Secretos: nunca se versionan (secrets.properties era el fichero de antes de
+# las claves en local.properties)
 secrets.properties
 iosApp/Configuration/Config.local.xcconfig
 keystore.properties
