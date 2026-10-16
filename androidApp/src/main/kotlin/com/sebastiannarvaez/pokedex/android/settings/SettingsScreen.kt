@@ -38,6 +38,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.platform.LocalContext
+import com.sebastiannarvaez.pokedex.android.daily.hoy
 import com.sebastiannarvaez.pokedex.android.daily.mostrarPokemonDelDia
 import com.sebastiannarvaez.pokedex.android.daily.programarRecordatorioDiario
 import com.sebastiannarvaez.pokedex.android.daily.recordarPermisoDeNotificaciones
@@ -45,9 +46,6 @@ import com.sebastiannarvaez.pokedex.feature.daily.EstadoDelPermiso
 import com.sebastiannarvaez.pokedex.android.auth.CuentaHoja
 import com.sebastiannarvaez.pokedex.feature.auth.AuthViewModel
 import com.sebastiannarvaez.pokedex.feature.settings.SettingsViewModel
-import kotlin.time.Clock
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toLocalDateTime
 import com.sebastiannarvaez.pokedex.feature.settings.Tema
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -243,6 +241,3 @@ val Tema.etiquetaRes: Int
         Tema.CLARO -> R.string.ajustes_tema_claro
         Tema.OSCURO -> R.string.ajustes_tema_oscuro
     }
-
-/** La fecha de hoy en la zona del dispositivo, que es la que ve el usuario. */
-private fun hoy() = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
