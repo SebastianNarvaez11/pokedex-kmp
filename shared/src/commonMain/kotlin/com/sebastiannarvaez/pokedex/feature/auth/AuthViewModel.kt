@@ -32,12 +32,13 @@ class AuthViewModel internal constructor(
         viewModelScope.launch { repository.restaurar() }
     }
 
+    // Escribir deja el campo tocado: a partir de ahi su error se ve.
     fun escribirEmail(valor: String) {
-        _form.value = _form.value.copy(email = valor, error = null)
+        _form.value = _form.value.copy(email = valor, emailTocado = true, error = null)
     }
 
     fun escribirPassword(valor: String) {
-        _form.value = _form.value.copy(password = valor, error = null)
+        _form.value = _form.value.copy(password = valor, passwordTocado = true, error = null)
     }
 
     fun entrar() = enviar { repository.entrar(it.email, it.password) }

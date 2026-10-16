@@ -52,7 +52,7 @@ struct AuthView: View {
             }
             .pickerStyle(.segmented)
 
-            VStack(spacing: 12) {
+            VStack(alignment: .leading, spacing: 12) {
                 TextField("Correo", text: Binding(
                     get: { formulario.email },
                     set: { viewModel.escribirEmail(valor: $0) }
@@ -65,6 +65,14 @@ struct AuthView: View {
                 .submitLabel(.next)
                 .onSubmit { campo = .password }
 
+                // El error, debajo del campo y solo si ya está tocado: lo decide
+                // el núcleo (`errorEmail` es nil hasta que se escribe algo).
+                if let error = formulario.errorEmail {
+                    Text(texto(de: error))
+                        .font(.caption)
+                        .foregroundStyle(.red)
+                }
+
                 SecureField("Contraseña", text: Binding(
                     get: { formulario.password },
                     set: { viewModel.escribirPassword(valor: $0) }
@@ -76,6 +84,12 @@ struct AuthView: View {
                 .focused($campo, equals: .password)
                 .submitLabel(.go)
                 .onSubmit(enviar)
+
+                if let error = formulario.errorPassword {
+                    Text(texto(de: error))
+                        .font(.caption)
+                        .foregroundStyle(.red)
+                }
             }
             .textFieldStyle(.roundedBorder)
 
@@ -148,6 +162,22 @@ struct AuthView: View {
             viewModel.registrar()
         } else {
             viewModel.entrar()
+        }
+    }
+
+    // El enum de Kotlin se traduce a texto aquí, en la vista. En Swift llega
+    // como una clase y no como un enum de Swift: el `switch` necesita `default`.
+    private func texto(de error: ErrorEmail) -> String {
+        switch error {
+        case .vacio: "Escribe tu correo"
+        default: "Escribe un correo completo, como nombre@correo.com"
+        }
+    }
+
+    private func texto(de error: ErrorPassword) -> String {
+        switch error {
+        case .vacia: "Escribe tu contraseña"
+        default: "Al menos \(AuthFormState.companion.MINIMO_PASSWORD) caracteres"
         }
     }
 
