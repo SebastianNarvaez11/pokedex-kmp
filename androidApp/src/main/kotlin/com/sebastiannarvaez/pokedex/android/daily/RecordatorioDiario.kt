@@ -12,6 +12,9 @@ import kotlin.time.Clock
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 
+/** La fecha de hoy en la zona del dispositivo, que es la que ve el usuario. */
+fun hoy() = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
+
 /**
  * El trabajo que muestra la notificación del día.
  * No pide nada a la red: el Pokémon del día es una función de la fecha, así que
@@ -22,12 +25,10 @@ class RecordatorioDiarioWorker(
     parametros: WorkerParameters,
 ) : CoroutineWorker(context, parametros) {
 
-    // doWork() es `suspend`: puede llamar a código del núcleo sin envolverlo en nada.
     override suspend fun doWork(): Result {
-        // Qué día es hoy en la zona del dispositivo (la frontera de El Pokémon del día en el núcleo).
-        val hoy = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
-        Log.i("recordatorio diario para $hoy")      // una marca para ver que se ejecutó
-        mostrarPokemonDelDia(applicationContext, hoy)
+        val fecha = hoy()
+        Log.i("recordatorio diario para $fecha")    // una marca para ver que se ejecutó
+        mostrarPokemonDelDia(applicationContext, fecha)
         return Result.success()                     // «hecho»; las otras: failure() y retry()
     }
 }
