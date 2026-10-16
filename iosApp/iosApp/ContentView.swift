@@ -18,6 +18,7 @@ struct ContentView: View {
     @State private var ajustes = Settings(tema: Tema.sistema, favoritosPorNumero: false)
     @State private var insignia: String? = nil   // nil: sin insignia en Favoritos
     @StateObject private var notificaciones = DelegadoDeNotificaciones.compartido
+    @Environment(\.scenePhase) private var scenePhase
 
     // La pestaña visible. Tiene que ser estado porque un enlace
     // entrante la cambia: si llega una ficha estando en Favoritos, hay que
@@ -42,6 +43,18 @@ struct ContentView: View {
         // El tema se aplica en la raíz: dentro de la pantalla de ajustes solo
         // pintaría esa pestaña.
         .preferredColorScheme(ajustes.tema.esquema)
+        // Reponer los avisos cada vez que la app pasa a primer plano: siete días
+        // se acaban, y sin esto la app dejaría de avisar a la semana.
+        // `initial: true` también lo ejecuta al arrancar, no solo al volver.
+        .onChange(of: scenePhase, initial: true) { _, fase in
+            guard fase == .active else { return }
+            Task {
+                // Solo si el usuario ya dijo que sí: reprogramar sin permiso no hace nada.
+                if await RecordatorioDiario.estadoDelPermiso() == .concedido {
+                    await RecordatorioDiario.programar()
+                }
+            }
+        }
         // `.onOpenURL` cubre los dos casos, app cerrada y app abierta,
         // sin distinguirlos. En Android son dos sitios (`onCreate` y
         // `onNewIntent`), y olvidar el segundo hace que el enlace falle si la app ya estaba abierta.
