@@ -1,66 +1,47 @@
 package com.sebastiannarvaez.pokedex.android.daily
 
 import android.content.Context
-import androidx.work.CoroutineWorker
-import androidx.work.ExistingPeriodicWorkPolicy
-import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.CoroutineWorker                 // un trabajo que puede usar corrutinas
+import androidx.work.ExistingPeriodicWorkPolicy      // qué hacer si ya hay uno con ese nombre
+import androidx.work.PeriodicWorkRequestBuilder      // la petición «repite esto cada…»
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import com.sebastiannarvaez.pokedex.core.Log
 import java.util.concurrent.TimeUnit
 import kotlin.time.Clock
-import kotlin.time.ExperimentalTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 
 /**
- * El trabajo que muestra la notificacion del dia.
- *
- * No pide nada a la red: el Pokemon del dia es una funcion de la fecha, asi que
- * este worker **nunca falla por falta de conexion**. Es lo que permite no
- * declarar ninguna restriccion de red y que el sistema lo ejecute cuando le
- * venga bien.
+ * El trabajo que muestra la notificación del día.
+ * No pide nada a la red: el Pokémon del día es una función de la fecha, así que
+ * este trabajo nunca falla por falta de conexión.
  */
 class RecordatorioDiarioWorker(
     context: Context,
     parametros: WorkerParameters,
 ) : CoroutineWorker(context, parametros) {
 
-    @OptIn(ExperimentalTime::class)
+    // doWork() es `suspend`: puede llamar a código del núcleo sin envolverlo en nada.
     override suspend fun doWork(): Result {
+        // Qué día es hoy en la zona del dispositivo (la frontera de El Pokémon del día en el núcleo).
         val hoy = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
-        Log.i("recordatorio diario para $hoy")
+        Log.i("recordatorio diario para $hoy")      // una marca para ver que se ejecutó
         mostrarPokemonDelDia(applicationContext, hoy)
-        return Result.success()
+        return Result.success()                     // «hecho»; las otras: failure() y retry()
     }
 }
 
-/**
- * Programa el recordatorio.
- *
- * **WorkManager no es puntual y no pretende serlo.** El minimo de una tarea
- * periodica es de quince minutos, y el sistema la agrupa con otras para no
- * despertar el dispositivo mas de lo necesario. Para un recordatorio diario
- * sobra; para algo que tenga que sonar a una hora exacta haria falta una alarma,
- * que es otro permiso y otra conversacion con el usuario.
- *
- * `KEEP` y no `REPLACE`: si ya estaba programado, reprogramarlo en cada arranque
- * reiniciaria la cuenta y el recordatorio nunca llegaria a dispararse en un
- * dispositivo que se abre a diario.
- */
+const val NOMBRE_TRABAJO = "recordatorio-diario"   // el nombre único del trabajo
+
 fun programarRecordatorioDiario(context: Context) {
+    // «Repite el trabajo cada 1 día».
     val trabajo = PeriodicWorkRequestBuilder<RecordatorioDiarioWorker>(1, TimeUnit.DAYS)
         .build()
 
     WorkManager.getInstance(context).enqueueUniquePeriodicWork(
-        NOMBRE_TRABAJO,
-        ExistingPeriodicWorkPolicy.KEEP,
+        NOMBRE_TRABAJO,                       // con nombre: no puede haber dos iguales
+        ExistingPeriodicWorkPolicy.KEEP,      // si ya existe, déjalo como está
         trabajo,
     )
 }
-
-fun cancelarRecordatorioDiario(context: Context) {
-    WorkManager.getInstance(context).cancelUniqueWork(NOMBRE_TRABAJO)
-}
-
-const val NOMBRE_TRABAJO = "recordatorio-diario"
