@@ -15,6 +15,8 @@ struct RaizConSesion<Contenido: View>: View {
     @State private var viewModel: AuthViewModel?
     @State private var estado = AuthState(comprobando: true, session: nil)
     @State private var cambiandoPassword = false
+    // El enlace que llegó antes de que exista el ViewModel (arranque en frío).
+    @State private var enlacePendiente: EnlaceDeRecuperacion?
 
     /// Se calcula una sola vez: la configuración no cambia mientras la app vive.
     private let hayCuentas = AuthIosKt.hayCuentas()
@@ -47,7 +49,15 @@ struct RaizConSesion<Contenido: View>: View {
             // que el suyo se expone aparte como `DestinationCompanion`. Esto es
             // una clase normal y **sí** conserva el suyo anidado.
             guard let enlace = EnlaceDeRecuperacion.companion.parse(url: url.absoluteString) else { return }
-            viewModel?.abrirRecuperacion(enlace: enlace)
+            // Arranque en frío: el ViewModel aún no existe. Se guarda y la
+            // `.task` lo atiende. (En el simulador la `.task` suele llegar
+            // antes, pero SwiftUI no promete el orden.)
+            guard let viewModel else {
+                enlacePendiente = enlace
+                return
+            }
+            // Adopta la sesión temporal del enlace y abre la hoja.
+            viewModel.abrirRecuperacion(enlace: enlace)
             cambiandoPassword = true
         }
         .sheet(isPresented: $cambiandoPassword) {
@@ -58,6 +68,12 @@ struct RaizConSesion<Contenido: View>: View {
             let vm = viewModel ?? AuthIosKt.authViewModel(owner: owner)
             viewModel = vm
             estado = vm.authStateForIos
+            // Si llegó un enlace antes de que existiera el ViewModel, se atiende ahora.
+            if let enlace = enlacePendiente {
+                enlacePendiente = nil
+                vm.abrirRecuperacion(enlace: enlace)
+                cambiandoPassword = true
+            }
             do {
                 for try await nuevo in asyncSequence(for: vm.authStateForIosFlow) {
                     estado = nuevo
