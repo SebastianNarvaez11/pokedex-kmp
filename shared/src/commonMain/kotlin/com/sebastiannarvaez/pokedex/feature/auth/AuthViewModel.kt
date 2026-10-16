@@ -49,8 +49,11 @@ class AuthViewModel internal constructor(
         viewModelScope.launch { repository.salir() }
     }
 
+    // Cierra el error o el aviso de «revisa tu correo»: sin apagar
+    // `correoEnviado`, el dialogo de Android reapareceria al instante, y la
+    // alerta de iOS no volveria a salir la proxima vez (el valor no cambiaria).
     fun descartarError() {
-        _form.value = _form.value.copy(error = null)
+        _form.value = _form.value.copy(error = null, correoEnviado = false)
     }
 
     /**
