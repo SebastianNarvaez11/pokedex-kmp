@@ -10,7 +10,7 @@ import Shared              // el framework de Kotlin
 enum RecordatorioDiario {
 
     /// Cuántos días se programan por adelantado. iOS guarda como mucho 64
-    /// notificaciones pendientes por app; siete es de sobra.
+    /// notificaciones pendientes por app; siete queda lejos.
     static let diasProgramados = 7
 
     /// Los identificadores son fijos: pokemon-del-dia-0 … pokemon-del-dia-6.
@@ -22,7 +22,7 @@ enum RecordatorioDiario {
         switch ajustes.authorizationStatus {
         case .notDetermined: return .sinPreguntar                      // nunca se ha preguntado
         // .provisional: entrega sin molestar, sin haber enseñado el diálogo.
-        // .ephemeral: permiso temporal de los App Clips. Para esta app, ambos son «sí».
+        // .ephemeral: permiso temporal que iOS da en situaciones especiales. Aquí también es «sí».
         case .authorized, .provisional, .ephemeral: return .concedido
         default: return .denegado                                      // .denied: iOS no vuelve a preguntar
         }
@@ -74,12 +74,13 @@ enum RecordatorioDiario {
             var cuando = calendario.dateComponents([.year, .month, .day], from: fecha)
             cuando.hour = hora
             cuando.minute = 0
-            // Si esa hora ya pasó (hoy, después de las 9), ese aviso no se enviaría nunca
-            // (iOS la descartaría sin avisar; el `guard` lo deja escrito).
+            // `Date()` es «ahora». Si ese momento ya pasó (hoy, después de las 9),
+            // se salta este día. La coma del `guard` es «y además»: las dos condiciones
+            // tienen que cumplirse, y `momento > Date()` compara dos fechas (mayor = más tarde).
             guard let momento = calendario.date(from: cuando), momento > Date() else { continue }
 
             // Los tres números de la fecha, para pedir el contenido de ese día.
-            guard let anio = cuando.year, let mes = cuando.month, let dd = cuando.day else { continue }
+            guard let anio = cuando.year, let mes = cuando.month, let diaDelMes = cuando.day else { continue }
 
             // Un disparador por día con `repeats: false`, no uno repetido: si se
             // repitiera, el contenido sería siempre el mismo y el «Pokémon del
@@ -88,7 +89,7 @@ enum RecordatorioDiario {
 
             let peticion = UNNotificationRequest(
                 identifier: "\(identificadorPrefijo)\(dia)",
-                content: contenido(anio: anio, mes: mes, dia: dd),
+                content: contenido(anio: anio, mes: mes, dia: diaDelMes),
                 trigger: disparo
             )
             try? await centro.add(peticion)   // entrega la petición al sistema

@@ -55,8 +55,9 @@ fun recordarPermisoDeNotificaciones(): Pair<EstadoDelPermiso, () -> Unit> {
     val context = LocalContext.current
     var estado by remember { mutableStateOf(estadoDelPermiso(context)) }
 
-    // El lanzador es un composable: se crea al dibujar la pantalla, nunca dentro de
-    // un onClick (el compilador lo rechaza). La lambda recibe la respuesta del diálogo.
+    // El lanzador es un composable: solo se puede crear mientras Compose dibuja la
+    // pantalla, nunca dentro de un onClick (el compilador lo rechaza). Se crea aquí
+    // y el onClick, más abajo, solo lo usa. La lambda recibe la respuesta del diálogo.
     val lanzador = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission(),
     ) { concedido ->
