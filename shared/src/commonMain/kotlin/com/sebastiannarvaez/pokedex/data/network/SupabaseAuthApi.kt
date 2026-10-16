@@ -5,6 +5,7 @@ import com.sebastiannarvaez.pokedex.core.Log
 import com.sebastiannarvaez.pokedex.data.network.dto.AuthErrorDto
 import com.sebastiannarvaez.pokedex.data.network.dto.SessionDto
 import io.ktor.client.HttpClient
+import io.ktor.client.HttpClientConfig
 import io.ktor.client.call.body
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.defaultRequest
@@ -19,6 +20,7 @@ import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import io.ktor.http.isSuccess
 import io.ktor.serialization.kotlinx.json.json
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
@@ -37,7 +39,7 @@ internal interface SupabaseAuthApi {
 private data class CredencialesDto(val email: String, val password: String)
 
 @Serializable
-private data class RefrescoDto(val refresh_token: String)
+private data class RefrescoDto(@SerialName("refresh_token") val refreshToken: String)
 
 @Serializable
 private data class EmailDto(val email: String)
@@ -115,9 +117,9 @@ internal class KtorSupabaseAuthApi(private val client: HttpClient) : SupabaseAut
 internal fun createSupabaseClient(
     config: AppConfig,
     engine: HttpClientEngine? = null,
-    extra: io.ktor.client.HttpClientConfig<*>.() -> Unit = {},
+    extra: HttpClientConfig<*>.() -> Unit = {},
 ): HttpClient {
-    val configuracion: io.ktor.client.HttpClientConfig<*>.() -> Unit = {
+    val configuracion: HttpClientConfig<*>.() -> Unit = {
         install(ContentNegotiation) { json(Json { ignoreUnknownKeys = true }) }
         install(HttpTimeout) {
             requestTimeoutMillis = 15_000

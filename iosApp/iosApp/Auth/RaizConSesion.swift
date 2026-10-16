@@ -24,8 +24,7 @@ struct RaizConSesion<Contenido: View>: View {
     var body: some View {
         Group {
             if !hayCuentas {
-                // Sin Supabase configurado la app va directa. Así se puede
-                // clonar el repositorio y ejecutarlo sin crear ninguna cuenta.
+                // Sin Supabase configurado la app va directa.
                 contenido()
             } else if estado.comprobando {
                 ProgressView()
