@@ -88,6 +88,9 @@
     <string name="auth_password_ver">Ver</string>
     <string name="auth_password_ocultar">Ocultar</string>
     <string name="auth_password_minimo">Al menos %1$d caracteres</string>
+    <string name="auth_error_correo_vacio">Escribe tu correo</string>
+    <string name="auth_error_correo_no_valido">Escribe un correo completo, como nombre@correo.com</string>
+    <string name="auth_error_password_vacia">Escribe tu contraseña</string>
     <string name="auth_olvidaste">¿Olvidaste tu contraseña?</string>
     <string name="auth_olvidaste_ayuda">Escribe tu correo arriba y te mandamos un enlace.</string>
     <string name="auth_revisa_correo">Revisa tu correo</string>
