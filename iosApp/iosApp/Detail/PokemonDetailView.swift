@@ -173,9 +173,12 @@ private struct Ficha: View {
                 // esquemas propios no se convierten en enlace pulsable en la
                 // mayoría de apps de mensajería.
                 // `DestinationKt.toShareUrl(_:)` y no `destino.toShareUrl()`:
-                // una funcion de extension de Kotlin llega a Swift como metodo
-                // estatico de la clase del fichero, con el receptor como primer
-                // argumento. No se puede llamar con notacion de punto.
+                // `toShareUrl` es una extensión sobre una interfaz (`Destination`),
+                // que llega a Swift como protocolo, y a un protocolo Kotlin no le
+                // puede añadir métodos: la deja en `DestinationKt`, la clase del
+                // fichero, con el destino como primer argumento. Las extensiones
+                // sobre clases, como `settingsForIos` o `insigniaForIos`, sí se
+                // llaman con punto.
                 ShareLink(
                     item: URL(string: DestinationKt.toShareUrl(DestinationDetalle(pokemonId: detalle.id)))!,
                     subject: Text(detalle.name.capitalized),
