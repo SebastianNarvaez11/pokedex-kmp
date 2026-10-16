@@ -109,6 +109,9 @@ kotlin {
         jvmTest.dependencies {
             implementation(libs.koin.test)
             implementation(libs.androidx.room.testing)
+            // La JVM no trae motor de red: Android usa OkHttp, y aqui se le presta
+            // el mismo solo para los tests (OrdenTest crea los HttpClient del grafo).
+            implementation(libs.ktor.client.okhttp)
         }
         commonTest.dependencies {
             implementation(kotlin("test"))
