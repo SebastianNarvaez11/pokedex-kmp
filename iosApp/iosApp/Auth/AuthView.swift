@@ -135,7 +135,9 @@ struct AuthView: View {
         // El aviso no dice si el correo existe. Decirlo le contaría a cualquiera
         // quién tiene cuenta aquí, y Supabase responde igual en los dos casos.
         .alert("Revisa tu correo", isPresented: $mostrandoCorreoEnviado) {
-            Button("Entendido", role: .cancel) { }
+            // Apaga `correoEnviado` en el núcleo: si se quedara en verdadero, la
+            // segunda petición no lo cambiaría y la alerta no volvería a salir.
+            Button("Entendido", role: .cancel) { viewModel.descartarError() }
         } message: {
             Text("Si hay una cuenta con ese correo, le hemos mandado un enlace para poner una contraseña nueva.")
         }
