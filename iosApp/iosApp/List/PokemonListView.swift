@@ -50,6 +50,7 @@ struct PokemonListView: View {
             .onChange(of: texto) { _, nuevo in buscador?.escribir(texto: nuevo) }
             .navigationDestination(for: Int32.self) { id in
                 PokemonDetailView(pokemonId: id)
+                    .id(id)   // otro número, otra ficha: SwiftUI no reutiliza la anterior
             }
             .navigationTitle("Pokédex")
                 // El título grande que se encoge al hacer scroll es de iOS, y
