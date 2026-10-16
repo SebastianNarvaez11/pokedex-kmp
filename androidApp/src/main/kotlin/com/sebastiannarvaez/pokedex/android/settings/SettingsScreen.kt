@@ -46,7 +46,6 @@ import com.sebastiannarvaez.pokedex.android.auth.CuentaHoja
 import com.sebastiannarvaez.pokedex.feature.auth.AuthViewModel
 import com.sebastiannarvaez.pokedex.feature.settings.SettingsViewModel
 import kotlin.time.Clock
-import kotlin.time.ExperimentalTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import com.sebastiannarvaez.pokedex.feature.settings.Tema
@@ -116,10 +115,8 @@ fun SettingsScreen(
                 },
                 alPulsar = {
                     if (permiso == EstadoDelPermiso.CONCEDIDO) {
-                        // Programar es idempotente con KEEP, asi que tocar aqui
-                        // mas de una vez no duplica nada. Ademas se ensena el de
-                        // hoy al instante: esperar veinticuatro horas para saber
-                        // si funciona no es una forma de comprobar nada.
+                        // Programar es idempotente con KEEP: tocar aquí más de una
+                        // vez no duplica nada.
                         programarRecordatorioDiario(contexto)
                         mostrarPokemonDelDia(contexto, hoy())
                     } else {
@@ -248,5 +245,4 @@ val Tema.etiquetaRes: Int
     }
 
 /** La fecha de hoy en la zona del dispositivo, que es la que ve el usuario. */
-@OptIn(ExperimentalTime::class)
 private fun hoy() = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
