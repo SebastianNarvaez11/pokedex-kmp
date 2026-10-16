@@ -52,8 +52,7 @@ fun PokedexApp(
 ) {
     val pila = rememberNavBackStack(ListaKey)
     val actual = pila.lastOrNull()
-    // La insignia de Favoritos. Este ViewModel es de la Activity (esta fuera del
-    // NavDisplay), no de una pestaña, y lee el mismo repositorio que la pantalla.
+    // El número de la pestaña: otro lector del mismo repositorio de favoritos.
     val favoritos: FavoritesViewModel = koinViewModel()
     val insignia by favoritos.insignia.collectAsStateWithLifecycle()
 
