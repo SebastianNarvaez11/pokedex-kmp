@@ -1,5 +1,6 @@
+// `Properties` es la clase de Java que lee ficheros de ajustes `clave=valor`.
 // `java` esta ocupado en un script de Gradle por la extension del plugin de
-// Java, asi que `java.util.Properties` no resuelve: hay que importarlo.
+// Java, asi que `java.util.Properties` sin import no resuelve.
 import java.util.Properties
 
 plugins {
@@ -9,10 +10,11 @@ plugins {
     alias(libs.plugins.composeCompiler)
 }
 
-// Las claves salen de un fichero que no se versiona. Si no existe, quedan
-// vacias y la app compila igual: lo unico que pasa es que no hay cuenta.
+// Lee `local.properties` (en la carpeta raiz del proyecto). Si no existe,
+// `secretos` queda vacio y la app compila igual: lo unico que pasa es que no
+// hay cuenta.
 val secretos = Properties().apply {
-    val fichero = rootProject.file("secrets.properties")
+    val fichero = rootProject.file("local.properties")
     if (fichero.exists()) fichero.inputStream().use { load(it) }
 }
 
@@ -36,6 +38,11 @@ android {
         // Del catalogo, que es el unico sitio donde se escribe un numero.
         versionCode = libs.versions.appVersionCode.get().toInt()
         versionName = libs.versions.appVersionName.get()
+        // Cada constante acaba en BuildConfig.SUPABASE_URL / SUPABASE_KEY. El
+        // segundo argumento de getProperty es el valor si falta la clave; las
+        // comillas escapadas hacen que la constante sea un texto en Java.
+        buildConfigField("String", "SUPABASE_URL", "\"${secretos.getProperty("SUPABASE_URL", "")}\"")
+        buildConfigField("String", "SUPABASE_KEY", "\"${secretos.getProperty("SUPABASE_KEY", "")}\"")
     }
 
     signingConfigs {
@@ -81,11 +88,6 @@ android {
             // found» y el mensaje no menciona a Robolectric.
             isIncludeAndroidResources = true
         }
-    }
-
-    defaultConfig {
-        buildConfigField("String", "SUPABASE_URL", "\"${secretos.getProperty("SUPABASE_URL", "")}\"")
-        buildConfigField("String", "SUPABASE_KEY", "\"${secretos.getProperty("SUPABASE_KEY", "")}\"")
     }
 }
 
