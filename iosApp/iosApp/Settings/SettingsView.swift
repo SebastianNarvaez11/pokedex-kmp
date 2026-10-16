@@ -19,8 +19,11 @@ struct SettingsView: View {
     @State private var auth: AuthViewModel?
     @State private var sesion: Session?
     @State private var confirmandoSalida = false
+    // Lo mismo para borrar la cuenta, con su propio ViewModel y el texto del
+    // error, si el borrado falla.
     @State private var confirmandoBorrado = false
     @State private var cuenta: AccountViewModel?
+    @State private var errorDeBorrado: String?
 
     var body: some View {
         NavigationStack {
@@ -132,16 +135,40 @@ struct SettingsView: View {
             } message: {
                 Text("Se borra tu usuario en el servidor y no se puede deshacer. Tus favoritos, que están en este iPhone, no se tocan.")
             }
+            // La alerta está abierta mientras haya un error. Al cerrarla se
+            // le dice al ViewModel que lo olvide, y eso la apaga.
+            .alert(
+                "No se pudo eliminar la cuenta",
+                isPresented: Binding(
+                    get: { errorDeBorrado != nil },
+                    set: { if !$0 { cuenta?.descartarError() } }
+                )
+            ) {
+                Button("Entendido", role: .cancel) { }
+            } message: {
+                Text(errorDeBorrado ?? "")
+            }
         }
         .task {
             guard AuthIosKt.hayCuentas() else { return }
             let vm = auth ?? AuthIosKt.authViewModel(owner: owner)
             auth = vm
-            cuenta = cuenta ?? AuthIosKt.accountViewModel(owner: owner)
             sesion = vm.authStateForIos.session
             do {
                 for try await nuevo in asyncSequence(for: vm.authStateForIosFlow) {
                     sesion = nuevo.session
+                }
+            } catch { }
+        }
+        .task {
+            guard AuthIosKt.hayCuentas() else { return }
+            // El ViewModel de la cuenta, creado una sola vez.
+            let vm = cuenta ?? AuthIosKt.accountViewModel(owner: owner)
+            cuenta = vm
+            do {
+                // Cada cambio del estado de la cuenta: si trae error, se enseña.
+                for try await nuevo in asyncSequence(for: vm.accountStateForIosFlow) {
+                    errorDeBorrado = nuevo.error?.detalle
                 }
             } catch { }
         }
