@@ -4,7 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import com.sebastiannarvaez.pokedex.feature.auth.EnlaceDeRecuperacion
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -43,7 +43,10 @@ fun RaizConSesion(
 
     val viewModel: AuthViewModel = koinViewModel()
     val estado by viewModel.state.collectAsStateWithLifecycle()
-    var cambiandoPassword by remember { mutableStateOf(false) }
+    // `rememberSaveable` y no `remember`: al girar el movil Android rehace la
+    // actividad, el enlace ya se consumio y no vuelve a llegar, y con `remember`
+    // el dialogo se cerraria dejando al usuario dentro con la sesion temporal.
+    var cambiandoPassword by rememberSaveable { mutableStateOf(false) }
 
     // El enlace del correo trae una sesion temporal: se adopta y el usuario
     // entra, con el dialogo de contrasena nueva encima.
