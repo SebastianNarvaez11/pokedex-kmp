@@ -31,13 +31,23 @@ fun NuevaPasswordDialog(
     alTerminar: () -> Unit,
     viewModel: AccountViewModel = koinViewModel(),
 ) {
+    // El texto se queda en `remember`: perder una contrasena a medio escribir al
+    // girar es aceptable, y asi no se guarda en el estado de la actividad.
     var password by remember { mutableStateOf("") }
     val estado by viewModel.state.collectAsStateWithLifecycle()
 
+    // El ViewModel vive lo que la actividad, y lo comparte la hoja de la cuenta:
+    // al cerrar, su estado vuelve al principio. Si no, un segundo enlace en la
+    // misma sesion de la app abriria directamente «Contrasena cambiada».
+    val cerrar = {
+        viewModel.reiniciar()
+        alTerminar()
+    }
+
     if (estado.passwordCambiada) {
         AlertDialog(
-            onDismissRequest = alTerminar,
-            confirmButton = { TextButton(onClick = alTerminar) { Text("Listo") } },
+            onDismissRequest = cerrar,
+            confirmButton = { TextButton(onClick = cerrar) { Text("Listo") } },
             title = { Text("Contraseña cambiada") },
             text = { Text("Ya puedes seguir usando la app con la contraseña nueva.") },
         )
@@ -45,7 +55,7 @@ fun NuevaPasswordDialog(
     }
 
     AlertDialog(
-        onDismissRequest = alTerminar,
+        onDismissRequest = cerrar,
         title = { Text("Nueva contraseña") },
         text = {
             Column {
@@ -74,6 +84,6 @@ fun NuevaPasswordDialog(
                 enabled = password.length >= AuthFormState.MINIMO_PASSWORD && !estado.trabajando,
             ) { Text("Guardar") }
         },
-        dismissButton = { TextButton(onClick = alTerminar) { Text("Ahora no") } },
+        dismissButton = { TextButton(onClick = cerrar) { Text("Ahora no") } },
     )
 }
