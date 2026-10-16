@@ -6,6 +6,7 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.sebastiannarvaez.pokedex.android.R
@@ -27,6 +28,9 @@ const val CANAL_DIARIO = "pokemon_del_dia"
  * texto de producto, no detalle tecnico.
  */
 fun crearCanalDiario(context: Context) {
+    // Antes de Android 8 (nivel 26) no hay canales: no hay nada que crear.
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
+
     val canal = NotificationChannel(
         CANAL_DIARIO,
         // Fuera de Compose no hay `stringResource`: aqui se usa el `Context`,

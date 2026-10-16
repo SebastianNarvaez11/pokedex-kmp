@@ -3,12 +3,12 @@ package com.sebastiannarvaez.pokedex.android.daily
 import android.Manifest
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.os.Build
 import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.NotificationManagerCompat
-import androidx.core.net.toUri
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -20,10 +20,10 @@ import com.sebastiannarvaez.pokedex.feature.daily.EstadoDelPermiso
 /**
  * El permiso de notificaciones, con sus tres estados.
  *
- * Android no distingue «sin preguntar» de «denegado» en una sola llamada: hay
- * que combinar si estan activadas con si el sistema aconseja explicar por que
- * se piden. Ese `shouldShowRequestPermissionRationale` es true **solo** despues
- * de una denegacion, asi que sirve justo para eso.
+ * Android solo contesta «¿estan activadas?» (`areNotificationsEnabled`): el
+ * sistema guarda aparte si el usuario ya contesto, pero esta pregunta no lo
+ * devuelve. Por eso, desde Android 13, «desactivadas» se trata como «sin
+ * preguntar», y el «no» se aprende cuando llega la respuesta del dialogo.
  */
 fun estadoDelPermiso(context: Context): EstadoDelPermiso = when {
     // Antes de Android 13 no hay permiso en tiempo de ejecucion: basta con que
@@ -37,16 +37,24 @@ fun estadoDelPermiso(context: Context): EstadoDelPermiso = when {
 
     NotificationManagerCompat.from(context).areNotificationsEnabled() -> EstadoDelPermiso.CONCEDIDO
 
+    // Desde Android 13, «desactivadas» puede ser «nunca preguntado» o «dijo que no»,
+    // y Android no deja distinguirlo desde aquí. Se trata como sin preguntar.
     else -> EstadoDelPermiso.SIN_PREGUNTAR
 }
 
-/** Lleva a los ajustes del sistema, que es lo unico que queda tras un «no». */
+/** Abre la pantalla de notificaciones de esta app en los ajustes del sistema. */
 fun abrirAjustesDeNotificaciones(context: Context) {
-    context.startActivity(
+    val intent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        // Android 8 o superior: la pantalla de notificaciones de esta app.
         Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS)
             .putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
-            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
-    )
+    } else {
+        // Android 7: esa pantalla no existe; se abre la ficha de la app.
+        Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.fromParts("package", context.packageName, null))
+    }
+    // La función recibe un Context cualquiera: si no fuera una Activity, sin esta
+    // bandera Android se negaría a abrir la pantalla.
+    context.startActivity(intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
 }
 
 /**
@@ -68,14 +76,12 @@ fun recordarPermisoDeNotificaciones(): Pair<EstadoDelPermiso, () -> Unit> {
     }
 
     val pedir: () -> Unit = {
-        when {
-            Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
-                estado == EstadoDelPermiso.SIN_PREGUNTAR ->
-                lanzador.launch(Manifest.permission.POST_NOTIFICATIONS)
-
-            // Ya dijo que no: el sistema no vuelve a preguntar por mucho que se
-            // lo pidamos. Lo unico honesto es llevarle a los ajustes.
-            else -> abrirAjustesDeNotificaciones(context)
+        // Antes de Android 13 el estado nunca es SIN_PREGUNTAR: no hay diálogo que lanzar.
+        if (estado == EstadoDelPermiso.SIN_PREGUNTAR) {
+            lanzador.launch(Manifest.permission.POST_NOTIFICATIONS)    // el diálogo del sistema
+        } else {
+            // Ya se dijo que no: la app no insiste, lleva a los ajustes.
+            abrirAjustesDeNotificaciones(context)
         }
     }
 
