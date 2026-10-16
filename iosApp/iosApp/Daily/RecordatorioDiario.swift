@@ -1,36 +1,34 @@
 import Foundation
-import UserNotifications
-import Shared
+import UserNotifications   // el centro de notificaciones de iOS
+import Shared              // el framework de Kotlin
 
 /// El recordatorio diario en iOS.
 ///
-/// La diferencia de fondo con Android: aquí **no hay trabajo en segundo plano**
-/// que se ejecute todos los días para decidir qué mostrar. Se programan las
-/// notificaciones por adelantado y el sistema las dispara.
-///
-/// Eso funciona porque el Pokémon del día es una función de la fecha: se puede
-/// calcular el de dentro de seis días sin red y sin servidor. Con un contenido
-/// que dependiera de una API, esto no se podría hacer.
+/// La diferencia de fondo con Android: aquí no hay trabajo en segundo plano que
+/// se ejecute cada día. Se programan los avisos por adelantado y el sistema los
+/// dispara, con el contenido ya escrito.
 enum RecordatorioDiario {
 
-    /// Cuántos días se programan por adelantado.
-    ///
-    /// iOS admite **64 notificaciones pendientes por app**, y a partir de ahí
-    /// descarta las más lejanas sin avisar. Siete es de sobra: se reprograman
-    /// cada vez que se abre la app.
+    /// Cuántos días se programan por adelantado. iOS guarda como mucho 64
+    /// notificaciones pendientes por app; siete es de sobra.
     static let diasProgramados = 7
 
+    /// Los identificadores son fijos: pokemon-del-dia-0 … pokemon-del-dia-6.
     static let identificadorPrefijo = "pokemon-del-dia-"
 
+    /// ¿En qué estado está el permiso? (el de iOS tiene más casos que el nuestro)
     static func estadoDelPermiso() async -> EstadoDelPermiso {
         let ajustes = await UNUserNotificationCenter.current().notificationSettings()
         switch ajustes.authorizationStatus {
-        case .notDetermined: return .sinPreguntar
+        case .notDetermined: return .sinPreguntar                      // nunca se ha preguntado
+        // .provisional: entrega sin molestar, sin haber enseñado el diálogo.
+        // .ephemeral: permiso temporal de los App Clips. Para esta app, ambos son «sí».
         case .authorized, .provisional, .ephemeral: return .concedido
-        default: return .denegado
+        default: return .denegado                                      // .denied: iOS no vuelve a preguntar
         }
     }
 
+    /// Enseña el diálogo del sistema (solo la primera vez) y devuelve el resultado.
     static func pedirPermiso() async -> EstadoDelPermiso {
         do {
             let concedido = try await UNUserNotificationCenter.current()
@@ -41,59 +39,63 @@ enum RecordatorioDiario {
         }
     }
 
-    /// Programa los próximos días, hora local.
+    /// El contenido de la notificación de un día: el Pokémon y el enlace a su ficha.
+    private static func contenido(anio: Int, mes: Int, dia: Int) -> UNMutableNotificationContent {
+        // El puente de tres enteros (Swift ve los Int de Kotlin como Int32).
+        let id = DailyIosKt.pokemonDelDia(anio: Int32(anio), mes: Int32(mes), dia: Int32(dia))
+
+        let contenido = UNMutableNotificationContent()
+        contenido.title = "El Pokémon de hoy"
+        contenido.body = "Descubre quién es el número \(id)"
+        contenido.sound = .default
+        // El enlace viaja en el userInfo (un diccionario libre): al tocar la
+        // notificación, la app lo lee y abre la misma ficha que abriría desde fuera.
+        contenido.userInfo = ["enlace": DestinationKt.toDeepLink(DestinationDetalle(pokemonId: Int32(id)))]
+        return contenido
+    }
+
+    /// Programa los próximos días, a la hora local indicada.
     static func programar(hora: Int = 9) async {
         let centro = UNUserNotificationCenter.current()
         // Se borra lo anterior antes de reprogramar: si no, los días ya
-        // programados se acumulan con los nuevos y se llega al límite de 64.
+        // programados se acumulan con los nuevos y se llega al límite.
         centro.removePendingNotificationRequests(
             withIdentifiers: (0..<diasProgramados).map { "\(identificadorPrefijo)\($0)" }
         )
 
         let calendario = Calendar.current
-        let hoy = calendario.startOfDay(for: Date())
+        let hoy = calendario.startOfDay(for: Date())    // hoy a las 00:00
 
         for dia in 0..<diasProgramados {
+            // La fecha de «hoy + dia días».
             guard let fecha = calendario.date(byAdding: .day, value: dia, to: hoy) else { continue }
-            let componentes = calendario.dateComponents([.year, .month, .day], from: fecha)
-            guard let anio = componentes.year, let mes = componentes.month, let dd = componentes.day else { continue }
 
-            // Un puente de tres enteros, para no exportar kotlinx-datetime
-            // entera al framework solo por construir una fecha.
-            let id = DailyIosKt.pokemonDelDia(anio: Int32(anio), mes: Int32(mes), dia: Int32(dd))
-
-            let contenido = UNMutableNotificationContent()
-            contenido.title = "El Pokémon de hoy"
-            contenido.body = "Descubre quién es el número \(id)"
-            contenido.sound = .default
-            // El enlace viaja en el userInfo: al tocar la notificación, la app
-            // lo lee y abre la misma ficha que abriría desde fuera.
-            contenido.userInfo = ["enlace": DestinationKt.toDeepLink(DestinationDetalle(pokemonId: Int32(id)))]
-
+            // Año, mes, día y la hora pedida: cuándo debe sonar.
             var cuando = calendario.dateComponents([.year, .month, .day], from: fecha)
             cuando.hour = hora
             cuando.minute = 0
+            // Si esa hora ya pasó (hoy, después de las 9), ese aviso no se enviaría nunca
+            // (iOS la descartaría sin avisar; el `guard` lo deja escrito).
+            guard let momento = calendario.date(from: cuando), momento > Date() else { continue }
 
-            // Un trigger por día con `repeats: false`, no uno repetido: si se
+            // Los tres números de la fecha, para pedir el contenido de ese día.
+            guard let anio = cuando.year, let mes = cuando.month, let dd = cuando.day else { continue }
+
+            // Un disparador por día con `repeats: false`, no uno repetido: si se
             // repitiera, el contenido sería siempre el mismo y el «Pokémon del
             // día» enseñaría el de hoy para siempre.
             let disparo = UNCalendarNotificationTrigger(dateMatching: cuando, repeats: false)
 
             let peticion = UNNotificationRequest(
                 identifier: "\(identificadorPrefijo)\(dia)",
-                content: contenido,
+                content: contenido(anio: anio, mes: mes, dia: dd),
                 trigger: disparo
             )
-            try? await centro.add(peticion)
+            try? await centro.add(peticion)   // entrega la petición al sistema
         }
     }
 
-    static func cancelar() {
-        UNUserNotificationCenter.current().removePendingNotificationRequests(
-            withIdentifiers: (0..<diasProgramados).map { "\(identificadorPrefijo)\($0)" }
-        )
-    }
-
+    /// Cuántos avisos del Pokémon del día quedan pendientes.
     static func pendientes() async -> Int {
         await UNUserNotificationCenter.current().pendingNotificationRequests()
             .filter { $0.identifier.hasPrefix(identificadorPrefijo) }
