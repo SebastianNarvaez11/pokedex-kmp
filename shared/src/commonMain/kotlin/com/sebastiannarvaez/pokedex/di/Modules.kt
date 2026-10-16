@@ -38,7 +38,14 @@ import org.koin.core.context.startKoin
 import org.koin.core.module.Module
 import org.koin.core.module.dsl.viewModel
 import org.koin.core.module.dsl.viewModelOf
+import org.koin.core.qualifier.named
 import org.koin.dsl.module
+
+// El nombre que distingue al cliente de Supabase del de PokeAPI.
+val SUPABASE = named("supabase")
+
+// El cliente de Supabase que si lleva la sesion del usuario.
+val SUPABASE_CUENTA = named("supabase-cuenta")
 
 /**
  * El grafo que comparten las dos apps.
@@ -47,12 +54,6 @@ import org.koin.dsl.module
  * por su cuenta: una en Kotlin y otra en Swift, describiendo lo mismo dos
  * veces y desincronizandose a la primera de cambio.
  */
-/** El nombre que distingue al cliente de Supabase del de PokeAPI. */
-val SUPABASE = org.koin.core.qualifier.named("supabase")
-
-/** El cliente que si lleva la sesion del usuario. */
-val SUPABASE_CUENTA = org.koin.core.qualifier.named("supabase-cuenta")
-
 val pokedexModule: Module = module {
     // <AppDispatchers>: se registra por el tipo de la interfaz, que es el que piden los demas.
     single<AppDispatchers> { PlatformAppDispatchers() }

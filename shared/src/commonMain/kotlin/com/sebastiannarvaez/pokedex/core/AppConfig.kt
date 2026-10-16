@@ -1,34 +1,28 @@
 package com.sebastiannarvaez.pokedex.core
 
-/**
- * Lo que cambia entre entornos y entre desarrolladores.
- *
- * Es una interfaz porque las claves **no pueden ser constantes en el codigo**:
- * quien clone el repositorio tiene las suyas, y las de produccion no se
- * commitean. Cada app la construye leyendo de donde su plataforma guarda estas
- * cosas.
- */
+// Lo que cambia entre entornos y entre desarrolladores. Es una interfaz porque
+// las claves no pueden ser constantes en el código: cada app las lee del sitio
+// donde su plataforma las guarda.
 interface AppConfig {
+    // La dirección de PokeAPI: no es secreta y no cambia.
     val pokeApiBaseUrl: String
 
-    /** El proyecto de Supabase. Vacio si no se ha configurado. */
+    // El proyecto de Supabase. Vacío si no se ha configurado.
     val supabaseUrl: String
 
-    /** La clave publica. Nunca la de servicio. */
+    // La clave pública. Nunca la de servicio.
     val supabaseKey: String
 
-    /**
-     * Si la parte de cuenta esta disponible.
-     *
-     * La app **funciona sin ella**: la pantalla de sesion se esconde y el resto
-     * va igual. Asi el curso se puede seguir sin crear nada, y una clave que
-     * falta no es una pantalla en blanco sin explicacion.
-     */
+    // Si la parte de cuenta está disponible. Una propiedad con `get()` se
+    // calcula cada vez que se lee. La app funciona sin cuenta: si falta
+    // alguno de los dos valores, la pantalla de sesión se esconde y el resto
+    // va igual.
     val haySupabase: Boolean
         get() = supabaseUrl.isNotBlank() && supabaseKey.isNotBlank()
 }
 
-/** Base comun: la URL de PokeAPI no es secreta y no cambia. */
+// Una base con lo que es igual en todas partes: la dirección de PokeAPI. Las
+// apps heredan de ella y rellenan solo las dos claves.
 abstract class BaseAppConfig : AppConfig {
     override val pokeApiBaseUrl: String = "https://pokeapi.co/api/v2/"
 }

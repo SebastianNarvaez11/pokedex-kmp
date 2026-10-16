@@ -7,7 +7,6 @@ import com.sebastiannarvaez.pokedex.domain.Session
 import com.sebastiannarvaez.pokedex.feature.auth.AuthState
 import com.sebastiannarvaez.pokedex.feature.auth.EnlaceDeRecuperacion
 import kotlin.time.Clock
-import kotlin.time.ExperimentalTime
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -21,7 +20,6 @@ import kotlinx.coroutines.withContext
  * Quien quiera saber si hay usuario mira este flujo; nadie pregunta al
  * almacenamiento ni al servidor por su cuenta.
  */
-@OptIn(ExperimentalTime::class)
 internal class SessionRepository(
     private val api: SupabaseAuthApi,
     private val store: TokenStore,
@@ -76,7 +74,7 @@ internal class SessionRepository(
      * saberse la vieja. Por eso esto entra por la misma puerta que un login.
      */
     suspend fun adoptar(enlace: EnlaceDeRecuperacion): Unit = withContext(dispatchers.io) {
-        val session = com.sebastiannarvaez.pokedex.domain.Session(
+        val session = Session(
             accessToken = enlace.accessToken,
             refreshToken = enlace.refreshToken,
             expiresAtEpochSeconds = ahoraEnSegundos() + enlace.expiresIn,
