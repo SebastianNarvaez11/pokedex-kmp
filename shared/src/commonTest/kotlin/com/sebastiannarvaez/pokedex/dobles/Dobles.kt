@@ -15,6 +15,7 @@ import com.sebastiannarvaez.pokedex.data.network.dto.SpeciesDto
 import com.sebastiannarvaez.pokedex.data.network.dto.StatSlotDto
 import com.sebastiannarvaez.pokedex.data.network.dto.TypeSlotDto
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.delay
 import kotlinx.io.IOException
 
 /**
@@ -106,11 +107,16 @@ internal class TestDispatchers(private val d: CoroutineDispatcher) : AppDispatch
  * duracion corta, con el reloj congelado del test el token nuevo tambien
  * naceria caducado y el repositorio refrescaria en bucle. Un servidor de
  * verdad nunca devuelve un token ya vencido.
+ *
+ * `retrasoDelRefresco` hace que el refresco tarde, como uno de verdad. Con un
+ * doble que contesta al instante, cada peticion termina antes de que empiece la
+ * siguiente y un test de concurrencia pasa aunque no haya candado.
  */
 internal class FakeAuthApi(
     private val expiresIn: Long = 3600,
     private val expiresInTrasRefresco: Long = 3600,
     private val fallaElRefresco: Boolean = false,
+    private val retrasoDelRefresco: Long = 0,
 ) : SupabaseAuthApi {
 
     var refrescos = 0
@@ -122,6 +128,7 @@ internal class FakeAuthApi(
     override suspend fun entrar(email: String, password: String) = sesion("entrada", expiresIn)
 
     override suspend fun refrescar(refreshToken: String): SessionDto {
+        delay(retrasoDelRefresco)   // mientras tanto, las demas peticiones llegan al candado
         refrescos++
         if (fallaElRefresco) error("refresh token ya usado")
         return sesion("refresco-$refrescos", expiresInTrasRefresco)

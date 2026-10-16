@@ -111,21 +111,23 @@ class SessionRepositoryTest {
     }
 
     /**
-     * El caso que justifica el `Mutex`.
+     * El caso que justifica el `Mutex` y la comprobacion de dentro.
      *
-     * El token de refresco de Supabase es de un solo uso. Si dos peticiones
-     * caducadas lo gastan a la vez, la segunda recibe 401 y tira la sesion
-     * entera. Aqui se lanzan cinco y solo puede haber un refresco.
+     * Cinco peticiones con el token a punto de caducar, y un servidor que tarda
+     * en refrescar: solo puede haber un refresco. Sin el candado, o sin la
+     * comprobacion de dentro, salen cinco.
      */
     @Test
-    fun `cinco peticiones a la vez refrescan una sola vez`() = runTest {
-        val api = FakeAuthApi(expiresIn = 30)
+    fun `cinco peticiones con un servidor lento refrescan una sola vez`() = runTest {
+        val api = FakeAuthApi(expiresIn = 30, retrasoDelRefresco = 100)
         val r = repo(api, ahora = { 1_000 })
         r.entrar("ash@pueblo-paleta.test", "pikachu")
 
         // De verdad a la vez: cinco corrutinas lanzadas antes de esperar a
-        // ninguna. Llamarlas en un bucle seria secuencial, y entonces el test
-        // pasaria incluso sin el candado.
+        // ninguna, y un doble que tarda. Llamarlas en un bucle seria
+        // secuencial, y con un doble instantaneo cada una terminaria antes de
+        // que empezara la siguiente: en los dos casos el test pasaria incluso
+        // sin el candado.
         val tokens = List(5) { async { r.tokenValido() } }.awaitAll()
 
         assertEquals(1, api.refrescos)

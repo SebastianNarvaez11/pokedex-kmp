@@ -51,8 +51,8 @@ class SupabaseAccountApiTest {
             ConfigDePrueba(),
         ).perfil()
 
-        // Una sola peticion: si `sendWithoutRequest` no filtrara por host,
-        // Ktor mandaria una sin cabecera, recibiria 401 y repetiria.
+        // Una sola peticion, y ya con la cabecera: el token sale en la
+        // primera, sin esperar a que el servidor diga 401.
         assertEquals(1, motor.requestHistory.size)
         assertEquals("Bearer access-entrada", motor.requestHistory.single().headers[HttpHeaders.Authorization])
     }
@@ -93,9 +93,69 @@ class SupabaseAccountApiTest {
     }
 
     /**
-     * Dos peticiones caducadas a la vez: el token de refresco es de un solo
-     * uso, asi que solo puede haber un refresco. Aqui se comprueba de punta a
-     * punta, con el plugin de por medio y no solo el repositorio.
+     * El caso real de Supabase: `/auth/v1/` contesta 403 con `bad_jwt`, no 401,
+     * y Ktor solo refresca ante un 401. Lo trata el interceptor del cliente.
+     */
+    @Test
+    fun `un 403 de auth v1 refresca y repite la peticion con el token nuevo`() = runTest {
+        var primera = true
+        val motor = MockEngine {
+            if (primera) {
+                primera = false
+                respond("""{"code":403,"error_code":"bad_jwt","msg":"invalid JWT"}""", HttpStatusCode.Forbidden, JSON)
+            } else {
+                respond(PERFIL, HttpStatusCode.OK, JSON)
+            }
+        }
+        val api = FakeAuthApi()
+        val repo = sesion(api)
+        repo.entrar("ash@pueblo-paleta.test", "pikachu")
+
+        val perfil = KtorSupabaseAccountApi(
+            createSupabaseAccountClient(ConfigDePrueba(), proveedor(repo), motor),
+            ConfigDePrueba(),
+        ).perfil()
+
+        assertEquals("ash@pueblo-paleta.test", perfil.email)
+        assertEquals(1, api.refrescos)
+        assertEquals(2, motor.requestHistory.size)
+        assertEquals("Bearer access-entrada", motor.requestHistory[0].headers[HttpHeaders.Authorization])
+        assertEquals("Bearer access-refresco-1", motor.requestHistory[1].headers[HttpHeaders.Authorization])
+    }
+
+    /** Sin el `clearToken()`, la siguiente saldria con el token rechazado. */
+    @Test
+    fun `tras un 403 la siguiente peticion ya sale con el token nuevo`() = runTest {
+        var primera = true
+        val motor = MockEngine {
+            if (primera) {
+                primera = false
+                respond("""{"error_code":"bad_jwt"}""", HttpStatusCode.Forbidden, JSON)
+            } else {
+                respond(PERFIL, HttpStatusCode.OK, JSON)
+            }
+        }
+        val api = FakeAuthApi()
+        val repo = sesion(api)
+        repo.entrar("ash@pueblo-paleta.test", "pikachu")
+        val cuenta = KtorSupabaseAccountApi(
+            createSupabaseAccountClient(ConfigDePrueba(), proveedor(repo), motor),
+            ConfigDePrueba(),
+        )
+
+        cuenta.perfil()
+        cuenta.perfil()
+
+        assertEquals(1, api.refrescos)
+        assertEquals("Bearer access-refresco-1", motor.requestHistory.last().headers[HttpHeaders.Authorization])
+    }
+
+    /**
+     * Tres peticiones rechazadas a la vez: tiene que haber un solo refresco.
+     * Aqui se comprueba de punta a punta, con el plugin de por medio y no solo
+     * el repositorio. (Con este doble instantaneo pasaria tambien sin el
+     * candado: el que lo prueba de verdad es el de las cinco peticiones de
+     * SessionRepositoryTest.)
      */
     @Test
     fun `tres 401 a la vez refrescan una sola vez`() = runTest {
