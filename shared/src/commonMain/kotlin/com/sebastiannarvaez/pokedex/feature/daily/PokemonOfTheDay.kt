@@ -1,39 +1,30 @@
 package com.sebastiannarvaez.pokedex.feature.daily
 
-import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalDate   // «un día del calendario», sin hora ni zona
 
 /**
- * El Pokemon del dia, calculado y no sorteado.
- *
- * La regla es una funcion pura de la fecha: **no hace falta red, ni servidor,
- * ni guardar nada**. Dos dispositivos con la misma fecha muestran el mismo
- * Pokemon, y la notificacion se puede programar con una semana de antelacion
- * sin consultar nada.
- *
- * Es la diferencia entre una feature que necesita backend y una que no.
+ * El Pokémon del día, calculado y no sorteado.
+ * Función pura de la fecha: no hace falta red, ni servidor, ni guardar nada.
  */
 object PokemonOfTheDay {
 
-    /** Cuantos Pokemon numerados de forma continua hay en PokeAPI. */
+    /** Cuántos Pokémon numerados de forma continua hay en PokeAPI. */
     const val TOTAL = 1025
 
-    /**
-     * Un numero entre 1 y TOTAL a partir de la fecha.
-     *
-     * No se usa `Random`: una funcion aleatoria daria un Pokemon distinto en
-     * cada llamada, y el del dia tiene que ser el mismo a las nueve que a las
-     * once. El dia epoch pasa por una mezcla sencilla para que dias seguidos no
-     * den numeros seguidos.
-     */
+    /** Un número entre 1 y TOTAL a partir de la fecha. */
     fun idParaFecha(fecha: LocalDate): Int {
-        val dias = fecha.toEpochDays().toLong()
-        // Mezcla de enteros de Thomas Wang, suficiente para que la secuencia no
-        // se note a simple vista y estable entre plataformas.
+        // Los días transcurridos desde el 1 de enero de 1970. Ya es un Long (64 bits).
+        val dias = fecha.toEpochDays()
+        // Mezcla de bits, como las de las funciones hash: multiplica, desplaza
+        // (shr) y combina (xor). No hace falta seguir la cuenta: solo sirve para
+        // que días seguidos no den números seguidos.
         var x = dias * 2_654_435_761L
         x = x xor (x shr 16)
         x *= 2_246_822_519L
         x = x xor (x shr 13)
+        // `and` con esta máscara se queda con 31 bits: el resultado nunca es negativo.
         val positivo = (x and 0x7FFF_FFFFL)
+        // Resto de dividir entre 1025 (0..1024) y +1 para que sea 1..1025.
         return (positivo % TOTAL).toInt() + 1
     }
 }
