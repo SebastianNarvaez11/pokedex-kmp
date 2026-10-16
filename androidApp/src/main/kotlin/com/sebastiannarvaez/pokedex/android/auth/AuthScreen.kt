@@ -48,12 +48,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sebastiannarvaez.pokedex.core.UiError
 import com.sebastiannarvaez.pokedex.feature.auth.AuthFormState
 import com.sebastiannarvaez.pokedex.feature.auth.AuthViewModel
+import com.sebastiannarvaez.pokedex.feature.auth.ErrorEmail
+import com.sebastiannarvaez.pokedex.feature.auth.ErrorPassword
 import org.koin.compose.viewmodel.koinViewModel
 
 /**
@@ -179,7 +182,10 @@ fun AuthContent(
                     keyboardType = KeyboardType.Email,
                     imeAction = ImeAction.Next,
                 ),
-                isError = formulario.email.isNotBlank() && !formulario.emailValido,
+                // El error, debajo del campo y solo si ya esta tocado: lo decide
+                // el nucleo (`errorEmail` es null hasta que se escribe algo).
+                isError = formulario.errorEmail != null,
+                supportingText = { formulario.errorEmail?.let { Text(textoDe(it)) } },
                 modifier = Modifier.fillMaxWidth(),
             )
 
@@ -197,7 +203,7 @@ fun AuthContent(
                     }
                 },
                 visualTransformation = if (verPassword) {
-                    androidx.compose.ui.text.input.VisualTransformation.None
+                    VisualTransformation.None
                 } else {
                     PasswordVisualTransformation()
                 },
@@ -207,8 +213,16 @@ fun AuthContent(
                     imeAction = ImeAction.Done,
                 ),
                 keyboardActions = KeyboardActions(onDone = { if (formulario.sePuedeEnviar) enviar() }),
+                isError = formulario.errorPassword != null,
+                // Debajo del campo: el error si lo hay; si no, al registrarse,
+                // el minimo de caracteres.
                 supportingText = {
-                    if (registrando) Text(stringResource(R.string.auth_password_minimo, AuthFormState.MINIMO_PASSWORD))
+                    val error = formulario.errorPassword
+                    if (error != null) {
+                        Text(textoDe(error))
+                    } else if (registrando) {
+                        Text(stringResource(R.string.auth_password_minimo, AuthFormState.MINIMO_PASSWORD))
+                    }
                 },
                 modifier = Modifier.fillMaxWidth(),
             )
@@ -287,6 +301,19 @@ const val TAG_MODO_ENTRAR = "modo-entrar"
 const val TAG_MODO_REGISTRAR = "modo-registrar"
 const val TAG_ENVIAR = "enviar"
 const val TAG_RECUPERAR = "recuperar"
+
+// El enum se traduce a texto AQUI, en la pantalla: las reglas no saben de textos.
+@Composable
+private fun textoDe(error: ErrorEmail): String = when (error) {
+    ErrorEmail.VACIO -> stringResource(R.string.auth_error_correo_vacio)
+    ErrorEmail.NO_VALIDO -> stringResource(R.string.auth_error_correo_no_valido)
+}
+
+@Composable
+private fun textoDe(error: ErrorPassword): String = when (error) {
+    ErrorPassword.VACIA -> stringResource(R.string.auth_error_password_vacia)
+    ErrorPassword.CORTA -> stringResource(R.string.auth_password_minimo, AuthFormState.MINIMO_PASSWORD)
+}
 
 @Composable
 private fun AvisoDeError(error: UiError) {

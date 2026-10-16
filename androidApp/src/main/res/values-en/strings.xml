@@ -67,6 +67,9 @@
     <string name="auth_password_ver">Show</string>
     <string name="auth_password_ocultar">Hide</string>
     <string name="auth_password_minimo">At least %1$d characters</string>
+    <string name="auth_error_correo_vacio">Enter your email</string>
+    <string name="auth_error_correo_no_valido">Enter a full email address, like name@email.com</string>
+    <string name="auth_error_password_vacia">Enter your password</string>
     <string name="auth_olvidaste">Forgot your password?</string>
     <string name="auth_olvidaste_ayuda">Type your email above and we’ll send you a link.</string>
     <string name="auth_revisa_correo">Check your email</string>
