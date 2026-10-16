@@ -43,7 +43,15 @@ class MainActivity : ComponentActivity() {
         installSplashScreen()
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
-        recibir(intent?.dataString)
+
+        // App cerrada: el enlace viene en el Intent que la arrancó.
+        // `dataString` es la URL; `recibir` decide qué es.
+        // Solo si la Activity es nueva: al girar el móvil Android la recrea,
+        // `savedInstanceState` ya no es null y `intent` sigue siendo el
+        // original, con el enlace. Sin el `if`, la ficha reaparecería sola.
+        if (savedInstanceState == null) {
+            recibir(intent?.dataString)
+        }
 
         setContent {
             // El tema se lee en la raiz y no dentro de la pantalla de ajustes:
