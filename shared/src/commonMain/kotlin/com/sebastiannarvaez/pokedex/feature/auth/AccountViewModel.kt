@@ -62,4 +62,9 @@ class AccountViewModel internal constructor(
     fun descartarError() {
         _state.value = _state.value.copy(error = null)
     }
+
+    /** Vuelve al estado del principio: lo llama el dialogo de contrasena nueva al cerrarse. */
+    fun reiniciar() {
+        _state.value = AccountState()
+    }
 }
