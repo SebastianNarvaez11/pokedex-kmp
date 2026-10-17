@@ -118,7 +118,7 @@
     <string name="stat_special_defense">Sp. defence</string>
     <string name="stat_speed">Speed</string>
     <string name="tarjeta_descripcion">%1$s, %2$s type</string>
-    <string name="separador_tipos"> and </string>
+    <string name="separador_tipos">" and "</string>
     <string name="favoritos_vacio_detalle">Tap the heart on any Pokémon to keep it here.</string>
     <string name="favorito_quitado">%1$s removed from favourites</string>
     <string name="deshacer">Undo</string>
