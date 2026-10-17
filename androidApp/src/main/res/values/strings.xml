@@ -17,8 +17,11 @@
     <!-- Navegación y pantallas -->
     <string name="pestana_pokedex">Pokédex</string>
     <string name="pestana_favoritos">Favoritos</string>
-    <!-- Lo que TalkBack dice de la insignia de la pestana: «3 favoritos», «99+ favoritos». -->
-    <string name="insignia_favoritos">%1$s favoritos</string>
+    <!-- Lo que TalkBack dice de la insignia de la pestana: «1 favorito», «3 favoritos», «99+ favoritos». -->
+    <plurals name="insignia_favoritos">
+        <item quantity="one">%1$s favorito</item>
+        <item quantity="other">%1$s favoritos</item>
+    </plurals>
     <string name="pestana_ajustes">Ajustes</string>
     <string name="volver">Volver</string>
     <string name="mas_opciones">Más opciones</string>
