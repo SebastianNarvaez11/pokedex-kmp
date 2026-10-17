@@ -190,8 +190,9 @@ fun FavoritesScreen(
     }
 }
 
+// `internal` y no `private`: FilaDeslizableTest la pinta sola, sin la pantalla.
 @Composable
-private fun FilaDeslizable(favorito: FavoritePokemon, alPulsar: () -> Unit, alQuitar: () -> Unit) {
+internal fun FilaDeslizable(favorito: FavoritePokemon, alPulsar: () -> Unit, alQuitar: () -> Unit) {
     val umbral = SwipeToDismissBoxDefaults.positionalThreshold
     // remember y no rememberSwipeToDismissBoxState (que lo guarda con
     // rememberSaveable): si la fila vuelve con «Deshacer», tiene que volver
@@ -209,20 +210,6 @@ private fun FilaDeslizable(favorito: FavoritePokemon, alPulsar: () -> Unit, alQu
         // Se llama cuando la fila ya salio de la pantalla. `quitar` borra por
         // numero: si llegara dos veces, la segunda no encuentra nada.
         onDismiss = { alQuitar() },
-        // Una accion que solo existe como gesto **no existe** para quien usa
-        // TalkBack: el lector de pantalla se traga el deslizamiento y no hay
-        // ninguna otra forma de quitar el favorito desde la lista. Declararla
-        // como accion personalizada la pone en el menu de acciones, que es
-        // donde TalkBack la busca. iOS hace esto solo con `.swipeActions`;
-        // Android no.
-        modifier = Modifier.semantics {
-            customActions = listOf(
-                CustomAccessibilityAction(etiquetaQuitar) {
-                    alQuitar()
-                    true
-                },
-            )
-        },
         backgroundContent = {
             Box(
                 modifier = Modifier
@@ -239,14 +226,31 @@ private fun FilaDeslizable(favorito: FavoritePokemon, alPulsar: () -> Unit, alQu
             }
         },
     ) {
-        Fila(favorito, alPulsar)
+        // Una accion que solo existe como gesto **no existe** para quien usa
+        // TalkBack: el lector de pantalla se traga el deslizamiento. Declararla
+        // como accion personalizada la pone en el menu de acciones, que es
+        // donde TalkBack la busca. Va en la fila que TalkBack enfoca (la que se
+        // pulsa), no en la caja de fuera: TalkBack solo ofrece las acciones
+        // del elemento enfocado. iOS hace esto solo con `.swipeActions`.
+        Fila(
+            favorito,
+            alPulsar,
+            modifier = Modifier.semantics {
+                customActions = listOf(
+                    CustomAccessibilityAction(etiquetaQuitar) {
+                        alQuitar()
+                        true   // `true`: la accion se hizo
+                    },
+                )
+            },
+        )
     }
 }
 
 @Composable
-private fun Fila(favorito: FavoritePokemon, alPulsar: () -> Unit) {
+private fun Fila(favorito: FavoritePokemon, alPulsar: () -> Unit, modifier: Modifier = Modifier) {
     Row(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .background(MaterialTheme.colorScheme.surface)
             .clickable(onClick = alPulsar)
