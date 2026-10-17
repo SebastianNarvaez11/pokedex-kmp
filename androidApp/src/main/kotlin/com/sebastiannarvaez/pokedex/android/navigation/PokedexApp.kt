@@ -22,6 +22,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import com.sebastiannarvaez.pokedex.navigation.Destination
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
@@ -85,9 +86,12 @@ fun PokedexApp(
                 NavigationBar {
                     // El numero del circulo no llega a TalkBack: con `label`, la
                     // pestana borra la semantica del icono. Se repite como estado
-                    // del elemento («3 favoritos»). El texto se resuelve aqui
-                    // porque `semantics { }` no es composable.
-                    val estadoInsignia = insignia?.let { stringResource(R.string.insignia_favoritos, it) }
+                    // del elemento («1 favorito», «3 favoritos»). El texto se resuelve
+                    // aqui porque `semantics { }` no es composable. «99+» no es un
+                    // numero: `toIntOrNull()` da null y se cuenta como 100, en plural.
+                    val estadoInsignia = insignia?.let {
+                        pluralStringResource(R.plurals.insignia_favoritos, it.toIntOrNull() ?: 100, it)
+                    }
                     NavigationBarItem(
                         selected = actual == ListaKey,
                         onClick = { irAPestana(pila, ListaKey) },
