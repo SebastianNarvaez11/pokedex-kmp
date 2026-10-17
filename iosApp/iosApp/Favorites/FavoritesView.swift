@@ -102,10 +102,9 @@ struct FavoritesView: View {
                         }
                     }
                     .buttonStyle(.plain)
-                    // Sin esto, VoiceOver lee la fila en tres trozos sueltos:
-                    // el nombre, el número y el tipo. `.combine` los junta en
-                    // una sola frase, que es como se lee una fila.
-                    .accessibilityElement(children: .combine)
+                    // La fila es un `Button`, y un botón ya se lee entero:
+                    // VoiceOver dice «Bulbasaur, N.º 0001, Planta» sin que haga
+                    // falta juntar nada con `.accessibilityElement`.
                     // `.swipeActions` deja ver el botón con su icono mientras
                     // se desliza, y permite varias acciones por lado. En
                     // Android el equivalente pinta un fondo y hay que dibujarlo.
