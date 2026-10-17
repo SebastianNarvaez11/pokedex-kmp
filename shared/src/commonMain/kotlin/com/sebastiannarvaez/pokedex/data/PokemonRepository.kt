@@ -30,6 +30,9 @@ import kotlinx.coroutines.withContext
 internal class PokemonRepository(
     private val api: PokeApi,
     private val dispatchers: AppDispatchers,
+    // Una función y no una lista: se evalúa en cada ficha, así que si el
+    // usuario cambia el idioma con la app abierta, la siguiente ficha lo respeta.
+    private val idiomas: () -> List<String> = ::idiomasPreferidos,
 ) {
 
     private val candado = Mutex()
@@ -109,8 +112,8 @@ internal class PokemonRepository(
             // habria que escribirla dos veces y una de las dos se equivocaria.
             heightCm = basico.height * 10,
             weightG = basico.weight * 100,
-            genus = especie.enElIdiomaDelUsuario { it.genera.map { g -> g.genus to g.language.name } },
-            description = especie.enElIdiomaDelUsuario { it.flavorTexts.map { f -> f.text to f.language.name } }
+            genus = especie.enElIdioma(idiomas()) { it.genera.map { g -> g.genus to g.language.name } },
+            description = especie.enElIdioma(idiomas()) { it.flavorTexts.map { f -> f.text to f.language.name } }
                 .limpiarSaltos(),
             stats = basico.stats.mapNotNull { s ->
                 StatKind.deApi(s.stat.name)?.let { PokemonStat(it, s.baseStat) }
@@ -120,23 +123,23 @@ internal class PokemonRepository(
 }
 
 /**
- * El texto en el idioma del usuario, con los de repuesto detras.
+ * El texto en el primer idioma de la lista que PokeAPI traiga.
  *
- * PokeAPI devuelve el mismo texto en once idiomas dentro del mismo array y no
- * hay endpoint por idioma: se filtra aqui. Antes estaba fijado a espanol, asi
- * que quien tuviera el telefono en ingles veia la ficha en espanol igualmente.
- *
- * Se recorre la lista de preferencias en orden y **no** al reves: buscar por
- * cada texto disponible cual encaja daria el primero del array, que es el que
- * PokeAPI devuelva primero, no el que el usuario quiere.
+ * Se recorre la lista de preferencias EN ORDEN. Hacerlo al revés (buscar por
+ * cada texto cuál encaja) daría el primero del array, que es el que PokeAPI
+ * devuelva primero, no el que el usuario quiere.
  */
-private fun SpeciesDto.enElIdiomaDelUsuario(
+private fun SpeciesDto.enElIdioma(
+    preferidos: List<String>,
     extraer: (SpeciesDto) -> List<Pair<String, String>>,
 ): String {
     val textos = extraer(this)
-    idiomasPreferidos().forEach { idioma ->
-        textos.firstOrNull { it.second == idioma }?.let { return it.first }
+    for (idioma in preferidos) {
+        val texto = textos.firstOrNull { it.second == idioma }
+        // `return` dentro de un `for` sale de la función entera.
+        if (texto != null) return texto.first
     }
+    // Si no hay ninguno de la lista, el primero que haya; y si no, vacío.
     return textos.firstOrNull()?.first.orEmpty()
 }
 
