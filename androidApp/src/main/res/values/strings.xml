@@ -10,7 +10,9 @@
   nombres de canal internos y las etiquetas de prueba no son texto de interfaz.
 -->
 <resources>
-    <string name="app_name">Pokédex</string>
+    <!-- `translatable="false"`: no se traduce a proposito (la app se llama Pokédex
+       en todos los idiomas). Sin el, lint la da como olvidada en values-en. -->
+    <string name="app_name" translatable="false">Pokédex</string>
 
     <!-- Navegación y pantallas -->
     <string name="pestana_pokedex">Pokédex</string>
@@ -135,7 +137,7 @@
     <string name="tipo_fairy">Hada</string>
 
     <!-- Estadísticas -->
-    <string name="stat_hp">Vida</string>
+    <string name="stat_hp">PS</string>
     <string name="stat_attack">Ataque</string>
     <string name="stat_defense">Defensa</string>
     <string name="stat_special_attack">At. especial</string>
@@ -144,10 +146,11 @@
     <!--
       La descripcion que lee TalkBack. Lleva los dos huecos y el separador
       dentro porque el orden de las palabras cambia entre idiomas, y « y » no
-      se traduce solo.
+      se traduce solo. Las comillas guardan los espacios: sin ellas, Android
+      los recorta y TalkBack lee «PlantayVeneno».
     -->
     <string name="tarjeta_descripcion">%1$s, tipo %2$s</string>
-    <string name="separador_tipos"> y </string>
+    <string name="separador_tipos">" y "</string>
     <string name="favoritos_vacio_detalle">Toca el corazón de cualquier Pokémon para guardarlo aquí.</string>
     <!-- El aviso al deslizar un favorito: el nombre va en el hueco. -->
     <string name="favorito_quitado">%1$s quitado de favoritos</string>
