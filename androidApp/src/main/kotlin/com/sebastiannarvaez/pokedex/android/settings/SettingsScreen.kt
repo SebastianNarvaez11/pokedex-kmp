@@ -3,6 +3,7 @@ package com.sebastiannarvaez.pokedex.android.settings
 import com.sebastiannarvaez.pokedex.android.R
 import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -33,6 +34,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -84,12 +86,17 @@ fun SettingsScreen(
                 titulo = stringResource(R.string.ajustes_orden),
                 detalle = if (ajustes.favoritosPorNumero) stringResource(R.string.ajustes_orden_numero) else stringResource(R.string.ajustes_orden_reciente),
                 icono = {
-                    Switch(
-                        checked = ajustes.favoritosPorNumero,
-                        onCheckedChange = viewModel::cambiarOrden,
-                    )
+                    // `null`: el interruptor ya no se pulsa por su cuenta; lo hace la fila.
+                    Switch(checked = ajustes.favoritosPorNumero, onCheckedChange = null)
                 },
-                alPulsar = { viewModel.cambiarOrden(!ajustes.favoritosPorNumero) },
+                // Toda la fila es el interruptor: un solo elemento para TalkBack,
+                // con su papel (`Role.Switch`) y su estado (activado o no). Antes
+                // eran dos: la fila pulsable y el Switch con su propio toque.
+                modifier = Modifier.toggleable(
+                    value = ajustes.favoritosPorNumero,
+                    role = Role.Switch,
+                    onValueChange = viewModel::cambiarOrden,
+                ),
             )
             val (permiso, pedirPermiso) = recordarPermisoDeNotificaciones()
             val contexto = LocalContext.current
@@ -200,10 +207,11 @@ private fun Fila(
     titulo: String,
     detalle: String,
     icono: @Composable () -> Unit,
+    modifier: Modifier = Modifier,
     alPulsar: (() -> Unit)? = null,
 ) {
     Row(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             // Pulsable solo si hay algo que hacer al pulsar; si no, un `Modifier` vacio.
             .then(if (alPulsar != null) Modifier.clickable(onClick = alPulsar) else Modifier)
