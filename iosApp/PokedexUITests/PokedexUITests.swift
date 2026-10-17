@@ -67,8 +67,13 @@ final class PokedexUITests: XCTestCase {
         let tema = app.buttons["ajustes.tema"]
         XCTAssertTrue(tema.waitForExistence(timeout: 20))
         tema.tap()
-        app.buttons["Oscuro"].tap()
+        // Espera a que la lista de opciones aparezca antes de tocar «Oscuro».
+        let oscuro = app.buttons["Oscuro"]
+        XCTAssertTrue(oscuro.waitForExistence(timeout: 5))
+        oscuro.tap()
 
+        // Mata el proceso y vuelve a arrancarlo. Los argumentos de lanzamiento
+        // se conservan, así que la app arranca con las mismas dobles.
         app.terminate()
         app.launch()
         app.tabBars.buttons["Ajustes"].tap()
