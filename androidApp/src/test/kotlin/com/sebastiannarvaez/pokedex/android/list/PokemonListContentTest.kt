@@ -93,11 +93,12 @@ class PokemonListContentTest {
     }
 
     /**
-     * Lista vacia y lista cargando no son el mismo estado, y confundirlos deja
-     * una ruleta girando para siempre cuando de verdad no hay nada.
+     * Lista vacia y lista con un fallo silencioso no se distinguen a simple
+     * vista: sin su rama, una carga terminada sin resultados caia en la rejilla
+     * y dejaba la pantalla en blanco.
      */
     @Test
-    fun `sin resultados se explica, no se deja girando`() {
+    fun `sin resultados se explica, no se deja una pantalla en blanco`() {
         compose.setContent { Pintar(PagingData.from(emptyList(), TERMINADO)) }
 
         compose.onNodeWithText("No hay nada que enseñar", substring = true).assertIsDisplayed()
