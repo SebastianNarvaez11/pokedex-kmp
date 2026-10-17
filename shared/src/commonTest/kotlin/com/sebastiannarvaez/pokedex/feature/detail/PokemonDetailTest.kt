@@ -38,8 +38,17 @@ class PokemonDetailTest {
         Dispatchers.resetMain()
     }
 
-    private fun repo(falla: Boolean = false, scheduler: kotlinx.coroutines.test.TestCoroutineScheduler) =
-        PokemonRepository(FakePokeApi(total = 10, falla = falla), TestDispatchers(StandardTestDispatcher(scheduler)))
+    // El idioma se fija en el test y no se hereda de la máquina: así pasa igual
+    // en tu Mac, en español o en inglés.
+    private fun repo(
+        falla: Boolean = false,
+        scheduler: kotlinx.coroutines.test.TestCoroutineScheduler,
+        idiomas: List<String> = listOf("es", "en"),
+    ) = PokemonRepository(
+        FakePokeApi(total = 10, falla = falla),
+        TestDispatchers(StandardTestDispatcher(scheduler)),
+        idiomas = { idiomas },
+    )
 
     @Test
     fun lasMedidasSeConviertenAUnidadesDeHumano() = runTest {
@@ -59,6 +68,23 @@ class PokemonDetailTest {
         // original, no donde acaba una frase.
         assertEquals("Una rara semilla le fue plantada al nacer.", detalle.description)
         assertFalse(detalle.description.contains('\n'))
+    }
+
+    // La otra mitad de la regla: con el teléfono en inglés, el texto llega en inglés.
+    @Test
+    fun conElTelefonoEnInglesElTextoLlegaEnIngles() = runTest {
+        val detalle = repo(scheduler = testScheduler, idiomas = listOf("en")).detail(1)
+
+        assertEquals("Seed Pokemon", detalle.genus)
+        assertEquals("Texto en ingles.", detalle.description)
+    }
+
+    // Un idioma que PokeAPI no trae cae al inglés, que siempre está.
+    @Test
+    fun unIdiomaQueNoExisteCaeAlIngles() = runTest {
+        val detalle = repo(scheduler = testScheduler, idiomas = listOf("eu", "en")).detail(1)
+
+        assertEquals("Seed Pokemon", detalle.genus)
     }
 
     @Test
