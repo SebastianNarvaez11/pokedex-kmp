@@ -18,11 +18,12 @@ final class PokedexUITests: XCTestCase {
     override func setUp() {
         continueAfterFailure = false
         app = XCUIApplication()
-        // El idioma, dicho a las claras. Sin esto, los tests corren en el del
-        // simulador —que en un runner de CI es ingles— y los que buscan
-        // «Ajustes» encuentran «Settings». No es que el test este mal: es que
-        // no decia en que idioma miraba.
-        app.launchArguments = ["-AppleLanguages", "(es)", "-AppleLocale", "es_ES"]
+        // `-uiTests` activa las dobles (DoblesParaUITests.swift): la app arranca
+        // con una sesion de mentira y sin depender de las claves de Supabase.
+        // Los otros cuatro fijan el idioma y el formato de la app. Sin ellos,
+        // los tests corren en el del simulador y los que buscan «Ajustes»
+        // encuentran «Settings».
+        app.launchArguments = ["-uiTests", "-AppleLanguages", "(es)", "-AppleLocale", "es_ES"]
         app.launch()
     }
 
