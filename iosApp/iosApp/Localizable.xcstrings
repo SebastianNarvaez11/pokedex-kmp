@@ -18,6 +18,23 @@
         }
       }
     },
+    "%lld días programados": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld days scheduled"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld días programados"
+          }
+        }
+      }
+    },
     "Acerca de": {
       "extractionState": "manual",
       "localizations": {
@@ -120,19 +137,36 @@
         }
       }
     },
-    "Al menos %lld caracteres": {
+    "Al menos %d caracteres": {
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "At least %lld characters"
+            "value": "At least %d characters"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Al menos %lld caracteres"
+            "value": "Al menos %d caracteres"
+          }
+        }
+      }
+    },
+    "Al menos %d caracteres.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "At least %d characters."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Al menos %d caracteres."
           }
         }
       }
@@ -490,6 +524,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Desactivadas"
+          }
+        }
+      }
+    },
+    "Descubre quién es el número %d": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Find out who number %d is"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Descubre quién es el número %d"
           }
         }
       }
