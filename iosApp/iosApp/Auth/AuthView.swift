@@ -185,7 +185,7 @@ struct AuthView: View {
     private func texto(de error: ErrorPassword) -> String {
         switch error {
         case .vacia: String(localized: "Escribe tu contraseña")
-        default: String(localized: "Al menos \(Int(AuthFormState.companion.MINIMO_PASSWORD)) caracteres")
+        default: String(localized: "Al menos \(AuthFormState.companion.MINIMO_PASSWORD) caracteres")
         }
     }
 

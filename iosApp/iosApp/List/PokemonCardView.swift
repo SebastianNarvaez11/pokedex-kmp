@@ -106,11 +106,11 @@ struct PokemonCardView: View {
         // Una sola etiqueta para VoiceOver, en vez de leer número, nombre y
         // tipos como cuatro cosas sueltas.
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(
-            pokemon.types.isEmpty
-                ? pokemon.name.capitalized
-                : "\(pokemon.name.capitalized), tipo \(pokemon.types.map(\.etiqueta).joined(separator: " y "))"
-        )
+        // La etiqueta dice qué es; el valor, cómo es. VoiceOver lee los dos:
+        // «Bulbasaur, Planta y Veneno».
+        .accessibilityLabel(pokemon.name.capitalized)
+        // El sistema une la lista con la «y» o la «and» de cada idioma.
+        .accessibilityValue(pokemon.types.map(\.etiqueta).formatted(.list(type: .and)))
         // Al ignorar a los hijos, el corazón deja de ser un elemento propio:
         // VoiceOver no lo encontraría. Vuelve como acción de la tarjeta, que
         // VoiceOver ofrece al deslizar hacia arriba o hacia abajo.
