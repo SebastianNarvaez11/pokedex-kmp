@@ -23,6 +23,15 @@ tasks.register("tamanos") {
     group = "verification"
     description = "Imprime el tamano de los artefactos ya construidos."
 
+    // Si en la misma orden pides construir y medir, que mida DESPUES.
+    // `mustRunAfter` solo fija el orden: no obliga a construir nada.
+    mustRunAfter(
+        ":androidApp:assembleDebug",
+        ":androidApp:assembleRelease",
+        ":shared:linkDebugFrameworkIosSimulatorArm64",
+        ":shared:linkReleaseFrameworkIosArm64",
+    )
+
     val piezas = mapOf(
         "Framework iOS · debug (simulador)" to
             "shared/build/bin/iosSimulatorArm64/debugFramework/Shared.framework",
