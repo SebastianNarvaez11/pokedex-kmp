@@ -79,8 +79,9 @@
     <string name="dia_activo">Una notificación al día</string>
     <string name="dia_pedir">Toca para activar las notificaciones</string>
     <string name="dia_denegado">Las notificaciones están desactivadas</string>
-    <string name="dia_canal">El Pokémon de hoy</string>
+    <string name="dia_canal">Pokémon del día</string>
     <string name="dia_canal_descripcion">Un Pokémon distinto cada día</string>
+    <string name="dia_notificacion_titulo">El Pokémon de hoy</string>
     <string name="dia_notificacion_texto">Descubre quién es el número %1$d</string>
 
     <!-- Sesión -->
