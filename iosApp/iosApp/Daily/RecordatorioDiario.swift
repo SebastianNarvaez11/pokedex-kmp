@@ -45,8 +45,12 @@ enum RecordatorioDiario {
         let id = DailyIosKt.pokemonDelDia(anio: Int32(anio), mes: Int32(mes), dia: Int32(dia))
 
         let contenido = UNMutableNotificationContent()
-        contenido.title = "El Pokémon de hoy"
-        contenido.body = "Descubre quién es el número \(id)"
+        contenido.title = String(localized: "El Pokémon de hoy")
+        // El número dentro del texto pasa a ser un hueco de la clave:
+        // `id` es un `Int32` (el `Int` de Kotlin), y su hueco es `%d`;
+        // con un `Int` de Swift sería `%lld`. Por eso la fila del catálogo
+        // se llama «…número %d».
+        contenido.body = String(localized: "Descubre quién es el número \(id)")
         contenido.sound = .default
         // El enlace viaja en el userInfo (un diccionario libre): al tocar la
         // notificación, la app lo lee y abre la misma ficha que abriría desde fuera.

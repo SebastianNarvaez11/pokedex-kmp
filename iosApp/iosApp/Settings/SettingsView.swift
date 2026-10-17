@@ -95,7 +95,7 @@ struct SettingsView: View {
 
                 if let sesion {
                     Section {
-                        LabeledContent("Correo", value: sesion.email ?? "Sesión iniciada")
+                        LabeledContent("Correo", value: sesion.email ?? String(localized: "Sesión iniciada"))
                         Button("Cerrar sesión", role: .destructive) {
                             confirmandoSalida = true
                         }
@@ -200,9 +200,10 @@ struct SettingsView: View {
 extension Tema {
     var etiqueta: String {
         switch name {
-        case "CLARO": return "Claro"
-        case "OSCURO": return "Oscuro"
-        default: return "Lo que diga el sistema"
+        // `String(localized:)`: el `Picker` pinta este `String` tal cual.
+        case "CLARO": return String(localized: "Claro")
+        case "OSCURO": return String(localized: "Oscuro")
+        default: return String(localized: "Lo que diga el sistema")
         }
     }
 

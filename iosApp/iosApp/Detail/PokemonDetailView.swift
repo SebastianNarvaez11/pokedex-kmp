@@ -190,7 +190,10 @@ private struct Ficha: View {
 }
 
 private struct Medida: View {
-    let titulo: String
+    // `LocalizedStringKey` es lo que `Text` usa para los literales: con este
+    // tipo, `Text(titulo)` sí busca la traducción. Con `String` pintaba
+    // «Altura» y «Peso» también con la app en inglés.
+    let titulo: LocalizedStringKey
     let valor: String
 
     var body: some View {
@@ -207,12 +210,14 @@ private struct Medida: View {
 extension StatKind {
     var etiqueta: String {
         switch name {
-        case "HP": return "PS"
-        case "ATTACK": return "Ataque"
-        case "DEFENSE": return "Defensa"
-        case "SPECIAL_ATTACK": return "At. especial"
-        case "SPECIAL_DEFENSE": return "Def. especial"
-        case "SPEED": return "Velocidad"
+        // `String(localized:)`: un `String` que se pinta con `Text(variable)`
+        // no pasa por el catálogo; así llega ya traducido.
+        case "HP": return String(localized: "PS")
+        case "ATTACK": return String(localized: "Ataque")
+        case "DEFENSE": return String(localized: "Defensa")
+        case "SPECIAL_ATTACK": return String(localized: "At. especial")
+        case "SPECIAL_DEFENSE": return String(localized: "Def. especial")
+        case "SPEED": return String(localized: "Velocidad")
         default: return name.capitalized
         }
     }
