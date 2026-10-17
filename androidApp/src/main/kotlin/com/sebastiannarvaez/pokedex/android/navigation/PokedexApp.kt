@@ -23,6 +23,8 @@ import androidx.compose.runtime.LaunchedEffect
 import com.sebastiannarvaez.pokedex.navigation.Destination
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import com.sebastiannarvaez.pokedex.android.favorites.FavoritesScreen
 import com.sebastiannarvaez.pokedex.android.settings.SettingsScreen
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
@@ -81,6 +83,11 @@ fun PokedexApp(
                 exit = slideOutVertically { it },
             ) {
                 NavigationBar {
+                    // El numero del circulo no llega a TalkBack: con `label`, la
+                    // pestana borra la semantica del icono. Se repite como estado
+                    // del elemento («3 favoritos»). El texto se resuelve aqui
+                    // porque `semantics { }` no es composable.
+                    val estadoInsignia = insignia?.let { stringResource(R.string.insignia_favoritos, it) }
                     NavigationBarItem(
                         selected = actual == ListaKey,
                         onClick = { irAPestana(pila, ListaKey) },
@@ -90,6 +97,8 @@ fun PokedexApp(
                     NavigationBarItem(
                         selected = actual == FavoritosKey,
                         onClick = { irAPestana(pila, FavoritosKey) },
+                        // Sin favoritos es null y no se dice nada.
+                        modifier = Modifier.semantics { estadoInsignia?.let { stateDescription = it } },
                         icon = {
                             // Con null no se dibuja el circulo: sin favoritos, sin insignia.
                             BadgedBox(badge = { insignia?.let { Badge { Text(it) } } }) {
