@@ -56,8 +56,9 @@
     <string name="dia_activo">One notification a day</string>
     <string name="dia_pedir">Tap to turn notifications on</string>
     <string name="dia_denegado">Notifications are turned off</string>
-    <string name="dia_canal">Today’s Pokémon</string>
+    <string name="dia_canal">Pokémon of the day</string>
     <string name="dia_canal_descripcion">A different Pokémon every day</string>
+    <string name="dia_notificacion_titulo">Today’s Pokémon</string>
     <string name="dia_notificacion_texto">Find out who number %1$d is</string>
 
     <string name="auth_bienvenida">Sign in to keep your favourites and get the Pokémon of the day.</string>
