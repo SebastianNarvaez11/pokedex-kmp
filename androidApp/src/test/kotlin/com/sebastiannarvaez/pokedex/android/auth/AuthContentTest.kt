@@ -20,9 +20,9 @@ import kotlin.test.assertEquals
  * Los tests de interfaz de Android, corriendo en la JVM.
  *
  * `RobolectricTestRunner` levanta un Android de mentira dentro del proceso de
- * la JVM. Eso los hace baratos —corren en el job de Linux, que cuesta la decima
- * parte que el de macOS— y rapidos. Lo que **no** cubren es el renderizado real
- * del sistema ni los gestos: para eso hace falta un dispositivo.
+ * la JVM. Eso los hace rapidos: corren en el ordenador, sin emulador ni
+ * movil. Lo que **no** cubren es el renderizado real del sistema ni los
+ * gestos: para eso hace falta un dispositivo.
  */
 @RunWith(RobolectricTestRunner::class)
 class AuthContentTest {
